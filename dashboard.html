@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="style.css"/>
   <style>
     .topnav-brand { font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
-    .topnav-brand .icon { font-size: 20px; }
+    .topnav-brand .brand-logo { width: 28px; height: 28px; border-radius: 7px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #fff; letter-spacing: -.5px; }
     .topnav-brand span { color: var(--accent); }
     .avatar {
       width: 32px; height: 32px; border-radius: 50%;
@@ -71,7 +71,9 @@
     .project-card-icon {
       width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      font-size: 20px; background: var(--surface2); border: 1px solid var(--border);
+      font-size: 11px; font-weight: 800; letter-spacing: -.3px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--accent);
     }
     .project-card-info { flex: 1; min-width: 0; }
     .project-name { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -123,7 +125,7 @@
 
 <nav class="topnav">
   <div class="topnav-brand">
-    <span class="icon">🧽</span> Code<span>Sponge</span>
+    <div class="brand-logo">CS</div> Code<span>Sponge</span>
   </div>
   <div class="nav-right">
     <div style="display:flex;align-items:center;gap:8px">
@@ -140,7 +142,7 @@
     <p>Pick up where you left off, or start something new.</p>
     <div class="dash-controls">
       <div class="search-wrap">
-        <span class="search-icon">🔍</span>
+        <span class="search-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
         <input id="search-input" type="text" placeholder="Search projects…" oninput="filterProjects()"/>
       </div>
       <select class="filter-select" id="lang-filter" onchange="filterProjects()">
@@ -149,6 +151,7 @@
         <option value="javascript">JavaScript</option>
         <option value="cpp">C++</option>
         <option value="html">HTML</option>
+
       </select>
       <button class="btn btn-primary" onclick="document.getElementById('new-modal').classList.add('open')">+ New project</button>
     </div>
@@ -171,10 +174,10 @@
     <div class="form-group" style="margin-top:14px">
       <label style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Language</label>
       <select id="proj-lang">
-        <option value="python">🐍 Python</option>
-        <option value="javascript">🟡 JavaScript</option>
-        <option value="cpp">⚙️ C++</option>
-        <option value="html">🌐 HTML</option>
+        <option value="python">Python</option>
+        <option value="javascript">JavaScript</option>
+        <option value="cpp">C++</option>
+        <option value="html">HTML</option>
       </select>
     </div>
     <div class="modal-actions">
@@ -208,19 +211,25 @@
   function logout() { localStorage.clear(); window.location.href = "index.html"; }
   function authH()  { return { "Content-Type": "application/json", "Authorization": "Bearer " + token }; }
 
-  const LANG_ICONS = { python: "🐍", javascript: "🟡", cpp: "⚙️", html: "🌐" };
+  const LANG_ICONS = { python: "Py", javascript: "JS", cpp: "C++", html: "HTML" };
 
   let allProjects = [];
 
   async function loadProjects() {
     const grid = document.getElementById("projects-grid");
-    grid.innerHTML = '<p style="color:var(--muted);font-size:14px;padding:20px 0">Loading projects…</p>';
+    grid.innerHTML = '<p style="color:var(--muted);font-size:14px;padding:20px 0" id="load-msg">Loading projects…</p>';
+    const wakeTimer = setTimeout(() => {
+      const m = document.getElementById("load-msg");
+      if (m) m.textContent = "Server is starting up, please wait (up to 30s)…";
+    }, 6000);
     try {
       const res = await fetch(API + "/projects", { headers: authH() });
+      clearTimeout(wakeTimer);
       if (res.status === 401) { logout(); return; }
       allProjects = await res.json();
       filterProjects();
     } catch {
+      clearTimeout(wakeTimer);
       grid.innerHTML = '<p style="color:var(--danger);font-size:14px;padding:20px 0">Could not load projects. Check your connection.</p>';
     }
   }
@@ -251,7 +260,7 @@
       count.textContent = "0 projects";
       const empty = document.createElement("div");
       empty.className = "empty-full";
-      empty.innerHTML = `<div class="empty-state"><div class="empty-icon">📂</div><h3>No projects found</h3><p>${allProjects.length === 0 ? "Create your first project to get started." : "Try a different search or filter."}</p></div>`;
+      empty.innerHTML = `<div class="empty-state"><div class="empty-icon" style="font-size:36px;margin-bottom:16px;color:var(--muted)"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div><h3>No projects found</h3><p>${allProjects.length === 0 ? "Create your first project to get started." : "Try a different search or filter."}</p></div>`;
       grid.appendChild(empty);
       return;
     }
@@ -321,9 +330,9 @@
     try {
       await fetch(API + "/projects/" + deleteId, { method: "DELETE", headers: authH() });
       document.getElementById("del-modal").classList.remove("open");
-      deleteId = null;
       allProjects = allProjects.filter(p => p.id !== deleteId);
-      loadProjects();
+      deleteId = null;
+      filterProjects();
     } catch { alert("Could not delete project."); }
     finally { btn.disabled = false; btn.textContent = "Yes, delete"; }
   }

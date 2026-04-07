@@ -131,7 +131,7 @@
   <div class="editor-topbar">
     <a href="dashboard.html" class="btn btn-ghost" style="padding:5px 10px;font-size:13px;gap:4px">← Back</a>
     <div class="topbar-sep">/</div>
-    <div class="topbar-brand">🧽 Code<span>Sponge</span></div>
+    <div class="topbar-brand"><span style="width:22px;height:22px;border-radius:5px;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;letter-spacing:-.3px;flex-shrink:0">CS</span> Code<span>Sponge</span></div>
     <div class="topbar-sep">/</div>
     <input class="project-title-input" id="project-title" value="Loading…" onblur="renameProject()" onkeydown="if(event.key==='Enter')this.blur()"/>
     <div class="topbar-spacer"></div>
@@ -141,10 +141,10 @@
     </div>
     <div class="lang-select-wrap">
       <select id="lang-select" onchange="changeLanguage(this.value)">
-        <option value="python">🐍 Python</option>
-        <option value="javascript">🟡 JavaScript</option>
-        <option value="cpp">⚙️ C++</option>
-        <option value="html">🌐 HTML</option>
+        <option value="python">Python</option>
+        <option value="javascript">JavaScript</option>
+        <option value="cpp">C++</option>
+        <option value="html">HTML</option>
       </select>
     </div>
     <button class="btn btn-ghost" style="padding:5px 12px;font-size:13px" onclick="shareSnippet()">Share</button>
@@ -163,7 +163,7 @@
         <div class="output-tab" id="tab-preview" onclick="switchTab('preview')" style="display:none">Preview</div>
       </div>
       <div class="output-body" id="output-body">
-        <pre id="output" class="idle">Press ▶ Run or use ⌘↵ to run your code…</pre>
+        <pre id="output" class="idle">Press Run or use Ctrl+Enter to run your code…</pre>
       </div>
       <iframe id="html-preview"></iframe>
       <div class="output-toolbar">
@@ -174,11 +174,11 @@
 
   <!-- Status bar -->
   <div class="status-bar">
-    <div class="status-item">🧽 CodeSponge</div>
+    <div class="status-item">CodeSponge</div>
     <div class="status-item" id="status-lang">Python</div>
     <div class="status-right">
-      <div class="status-item">⌘↵ Run</div>
-      <div class="status-item">⌘S Save</div>
+      <div class="status-item">Ctrl+Enter: Run</div>
+      <div class="status-item">Ctrl+S: Save</div>
     </div>
   </div>
 </div>
@@ -416,7 +416,7 @@
     const map = { cpp: "cpp", javascript: "javascript", python: "python", html: "html" };
     monaco.editor.setModelLanguage(editor.getModel(), map[lang] || "plaintext");
     document.getElementById("status-lang").textContent =
-      { python: "🐍 Python", javascript: "🟡 JavaScript", cpp: "⚙️ C++", html: "🌐 HTML" }[lang] || lang;
+      { python: "Python", javascript: "JavaScript", cpp: "C++", html: "HTML" }[lang] || lang;
     const isHtml = lang === "html";
     document.getElementById("tab-preview").style.display = isHtml ? "" : "none";
     if (isHtml) switchTab("preview"); else switchTab("output");
@@ -471,7 +471,7 @@
 
   function clearOutput() {
     const out = document.getElementById("output");
-    out.textContent = "Press ▶ Run or use ⌘↵ to run your code…";
+    out.textContent = "Press Run or use Ctrl+Enter to run your code…";
     out.className   = "idle";
   }
 
