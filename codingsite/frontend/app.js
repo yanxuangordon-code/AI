@@ -1,6 +1,6 @@
 // ---- Config ----
 // Replace this with your Render backend URL after deploying
-const BACKEND_URL = "https://your-backend.onrender.com";
+const BACKEND_URL = "https://ai-9i22.onrender.com";
 
 // ---- Monaco Editor Setup ----
 require.config({ paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs" } });
