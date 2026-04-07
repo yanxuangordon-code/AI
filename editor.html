@@ -214,6 +214,102 @@
 
   require.config({ paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs" } });
   require(["vs/editor/editor.main"], () => {
+
+    // ── Ghost text (inline completion) provider ──────────────
+    const SNIPPETS = {
+      python: [
+        { trigger: /def\s+(\w*)$/,         insert: "function_name(params):\n    pass" },
+        { trigger: /for\s+$/,              insert: "i in range(10):\n    " },
+        { trigger: /for\s+\w+\s+in\s+$/,  insert: "range(10):\n    " },
+        { trigger: /if\s+$/,               insert: "condition:\n    " },
+        { trigger: /while\s+$/,            insert: "True:\n    " },
+        { trigger: /class\s+(\w*)$/,       insert: "ClassName:\n    def __init__(self):\n        pass" },
+        { trigger: /import\s+$/,           insert: "os" },
+        { trigger: /print\s*\($/,          insert: '"Hello, World!")' },
+        { trigger: /try:\s*$/,             insert: "\nexcept Exception as e:\n    print(e)" },
+        { trigger: /with\s+open\s*\($/,    insert: '"file.txt", "r") as f:\n    content = f.read()' },
+        { trigger: /return\s+$/,           insert: "result" },
+        { trigger: /self\.\s*$/,           insert: "attribute" },
+        { trigger: /#\s*TODO\s*$/,         insert: ": implement this" },
+        { trigger: /lambda\s+$/,           insert: "x: x * 2" },
+        { trigger: /list\s*\($/,           insert: "range(10))" },
+      ],
+      javascript: [
+        { trigger: /function\s+(\w*)$/,    insert: "name(params) {\n  \n}" },
+        { trigger: /const\s+(\w*)\s*=\s*$/, insert: "value;" },
+        { trigger: /let\s+(\w*)\s*=\s*$/,  insert: "value;" },
+        { trigger: /for\s+\($/,            insert: "let i = 0; i < 10; i++) {\n  \n}" },
+        { trigger: /if\s+\($/,             insert: "condition) {\n  \n}" },
+        { trigger: /console\.log\s*\($/,   insert: '"Hello, World!")' },
+        { trigger: /\.forEach\s*\($/,      insert: "(item) => {\n  \n});" },
+        { trigger: /\.map\s*\($/,          insert: "(item) => item);" },
+        { trigger: /\.filter\s*\($/,       insert: "(item) => item);" },
+        { trigger: /async\s+function\s*$/, insert: "name() {\n  \n}" },
+        { trigger: /await\s+$/,            insert: "fetch(url)" },
+        { trigger: /return\s+$/,           insert: "result;" },
+        { trigger: /class\s+(\w*)$/,       insert: "ClassName {\n  constructor() {\n    \n  }\n}" },
+        { trigger: /import\s+\{$/,         insert: " } from 'module';" },
+        { trigger: /\/\/\s*TODO\s*$/,      insert: ": implement this" },
+      ],
+      cpp: [
+        { trigger: /int\s+main\s*\($/,     insert: ") {\n    \n    return 0;\n}" },
+        { trigger: /cout\s*<<\s*$/,        insert: '"Hello, World!" << endl;' },
+        { trigger: /for\s+\($/,            insert: "int i = 0; i < 10; i++) {\n    \n}" },
+        { trigger: /if\s+\($/,             insert: "condition) {\n    \n}" },
+        { trigger: /while\s+\($/,          insert: "condition) {\n    \n}" },
+        { trigger: /void\s+(\w*)$/,        insert: "functionName() {\n    \n}" },
+        { trigger: /int\s+(\w+)\s*=\s*$/,  insert: "0;" },
+        { trigger: /std::\s*$/,            insert: "string" },
+        { trigger: /#include\s+<$/,        insert: "iostream>" },
+        { trigger: /cin\s*>>\s*$/,         insert: "variable;" },
+        { trigger: /return\s+$/,           insert: "0;" },
+        { trigger: /class\s+(\w*)$/,       insert: "ClassName {\npublic:\n    \n};" },
+        { trigger: /\/\/\s*TODO\s*$/,      insert: ": implement this" },
+      ],
+      html: [
+        { trigger: /<div\s*$/,             insert: 'class="">\n  \n</div>' },
+        { trigger: /<p\s*$/,               insert: 'class="">' },
+        { trigger: /<h1\s*$/,              insert: 'class="">' },
+        { trigger: /<a\s*$/,               insert: 'href="#">Link</a>' },
+        { trigger: /<img\s*$/,             insert: 'src="" alt="">' },
+        { trigger: /<input\s*$/,           insert: 'type="text" placeholder="">' },
+        { trigger: /<button\s*$/,          insert: 'class="">Click me</button>' },
+        { trigger: /<style\s*$/,           insert: '>\n  body {\n    \n  }\n</style>' },
+        { trigger: /<script\s*$/,          insert: '>\n  \n</script>' },
+        { trigger: /<form\s*$/,            insert: 'action="" method="post">' },
+        { trigger: /<ul\s*$/,              insert: '>\n  <li></li>\n</ul>' },
+        { trigger: /<table\s*$/,           insert: '>\n  <tr><td></td></tr>\n</table>' },
+      ],
+    };
+
+    monaco.languages.registerInlineCompletionsProvider(
+      ["python","javascript","cpp","html"],
+      {
+        provideInlineCompletions(model, position) {
+          const line    = model.getLineContent(position.lineNumber);
+          const before  = line.substring(0, position.column - 1);
+          const snippets = SNIPPETS[currentLang] || [];
+          for (const s of snippets) {
+            if (s.trigger.test(before)) {
+              return {
+                items: [{
+                  insertText: s.insert,
+                  range: {
+                    startLineNumber: position.lineNumber,
+                    startColumn:     position.column,
+                    endLineNumber:   position.lineNumber,
+                    endColumn:       position.column,
+                  }
+                }]
+              };
+            }
+          }
+          return { items: [] };
+        },
+        freeInlineCompletions() {}
+      }
+    );
+
     editor = monaco.editor.create(document.getElementById("monaco-editor"), {
       value: "",
       language: "python",
@@ -227,6 +323,8 @@
       cursorBlinking: "smooth",
       smoothScrolling: true,
       renderWhitespace: "selection",
+      inlineSuggest: { enabled: true },      // enable ghost text
+      quickSuggestions: { other: true, comments: false, strings: false },
     });
 
     let saveTimer;
@@ -234,6 +332,13 @@
       clearTimeout(saveTimer);
       setSaveStatus("saving");
       saveTimer = setTimeout(saveProject, 1500);
+    });
+
+    // Accept ghost text with Tab key
+    editor.addCommand(monaco.KeyCode.Tab, () => {
+      const handled = editor.getAction("editor.action.inlineSuggest.commit");
+      if (handled) handled.run();
+      else editor.trigger("keyboard", "tab", {});
     });
 
     loadProject();
