@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CodeSponge</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <h1>🧽 CodeSponge</h1>
+    <p>Write, run, and share code in your browser</p>
+  </header>
+
+  <main>
+    <div class="toolbar">
+      <select id="language">
+        <option value="python">Python</option>
+        <option value="javascript">JavaScript</option>
+        <option value="cpp">C++</option>
+        <option value="html">HTML</option>
+      </select>
+      <button id="runBtn">▶ Run</button>
+      <button id="saveBtn">💾 Save & Share</button>
+      <button id="clearBtn">🗑 Clear</button>
+    </div>
+
+    <div class="editor-area">
+      <div id="editor"></div>
+    </div>
+
+    <!-- HTML preview -->
+    <div id="previewContainer" style="display:none;">
+      <h3>Preview</h3>
+      <iframe id="htmlPreview"></iframe>
+    </div>
+
+    <div class="output-area">
+      <h3>Output</h3>
+      <pre id="output">Run your code to see output here...</pre>
+    </div>
+
+    <div id="shareBox" style="display:none;">
+      <p>🔗 Share this link:</p>
+      <input type="text" id="shareLink" readonly />
+      <button onclick="copyLink()">Copy</button>
+    </div>
+  </main>
+
+  <!-- Monaco Editor -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

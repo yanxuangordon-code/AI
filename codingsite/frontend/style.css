@@ -1,0 +1,161 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #1e1e2e;
+  color: #cdd6f4;
+  min-height: 100vh;
+}
+
+header {
+  background: #181825;
+  padding: 20px 40px;
+  border-bottom: 2px solid #313244;
+}
+
+header h1 {
+  font-size: 2rem;
+  color: #cba6f7;
+}
+
+header p {
+  color: #6c7086;
+  margin-top: 4px;
+}
+
+main {
+  max-width: 1100px;
+  margin: 30px auto;
+  padding: 0 20px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  align-items: center;
+}
+
+select {
+  background: #313244;
+  color: #cdd6f4;
+  border: 1px solid #45475a;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+button {
+  background: #cba6f7;
+  color: #1e1e2e;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: #b4befe;
+}
+
+#clearBtn {
+  background: #f38ba8;
+}
+
+#clearBtn:hover {
+  background: #eba0ac;
+}
+
+#saveBtn {
+  background: #a6e3a1;
+  color: #1e1e2e;
+}
+
+#saveBtn:hover {
+  background: #94e2d5;
+}
+
+.editor-area {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #313244;
+  height: 400px;
+}
+
+#editor {
+  height: 400px;
+  width: 100%;
+}
+
+#previewContainer {
+  margin-top: 20px;
+}
+
+#previewContainer h3 {
+  margin-bottom: 10px;
+  color: #89b4fa;
+}
+
+#htmlPreview {
+  width: 100%;
+  height: 300px;
+  background: white;
+  border: 1px solid #313244;
+  border-radius: 10px;
+}
+
+.output-area {
+  margin-top: 20px;
+}
+
+.output-area h3 {
+  margin-bottom: 10px;
+  color: #89b4fa;
+}
+
+#output {
+  background: #181825;
+  border: 1px solid #313244;
+  border-radius: 10px;
+  padding: 20px;
+  min-height: 120px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  white-space: pre-wrap;
+  color: #a6e3a1;
+}
+
+#shareBox {
+  margin-top: 20px;
+  background: #313244;
+  padding: 15px 20px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+#shareBox p {
+  color: #cba6f7;
+  font-weight: bold;
+}
+
+#shareLink {
+  flex: 1;
+  background: #1e1e2e;
+  color: #cdd6f4;
+  border: 1px solid #45475a;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  min-width: 200px;
+}
