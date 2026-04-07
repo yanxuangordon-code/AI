@@ -5,119 +5,339 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CodeSponge — Sign in</title>
   <link rel="stylesheet" href="style.css"/>
+  <style>
+    body { overflow: hidden; }
+    .auth-page {
+      display: flex;
+      height: 100vh;
+    }
+    /* ── Left panel ── */
+    .auth-left {
+      flex: 1;
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 60%, #1a2233 100%);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    .auth-left::before {
+      content: '';
+      position: absolute;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(79,142,247,.08) 0%, transparent 70%);
+      top: -100px; left: -100px;
+      border-radius: 50%;
+    }
+    .auth-left::after {
+      content: '';
+      position: absolute;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(79,142,247,.05) 0%, transparent 70%);
+      bottom: -80px; right: -80px;
+      border-radius: 50%;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 56px; position: relative; z-index: 1; }
+    .brand-icon {
+      width: 44px; height: 44px;
+      background: var(--accent);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .brand-name { font-size: 22px; font-weight: 700; }
+    .brand-name span { color: var(--accent); }
+    .auth-headline { font-size: 36px; font-weight: 800; line-height: 1.25; margin-bottom: 16px; position: relative; z-index: 1; }
+    .auth-headline em { font-style: normal; color: var(--accent); }
+    .auth-tagline { font-size: 16px; color: var(--muted); line-height: 1.6; margin-bottom: 48px; position: relative; z-index: 1; }
+    .features { display: flex; flex-direction: column; gap: 20px; position: relative; z-index: 1; }
+    .feature { display: flex; align-items: center; gap: 14px; }
+    .feature-icon {
+      width: 38px; height: 38px; flex-shrink: 0;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .feature-text { font-size: 14px; color: var(--muted); }
+    .feature-text strong { color: var(--text); display: block; margin-bottom: 2px; }
+    .lang-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 40px; position: relative; z-index: 1; }
+    .lang-chip {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    /* ── Right panel ── */
+    .auth-right {
+      width: 480px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px;
+      overflow-y: auto;
+    }
+    .auth-form-wrap { width: 100%; max-width: 360px; }
+    .form-label { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; margin-bottom: 6px; display: block; }
+    .input-wrap { position: relative; margin-bottom: 14px; }
+    .input-wrap input { padding-left: 14px; }
+    .auth-btn-row { margin-top: 6px; }
+    .divider-line {
+      display: flex; align-items: center; gap: 12px;
+      margin: 20px 0; color: var(--muted); font-size: 12px;
+    }
+    .divider-line::before, .divider-line::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .switch-link { text-align: center; font-size: 13px; color: var(--muted); margin-top: 20px; }
+    .switch-link a { color: var(--accent); font-weight: 600; }
+    .step-indicator {
+      display: flex; gap: 8px; margin-bottom: 28px;
+    }
+    .step {
+      height: 3px; flex: 1; background: var(--border); border-radius: 2px;
+      transition: background .3s;
+    }
+    .step.active { background: var(--accent); }
+    .step.done   { background: var(--success); }
+    @media (max-width: 900px) {
+      .auth-left { display: none; }
+      .auth-right { width: 100%; }
+      body { overflow: auto; }
+    }
+  </style>
 </head>
 <body>
-<div class="auth-wrap">
-  <div class="auth-card">
-    <div class="auth-logo">🧽 Code<span>Sponge</span></div>
+<div class="auth-page">
 
-    <!-- LOGIN -->
-    <div id="panel-login">
-      <h2 class="auth-title">Welcome back</h2>
-      <p class="auth-sub">Sign in to your account</p>
-      <div class="alert alert-error" id="login-error"></div>
-      <div class="form-group">
-        <label>Email</label>
-        <input id="login-email" type="email" placeholder="you@example.com"/>
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input id="login-password" type="password" placeholder="••••••••"/>
-      </div>
-      <button class="btn btn-primary btn-full" id="login-btn" onclick="doLogin()">Sign in</button>
-      <p class="auth-divider">No account? <a href="#" onclick="showPanel('signup')">Create one</a></p>
+  <!-- Left branding panel -->
+  <div class="auth-left">
+    <div class="brand">
+      <div class="brand-icon">🧽</div>
+      <div class="brand-name">Code<span>Sponge</span></div>
     </div>
-
-    <!-- SIGNUP -->
-    <div id="panel-signup" style="display:none">
-      <h2 class="auth-title">Create account</h2>
-      <p class="auth-sub">Enter your email to get started</p>
-      <div class="alert alert-error"   id="signup-error"></div>
-      <div class="alert alert-success" id="signup-success"></div>
-      <div class="form-group">
-        <label>Email</label>
-        <input id="signup-email" type="email" placeholder="you@example.com"/>
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input id="signup-password" type="password" placeholder="At least 6 characters"/>
-      </div>
-      <button class="btn btn-ghost btn-full" id="send-code-btn" onclick="sendCode()" style="margin-bottom:16px">Send verification code</button>
-      <div id="code-section" style="display:none">
-        <div class="form-group">
-          <label>Verification code</label>
-          <input id="signup-code" type="text" placeholder="6-digit code" maxlength="6"/>
+    <h1 class="auth-headline">Code, run, and<br/><em>share</em> instantly.</h1>
+    <p class="auth-tagline">A modern coding playground with cloud saves,<br/>live output, and instant sharing.</p>
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-text">
+          <strong>Run in the cloud</strong>
+          Execute Python, JavaScript & C++ instantly
         </div>
-        <button class="btn btn-primary btn-full" id="signup-btn" onclick="doSignup()">Create account</button>
       </div>
-      <p class="auth-divider">Have an account? <a href="#" onclick="showPanel('login')">Sign in</a></p>
+      <div class="feature">
+        <div class="feature-icon">☁️</div>
+        <div class="feature-text">
+          <strong>Cloud saved projects</strong>
+          Your code syncs automatically, always
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔗</div>
+        <div class="feature-text">
+          <strong>One-click sharing</strong>
+          Share any snippet with a single link
+        </div>
+      </div>
+    </div>
+    <div class="lang-chips">
+      <span class="lang-chip">Python</span>
+      <span class="lang-chip">JavaScript</span>
+      <span class="lang-chip">C++</span>
+      <span class="lang-chip">HTML</span>
+    </div>
+  </div>
+
+  <!-- Right form panel -->
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+
+      <!-- LOGIN -->
+      <div id="panel-login">
+        <h2 style="font-size:24px;font-weight:800;margin-bottom:6px">Welcome back</h2>
+        <p style="color:var(--muted);font-size:14px;margin-bottom:28px">Sign in to continue to CodeSponge</p>
+        <div class="alert alert-error" id="login-error"></div>
+        <div class="input-wrap">
+          <label class="form-label">Email</label>
+          <input id="login-email" type="email" placeholder="you@example.com" autocomplete="email"/>
+        </div>
+        <div class="input-wrap">
+          <label class="form-label">Password</label>
+          <input id="login-password" type="password" placeholder="Your password" autocomplete="current-password"/>
+        </div>
+        <div class="auth-btn-row">
+          <button class="btn btn-primary btn-full" id="login-btn" onclick="doLogin()">Sign in →</button>
+        </div>
+        <p class="switch-link">Don't have an account? <a href="#" onclick="showPanel('signup')">Sign up free</a></p>
+      </div>
+
+      <!-- SIGNUP -->
+      <div id="panel-signup" style="display:none">
+        <h2 style="font-size:24px;font-weight:800;margin-bottom:6px">Create account</h2>
+        <p style="color:var(--muted);font-size:14px;margin-bottom:24px">Free forever. No credit card needed.</p>
+
+        <div class="step-indicator">
+          <div class="step active" id="step1"></div>
+          <div class="step" id="step2"></div>
+        </div>
+
+        <div class="alert alert-error"   id="signup-error"></div>
+        <div class="alert alert-success" id="signup-success"></div>
+
+        <!-- Step 1 -->
+        <div id="step1-fields">
+          <div class="input-wrap">
+            <label class="form-label">Email</label>
+            <input id="signup-email" type="email" placeholder="you@example.com" autocomplete="email"/>
+          </div>
+          <div class="input-wrap">
+            <label class="form-label">Password</label>
+            <input id="signup-password" type="password" placeholder="At least 6 characters" autocomplete="new-password"/>
+          </div>
+          <button class="btn btn-primary btn-full" id="send-code-btn" onclick="sendCode()">Send verification code →</button>
+        </div>
+
+        <!-- Step 2 -->
+        <div id="step2-fields" style="display:none">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:20px">We sent a 6-digit code to your email. Enter it below to verify your account.</p>
+          <div class="input-wrap">
+            <label class="form-label">Verification code</label>
+            <input id="signup-code" type="text" placeholder="000000" maxlength="6" style="font-size:24px;letter-spacing:.3em;text-align:center;font-weight:700"/>
+          </div>
+          <button class="btn btn-primary btn-full" id="signup-btn" onclick="doSignup()">Create my account →</button>
+          <p style="text-align:center;font-size:13px;color:var(--muted);margin-top:14px">
+            Wrong email? <a href="#" onclick="resetSignup()">Go back</a>
+          </p>
+        </div>
+
+        <p class="switch-link">Already have an account? <a href="#" onclick="showPanel('login')">Sign in</a></p>
+      </div>
+
     </div>
   </div>
 </div>
+
 <script>
   const API = "https://codesponge-backend.onrender.com";
   if (localStorage.getItem("token")) window.location.href = "dashboard.html";
 
   function showPanel(n) {
-    document.getElementById("panel-login").style.display  = n==="login"  ? "" : "none";
-    document.getElementById("panel-signup").style.display = n==="signup" ? "" : "none";
-    document.querySelectorAll(".alert").forEach(e=>{e.style.display="none";e.textContent="";});
-  }
-  function err(id,m){const e=document.getElementById(id);e.textContent=m;e.style.display="block";}
-  function ok(id,m) {const e=document.getElementById(id);e.textContent=m;e.style.display="block";}
-  function busy(id,v){const b=document.getElementById(id);b.disabled=v;if(v){b.dataset.l=b.dataset.l||b.innerHTML;b.innerHTML='<span class="spinner"></span> Please wait…';}else b.innerHTML=b.dataset.l;}
-
-  async function doLogin(){
-    document.querySelectorAll(".alert").forEach(e=>{e.style.display="none";});
-    const email=document.getElementById("login-email").value.trim();
-    const pass=document.getElementById("login-password").value;
-    if(!email||!pass)return err("login-error","Please fill in all fields.");
-    busy("login-btn",true);
-    try{
-      const r=await fetch(API+"/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password:pass})});
-      const d=await r.json();
-      if(!r.ok)return err("login-error",d.error);
-      localStorage.setItem("token",d.token);localStorage.setItem("email",d.email);
-      window.location.href="dashboard.html";
-    }catch{err("login-error","Could not connect to server.");}
-    finally{busy("login-btn",false);}
+    document.getElementById("panel-login").style.display  = n === "login"  ? "" : "none";
+    document.getElementById("panel-signup").style.display = n === "signup" ? "" : "none";
+    clearAlerts();
   }
 
-  async function sendCode(){
-    document.querySelectorAll(".alert").forEach(e=>{e.style.display="none";});
-    const email=document.getElementById("signup-email").value.trim();
-    const pass=document.getElementById("signup-password").value;
-    if(!email)return err("signup-error","Please enter your email.");
-    if(pass.length<6)return err("signup-error","Password must be at least 6 characters.");
-    busy("send-code-btn",true);
-    try{
-      const r=await fetch(API+"/auth/send-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
-      const d=await r.json();
-      if(!r.ok)return err("signup-error",d.error);
-      ok("signup-success","Code sent to "+email+". Check your inbox.");
-      document.getElementById("code-section").style.display="";
-    }catch{err("signup-error","Could not connect to server.");}
-    finally{busy("send-code-btn",false);}
+  function clearAlerts() {
+    document.querySelectorAll(".alert").forEach(e => { e.style.display = "none"; e.textContent = ""; });
   }
 
-  async function doSignup(){
-    document.querySelectorAll(".alert").forEach(e=>{e.style.display="none";});
-    const email=document.getElementById("signup-email").value.trim();
-    const pass=document.getElementById("signup-password").value;
-    const code=document.getElementById("signup-code").value.trim();
-    if(!code)return err("signup-error","Please enter the verification code.");
-    busy("signup-btn",true);
-    try{
-      const r=await fetch(API+"/auth/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password:pass,code})});
-      const d=await r.json();
-      if(!r.ok)return err("signup-error",d.error);
-      localStorage.setItem("token",d.token);localStorage.setItem("email",d.email);
-      window.location.href="dashboard.html";
-    }catch{err("signup-error","Could not connect to server.");}
-    finally{busy("signup-btn",false);}
+  function showErr(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg; el.style.display = "block";
   }
 
-  document.addEventListener("keydown",e=>{if(e.key==="Enter"&&document.getElementById("panel-login").style.display!=="none")doLogin();});
+  function showOk(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg; el.style.display = "block";
+  }
+
+  function setBusy(id, busy) {
+    const btn = document.getElementById(id);
+    btn.disabled = busy;
+    if (busy) { btn.dataset.orig = btn.innerHTML; btn.innerHTML = '<span class="spinner"></span> Please wait…'; }
+    else btn.innerHTML = btn.dataset.orig;
+  }
+
+  function resetSignup() {
+    document.getElementById("step1-fields").style.display = "";
+    document.getElementById("step2-fields").style.display = "none";
+    document.getElementById("step1").className = "step active";
+    document.getElementById("step2").className = "step";
+    clearAlerts();
+  }
+
+  async function doLogin() {
+    clearAlerts();
+    const email = document.getElementById("login-email").value.trim();
+    const pass  = document.getElementById("login-password").value;
+    if (!email || !pass) return showErr("login-error", "Please fill in all fields.");
+    setBusy("login-btn", true);
+    try {
+      const r = await fetch(API + "/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: pass })
+      });
+      const d = await r.json();
+      if (!r.ok) return showErr("login-error", d.error);
+      localStorage.setItem("token", d.token);
+      localStorage.setItem("email", d.email);
+      window.location.href = "dashboard.html";
+    } catch { showErr("login-error", "Could not connect to server. Try again."); }
+    finally { setBusy("login-btn", false); }
+  }
+
+  async function sendCode() {
+    clearAlerts();
+    const email = document.getElementById("signup-email").value.trim();
+    const pass  = document.getElementById("signup-password").value;
+    if (!email) return showErr("signup-error", "Please enter your email.");
+    if (pass.length < 6) return showErr("signup-error", "Password must be at least 6 characters.");
+    setBusy("send-code-btn", true);
+    try {
+      const r = await fetch(API + "/auth/send-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+      });
+      const d = await r.json();
+      if (!r.ok) return showErr("signup-error", d.error);
+      showOk("signup-success", "✓ Code sent to " + email);
+      document.getElementById("step1-fields").style.display = "none";
+      document.getElementById("step2-fields").style.display = "";
+      document.getElementById("step1").className = "step done";
+      document.getElementById("step2").className = "step active";
+      setTimeout(() => document.getElementById("signup-code").focus(), 100);
+    } catch { showErr("signup-error", "Could not connect to server. Try again."); }
+    finally { setBusy("send-code-btn", false); }
+  }
+
+  async function doSignup() {
+    clearAlerts();
+    const email = document.getElementById("signup-email").value.trim();
+    const pass  = document.getElementById("signup-password").value;
+    const code  = document.getElementById("signup-code").value.trim();
+    if (!code) return showErr("signup-error", "Please enter your verification code.");
+    setBusy("signup-btn", true);
+    try {
+      const r = await fetch(API + "/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: pass, code })
+      });
+      const d = await r.json();
+      if (!r.ok) return showErr("signup-error", d.error);
+      localStorage.setItem("token", d.token);
+      localStorage.setItem("email", d.email);
+      window.location.href = "dashboard.html";
+    } catch { showErr("signup-error", "Could not connect to server. Try again."); }
+    finally { setBusy("signup-btn", false); }
+  }
+
+  document.addEventListener("keydown", e => {
+    if (e.key !== "Enter") return;
+    if (document.getElementById("panel-login").style.display !== "none") doLogin();
+    else if (document.getElementById("step2-fields").style.display !== "none") doSignup();
+    else sendCode();
+  });
 </script>
 </body>
 </html>

@@ -5,40 +5,180 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CodeSponge — Editor</title>
   <link rel="stylesheet" href="style.css"/>
+  <style>
+    html, body { height: 100%; overflow: hidden; }
+    .editor-layout { display: flex; flex-direction: column; height: 100vh; }
+
+    /* Top bar */
+    .editor-topbar {
+      height: 50px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 14px; flex-shrink: 0;
+    }
+    .topbar-brand { font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 6px; margin-right: 4px; }
+    .topbar-brand span { color: var(--accent); }
+    .topbar-sep { color: var(--border); font-size: 20px; font-weight: 200; }
+    .project-title-input {
+      background: none; border: none; color: var(--text);
+      font-size: 14px; font-weight: 600; font-family: var(--font);
+      outline: none; max-width: 200px;
+      border-bottom: 1px solid transparent;
+      padding: 2px 0;
+      transition: border-color .15s;
+    }
+    .project-title-input:focus { border-bottom-color: var(--accent); }
+    .topbar-spacer { flex: 1; }
+    .save-indicator {
+      font-size: 12px; color: var(--muted);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .save-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--success); flex-shrink: 0;
+      transition: background .2s;
+    }
+    .save-dot.saving { background: #e3b341; }
+    .save-dot.error  { background: var(--danger); }
+    .lang-select-wrap select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 7px;
+      padding: 5px 10px;
+      font-size: 13px;
+      font-family: var(--font);
+      outline: none;
+      cursor: pointer;
+    }
+    .lang-select-wrap select:focus { border-color: var(--accent); }
+    .run-btn {
+      background: var(--success);
+      color: #0d1117;
+      font-weight: 700;
+      padding: 6px 16px;
+      font-size: 13px;
+      gap: 6px;
+    }
+    .run-btn:hover { background: #46c55a; }
+    .run-btn:disabled { opacity: .6; }
+
+    /* Body */
+    .editor-body { display: flex; flex: 1; overflow: hidden; }
+    .editor-pane { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    #monaco-editor { flex: 1; }
+
+    /* Output pane */
+    .output-pane {
+      width: 360px; flex-shrink: 0;
+      border-left: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      background: var(--surface);
+    }
+    .output-tabs {
+      display: flex; border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .output-tab {
+      padding: 9px 16px;
+      font-size: 12px; font-weight: 600; color: var(--muted);
+      cursor: pointer; border-bottom: 2px solid transparent;
+      transition: color .15s;
+    }
+    .output-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+    .output-body { flex: 1; overflow-y: auto; padding: 16px; }
+    #output {
+      font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+      font-size: 13px; white-space: pre-wrap;
+      color: var(--success); line-height: 1.7;
+      min-height: 60px;
+    }
+    #output.has-error { color: var(--danger); }
+    #output.idle { color: var(--muted); }
+    #html-preview { flex: 1; border: none; background: #fff; display: none; }
+    .output-toolbar {
+      padding: 8px 12px;
+      border-top: 1px solid var(--border);
+      display: flex; gap: 8px; flex-shrink: 0;
+    }
+
+    /* Status bar (bottom) */
+    .status-bar {
+      height: 24px; background: var(--accent);
+      display: flex; align-items: center;
+      padding: 0 14px; gap: 20px; flex-shrink: 0;
+    }
+    .status-item {
+      font-size: 11px; color: rgba(255,255,255,.85);
+      display: flex; align-items: center; gap: 5px;
+    }
+    .status-item a { color: inherit; }
+    .status-right { margin-left: auto; display: flex; gap: 20px; }
+
+    /* Share modal */
+    .modal { padding: 28px; }
+    .modal h2 { font-size: 17px; margin-bottom: 6px; }
+    .modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+    .share-input-wrap { display: flex; gap: 8px; }
+    .share-input-wrap input { flex: 1; font-size: 13px; }
+  </style>
 </head>
 <body>
 <div class="editor-layout">
 
   <!-- Top bar -->
   <div class="editor-topbar">
-    <a href="dashboard.html" class="btn btn-ghost" style="padding:6px 12px;font-size:13px">← Projects</a>
-    <span class="project-title" id="project-title">Loading…</span>
-    <select id="lang-select" onchange="changeLanguage(this.value)">
-      <option value="python">Python</option>
-      <option value="javascript">JavaScript</option>
-      <option value="cpp">C++</option>
-      <option value="html">HTML</option>
-    </select>
-    <span class="save-status" id="save-status">All changes saved</span>
-    <button class="btn btn-ghost"    style="padding:6px 14px;font-size:13px" onclick="shareSnippet()">Share</button>
-    <button class="btn btn-primary"  style="padding:6px 14px;font-size:13px" id="run-btn" onclick="runCode()">▶ Run</button>
+    <a href="dashboard.html" class="btn btn-ghost" style="padding:5px 10px;font-size:13px;gap:4px">← Back</a>
+    <div class="topbar-sep">/</div>
+    <div class="topbar-brand">🧽 Code<span>Sponge</span></div>
+    <div class="topbar-sep">/</div>
+    <input class="project-title-input" id="project-title" value="Loading…" onblur="renameProject()" onkeydown="if(event.key==='Enter')this.blur()"/>
+    <div class="topbar-spacer"></div>
+    <div class="save-indicator">
+      <div class="save-dot" id="save-dot"></div>
+      <span id="save-status">Saved</span>
+    </div>
+    <div class="lang-select-wrap">
+      <select id="lang-select" onchange="changeLanguage(this.value)">
+        <option value="python">🐍 Python</option>
+        <option value="javascript">🟡 JavaScript</option>
+        <option value="cpp">⚙️ C++</option>
+        <option value="html">🌐 HTML</option>
+      </select>
+    </div>
+    <button class="btn btn-ghost" style="padding:5px 12px;font-size:13px" onclick="shareSnippet()">Share</button>
+    <button class="btn run-btn" id="run-btn" onclick="runCode()">▶ Run</button>
   </div>
 
-  <!-- Body -->
+  <!-- Editor + Output -->
   <div class="editor-body">
     <div class="editor-pane">
       <div id="monaco-editor"></div>
     </div>
 
-    <div class="output-pane" id="output-pane">
-      <div class="output-header">
-        <span>Output</span>
-        <button onclick="clearOutput()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px">Clear</button>
+    <div class="output-pane">
+      <div class="output-tabs">
+        <div class="output-tab active" id="tab-output" onclick="switchTab('output')">Output</div>
+        <div class="output-tab" id="tab-preview" onclick="switchTab('preview')" style="display:none">Preview</div>
       </div>
-      <div class="output-body">
-        <pre id="output">Run your code to see output here…</pre>
+      <div class="output-body" id="output-body">
+        <pre id="output" class="idle">Press ▶ Run or use ⌘↵ to run your code…</pre>
       </div>
-      <iframe id="html-preview" style="display:none;flex:1;border:none;background:#fff;"></iframe>
+      <iframe id="html-preview"></iframe>
+      <div class="output-toolbar">
+        <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="clearOutput()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <div class="status-item">🧽 CodeSponge</div>
+    <div class="status-item" id="status-lang">Python</div>
+    <div class="status-right">
+      <div class="status-item">⌘↵ Run</div>
+      <div class="status-item">⌘S Save</div>
     </div>
   </div>
 </div>
@@ -47,11 +187,13 @@
 <div class="modal-backdrop" id="share-modal">
   <div class="modal">
     <h2>Share snippet</h2>
-    <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Anyone with this link can view your code.</p>
-    <input id="share-link" type="text" readonly onclick="this.select()" style="font-size:13px"/>
-    <div class="modal-actions">
-      <button class="btn btn-primary" onclick="copyShareLink()">Copy link</button>
-      <button class="btn btn-ghost"   onclick="document.getElementById('share-modal').classList.remove('open')">Close</button>
+    <p class="modal-sub">Anyone with this link can view and run your code.</p>
+    <div class="share-input-wrap">
+      <input id="share-link" type="text" readonly onclick="this.select()"/>
+      <button class="btn btn-primary" id="copy-btn" onclick="copyShareLink()">Copy</button>
+    </div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn btn-ghost" onclick="document.getElementById('share-modal').classList.remove('open')">Close</button>
     </div>
   </div>
 </div>
@@ -64,14 +206,12 @@
 
   const params    = new URLSearchParams(window.location.search);
   const projectId = params.get("project");
-  if (!projectId) window.location.href = "dashboard.html";
+  if (!projectId && !params.get("snippet")) window.location.href = "dashboard.html";
 
-  function authHeaders() {
-    return { "Content-Type": "application/json", "Authorization": "Bearer " + token };
-  }
+  function authH() { return { "Content-Type": "application/json", "Authorization": "Bearer " + token }; }
 
-  // ── Monaco ─────────────────────────────────────────────
-  let editor;
+  let editor, currentLang = "python";
+
   require.config({ paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs" } });
   require(["vs/editor/editor.main"], () => {
     editor = monaco.editor.create(document.getElementById("monaco-editor"), {
@@ -82,39 +222,45 @@
       minimap: { enabled: false },
       automaticLayout: true,
       scrollBeyondLastLine: false,
-      padding: { top: 16 },
+      padding: { top: 14, bottom: 14 },
+      fontLigatures: true,
+      cursorBlinking: "smooth",
+      smoothScrolling: true,
+      renderWhitespace: "selection",
     });
 
-    // Auto-save on change (debounced)
     let saveTimer;
     editor.onDidChangeModelContent(() => {
       clearTimeout(saveTimer);
-      setSaveStatus("Saving…");
-      saveTimer = setTimeout(saveProject, 1200);
+      setSaveStatus("saving");
+      saveTimer = setTimeout(saveProject, 1500);
     });
 
     loadProject();
   });
 
-  // ── Load project ───────────────────────────────────────
+  function setSaveStatus(state) {
+    const dot = document.getElementById("save-dot");
+    const txt = document.getElementById("save-status");
+    if (state === "saving") { dot.className = "save-dot saving"; txt.textContent = "Saving…"; }
+    else if (state === "saved") { dot.className = "save-dot"; txt.textContent = "Saved"; }
+    else { dot.className = "save-dot error"; txt.textContent = "Save failed"; }
+  }
+
   async function loadProject() {
-    // Check for shared snippet in URL
     const snippet = params.get("snippet");
     if (snippet) { loadSnippet(snippet); return; }
-
     try {
-      const res  = await fetch(`${API}/projects/${projectId}`, { headers: authHeaders() });
+      const res  = await fetch(`${API}/projects/${projectId}`, { headers: authH() });
       if (res.status === 401) { window.location.href = "index.html"; return; }
       const data = await res.json();
       document.title = data.name + " — CodeSponge";
-      document.getElementById("project-title").textContent = data.name;
-      document.getElementById("lang-select").value = data.language;
+      document.getElementById("project-title").value = data.name;
+      document.getElementById("lang-select").value   = data.language;
       setLanguage(data.language);
       editor.setValue(data.code || getDefaultCode(data.language));
-      setSaveStatus("All changes saved");
-    } catch {
-      document.getElementById("project-title").textContent = "Error loading project";
-    }
+      setSaveStatus("saved");
+    } catch { document.getElementById("project-title").value = "Error loading"; }
   }
 
   async function loadSnippet(id) {
@@ -124,30 +270,36 @@
       document.getElementById("lang-select").value = data.language;
       setLanguage(data.language);
       editor.setValue(data.code);
-      setSaveStatus("Viewing shared snippet");
+      document.getElementById("save-status").textContent = "Shared snippet (read-only)";
+      document.getElementById("save-dot").style.display = "none";
     } catch { alert("Could not load snippet."); }
   }
 
-  // ── Save project ───────────────────────────────────────
   async function saveProject() {
-    if (params.get("snippet")) return; // don't save shared snippets
+    if (params.get("snippet")) return;
+    try {
+      const r = await fetch(`${API}/projects/${projectId}`, {
+        method: "PUT", headers: authH(),
+        body: JSON.stringify({ code: editor.getValue(), language: currentLang })
+      });
+      setSaveStatus(r.ok ? "saved" : "error");
+    } catch { setSaveStatus("error"); }
+  }
+
+  async function renameProject() {
+    if (params.get("snippet")) return;
+    const name = document.getElementById("project-title").value.trim();
+    if (!name) return;
+    document.title = name + " — CodeSponge";
+    // Optimistic rename — save via PUT with current code
     try {
       await fetch(`${API}/projects/${projectId}`, {
-        method: "PUT",
-        headers: authHeaders(),
-        body: JSON.stringify({ code: editor.getValue(), language: document.getElementById("lang-select").value })
+        method: "PUT", headers: authH(),
+        body: JSON.stringify({ code: editor.getValue(), language: currentLang, name })
       });
-      setSaveStatus("All changes saved");
-    } catch {
-      setSaveStatus("Save failed");
-    }
+    } catch {}
   }
 
-  function setSaveStatus(msg) {
-    document.getElementById("save-status").textContent = msg;
-  }
-
-  // ── Language ───────────────────────────────────────────
   function changeLanguage(lang) {
     setLanguage(lang);
     editor.setValue(getDefaultCode(lang));
@@ -155,37 +307,48 @@
   }
 
   function setLanguage(lang) {
+    currentLang = lang;
     const map = { cpp: "cpp", javascript: "javascript", python: "python", html: "html" };
     monaco.editor.setModelLanguage(editor.getModel(), map[lang] || "plaintext");
+    document.getElementById("status-lang").textContent =
+      { python: "🐍 Python", javascript: "🟡 JavaScript", cpp: "⚙️ C++", html: "🌐 HTML" }[lang] || lang;
     const isHtml = lang === "html";
-    document.getElementById("output").parentElement.style.display   = isHtml ? "none" : "";
-    document.getElementById("html-preview").style.display           = isHtml ? "flex"  : "none";
+    document.getElementById("tab-preview").style.display = isHtml ? "" : "none";
+    if (isHtml) switchTab("preview"); else switchTab("output");
   }
 
-  // ── Run code ───────────────────────────────────────────
+  function switchTab(tab) {
+    const isOutput  = tab === "output";
+    document.getElementById("tab-output").className  = "output-tab" + (isOutput ? " active" : "");
+    document.getElementById("tab-preview").className = "output-tab" + (!isOutput ? " active" : "");
+    document.getElementById("output-body").style.display    = isOutput ? "" : "none";
+    document.getElementById("html-preview").style.display   = isOutput ? "none" : "flex";
+    document.querySelector(".output-toolbar").style.display = isOutput ? "" : "none";
+  }
+
   async function runCode() {
-    const lang = document.getElementById("lang-select").value;
     const code = editor.getValue();
     const btn  = document.getElementById("run-btn");
 
-    if (lang === "html") {
+    if (currentLang === "html") {
       document.getElementById("html-preview").srcdoc = code;
+      switchTab("preview");
       return;
     }
 
-    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner" style="border-top-color:#0d1117;border-color:rgba(0,0,0,.2);"></span>';
     const out = document.getElementById("output");
+    out.className   = "idle";
     out.textContent = "Running…";
-    out.className   = "";
 
     try {
       const res  = await fetch(`${API}/run`, {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify({ language: lang, code })
+        method: "POST", headers: authH(),
+        body: JSON.stringify({ language: currentLang, code })
       });
       const data = await res.json();
-      if (data.error && data.error.trim()) {
+      if (data.error?.trim()) {
         out.textContent = data.error;
         out.className   = "has-error";
       } else {
@@ -196,43 +359,43 @@
       out.textContent = "Could not connect to server.";
       out.className   = "has-error";
     } finally {
-      btn.disabled = false; btn.innerHTML = "▶ Run";
+      btn.disabled = false;
+      btn.innerHTML = "▶ Run";
     }
   }
 
   function clearOutput() {
     const out = document.getElementById("output");
-    out.textContent = "Run your code to see output here…";
-    out.className   = "";
+    out.textContent = "Press ▶ Run or use ⌘↵ to run your code…";
+    out.className   = "idle";
   }
 
-  // ── Share snippet ──────────────────────────────────────
   async function shareSnippet() {
     try {
       const res  = await fetch(`${API}/snippets`, {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify({ language: document.getElementById("lang-select").value, code: editor.getValue() })
+        method: "POST", headers: authH(),
+        body: JSON.stringify({ language: currentLang, code: editor.getValue() })
       });
       const data = await res.json();
-      const url  = `${window.location.origin}${window.location.pathname}?snippet=${data.id}`;
+      const url  = `${location.origin}${location.pathname}?snippet=${data.id}`;
       document.getElementById("share-link").value = url;
       document.getElementById("share-modal").classList.add("open");
     } catch { alert("Could not create share link."); }
   }
 
   function copyShareLink() {
-    const input = document.getElementById("share-link");
-    input.select();
-    document.execCommand("copy");
-    const btn = event.target;
-    btn.textContent = "Copied!";
-    setTimeout(() => btn.textContent = "Copy link", 2000);
+    navigator.clipboard.writeText(document.getElementById("share-link").value).catch(() => {
+      document.getElementById("share-link").select();
+      document.execCommand("copy");
+    });
+    const btn = document.getElementById("copy-btn");
+    btn.textContent = "✓ Copied!";
+    setTimeout(() => btn.textContent = "Copy", 2000);
   }
 
-  // ── Keyboard shortcuts ─────────────────────────────────
   document.addEventListener("keydown", e => {
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); runCode(); }
+    if ((e.metaKey || e.ctrlKey) && e.key === "s")     { e.preventDefault(); saveProject(); }
     if (e.key === "Escape") document.getElementById("share-modal").classList.remove("open");
   });
 
@@ -241,7 +404,7 @@
       python:     '# Python\nprint("Hello, World!")',
       javascript: '// JavaScript\nconsole.log("Hello, World!");',
       cpp:        '#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello, World!" << endl;\n    return 0;\n}',
-      html:       '<!DOCTYPE html>\n<html>\n<body>\n  <h1>Hello, World!</h1>\n</body>\n</html>',
+      html:       '<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #0d1117; color: #e6edf3; }\n  </style>\n</head>\n<body>\n  <h1>Hello, World!</h1>\n</body>\n</html>',
     }[lang] || "";
   }
 </script>
