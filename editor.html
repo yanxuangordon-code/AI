@@ -355,17 +355,33 @@
   async function loadProject() {
     const snippet = params.get("snippet");
     if (snippet) { loadSnippet(snippet); return; }
+
+    editor.setValue("// Loading project...");
+    editor.updateOptions({ readOnly: true });
+
+    const titleEl = document.getElementById("project-title");
+    const wakeTimer = setTimeout(() => {
+      titleEl.value = "Server starting up…";
+    }, 6000);
+
     try {
       const res  = await fetch(`${API}/projects/${projectId}`, { headers: authH() });
+      clearTimeout(wakeTimer);
       if (res.status === 401) { window.location.href = "index.html"; return; }
       const data = await res.json();
       document.title = data.name + " — CodeSponge";
-      document.getElementById("project-title").value = data.name;
-      document.getElementById("lang-select").value   = data.language;
+      titleEl.value = data.name;
+      document.getElementById("lang-select").value = data.language;
       setLanguage(data.language);
       editor.setValue(data.code || getDefaultCode(data.language));
+      editor.updateOptions({ readOnly: false });
       setSaveStatus("saved");
-    } catch { document.getElementById("project-title").value = "Error loading"; }
+    } catch {
+      clearTimeout(wakeTimer);
+      titleEl.value = "Error loading";
+      editor.setValue("// Could not load project. Check your connection and refresh.");
+      editor.updateOptions({ readOnly: false });
+    }
   }
 
   async function loadSnippet(id) {
