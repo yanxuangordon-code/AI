@@ -1,55 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CodeSponge</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>CodeSponge — Sign in</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">🧽 Code<span>Sponge</span></div>
 
-  <header>
-    <h1>🧽 CodeSponge</h1>
-    <p>Write, run, and share code in your browser</p>
-  </header>
-
-  <main>
-    <div class="toolbar">
-      <select id="language">
-        <option value="python">Python</option>
-        <option value="javascript">JavaScript</option>
-        <option value="cpp">C++</option>
-        <option value="html">HTML</option>
-      </select>
-      <button id="runBtn">▶ Run</button>
-      <button id="saveBtn">💾 Save & Share</button>
-      <button id="clearBtn">🗑 Clear</button>
+    <!-- LOGIN -->
+    <div id="panel-login">
+      <h2 class="auth-title">Welcome back</h2>
+      <p class="auth-sub">Sign in to your account</p>
+      <div class="alert alert-error" id="login-error"></div>
+      <div class="form-group">
+        <label>Email</label>
+        <input id="login-email" type="email" placeholder="you@example.com"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input id="login-password" type="password" placeholder="••••••••"/>
+      </div>
+      <button class="btn btn-primary btn-full" id="login-btn" onclick="doLogin()">Sign in</button>
+      <p class="auth-divider">No account? <a href="#" onclick="showPanel('signup')">Create one</a></p>
     </div>
 
-    <div class="editor-area">
-      <div id="editor"></div>
+    <!-- SIGNUP -->
+    <div id="panel-signup" style="display:none">
+      <h2 class="auth-title">Create account</h2>
+      <p class="auth-sub">Enter your email to get started</p>
+      <div class="alert alert-error"   id="signup-error"></div>
+      <div class="alert alert-success" id="signup-success"></div>
+      <div class="form-group">
+        <label>Email</label>
+        <input id="signup-email" type="email" placeholder="you@example.com"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input id="signup-password" type="password" placeholder="At least 6 characters"/>
+      </div>
+      <button class="btn btn-ghost btn-full" id="send-code-btn" onclick="sendCode()" style="margin-bottom:16px">Send verification code</button>
+      <div id="code-section" style="display:none">
+        <div class="form-group">
+          <label>Verification code</label>
+          <input id="signup-code" type="text" placeholder="6-digit code" maxlength="6"/>
+        </div>
+        <button class="btn btn-primary btn-full" id="signup-btn" onclick="doSignup()">Create account</button>
+      </div>
+      <p class="auth-divider">Have an account? <a href="#" onclick="showPanel('login')">Sign in</a></p>
     </div>
+  </div>
+</div>
+<script>
+  const API = "https://ai-9i22.onrender.com";
+  if (localStorage.getItem("token")) window.location.href = "dashboard.html";
 
-    <!-- HTML preview -->
-    <div id="previewContainer" style="display:none;">
-      <h3>Preview</h3>
-      <iframe id="htmlPreview"></iframe>
-    </div>
+  function showPanel(n) {
+    document.getElementById("panel-login").style.display  = n==="login"  ? "" : "none";
+    document.getElementById("panel-signup").style.display = n==="signup" ? "" : "none";
+    document.querySelectorAll(".alert").forEach(e=>{e.style.display="none";e.textContent="";});
+  }
+  function err(id,m){const e=document.getElementById(id);e.textContent=m;e.style.display="block";}
+  function ok(id,m) {const e=document.getElementById(id);e.textContent=m;e.style.display="block";}
+  function busy(id,v){const b=document.getElementById(id);b.disabled=v;if(v){b.dataset.l=b.dataset.l||b.innerHTML;b.innerHTML='<span class="spinner"></span> Please wait…';}else b.innerHTML=b.dataset.l;}
 
-    <div class="output-area">
-      <h3>Output</h3>
-      <pre id="output">Run your code to see output here...</pre>
-    </div>
+  async function doLogin(){
+    document.querySelectorAll(".alert").forEach(e=>{e.style.display="none";});
+    const email=document.getElementById("login-email").value.trim();
+    const pass=document.getElementById("login-password").value;
+    if(!email||!pass)return err("login-error","Please fill in all fields.");
+    busy("login-btn",true);
+    try{
+      const r=await fetch(API+"/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password:pass})});
+      const d=await r.json();
+      if(!r.ok)return err("login-error",d.error);
+      localStorage.setItem("token",d.token);localStorage.setItem("email",d.email);
+      window.location.href="dashboard.html";
+    }catch{err("login-error","Could not connect to server.");}
+    finally{busy("login-btn",false);}
+  }
 
-    <div id="shareBox" style="display:none;">
-      <p>🔗 Share this link:</p>
-      <input type="text" id="shareLink" readonly />
-      <button onclick="copyLink()">Copy</button>
-    </div>
-  </main>
+  async function sendCode(){
+    document.querySelectorAll(".alert").forEach(e=>{e.style.display="none";});
+    const email=document.getElementById("signup-email").value.trim();
+    const pass=document.getElementById("signup-password").value;
+    if(!email)return err("signup-error","Please enter your email.");
+    if(pass.length<6)return err("signup-error","Password must be at least 6 characters.");
+    busy("send-code-btn",true);
+    try{
+      const r=await fetch(API+"/auth/send-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
+      const d=await r.json();
+      if(!r.ok)return err("signup-error",d.error);
+      ok("signup-success","Code sent to "+email+". Check your inbox.");
+      document.getElementById("code-section").style.display="";
+    }catch{err("signup-error","Could not connect to server.");}
+    finally{busy("send-code-btn",false);}
+  }
 
-  <!-- Monaco Editor -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
-  <script src="app.js"></script>
+  async function doSignup(){
+    document.querySelectorAll(".alert").forEach(e=>{e.style.display="none";});
+    const email=document.getElementById("signup-email").value.trim();
+    const pass=document.getElementById("signup-password").value;
+    const code=document.getElementById("signup-code").value.trim();
+    if(!code)return err("signup-error","Please enter the verification code.");
+    busy("signup-btn",true);
+    try{
+      const r=await fetch(API+"/auth/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password:pass,code})});
+      const d=await r.json();
+      if(!r.ok)return err("signup-error",d.error);
+      localStorage.setItem("token",d.token);localStorage.setItem("email",d.email);
+      window.location.href="dashboard.html";
+    }catch{err("signup-error","Could not connect to server.");}
+    finally{busy("signup-btn",false);}
+  }
+
+  document.addEventListener("keydown",e=>{if(e.key==="Enter"&&document.getElementById("panel-login").style.display!=="none")doLogin();});
+</script>
 </body>
 </html>

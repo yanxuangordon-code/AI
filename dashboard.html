@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CodeSponge — Projects</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="nav-logo">🧽 Code<span>Sponge</span></div>
+  <div class="nav-right">
+    <span class="nav-email" id="nav-email"></span>
+    <button class="btn btn-ghost" onclick="logout()">Sign out</button>
+  </div>
+</nav>
+
+<div class="dash-wrap">
+  <div class="dash-header">
+    <div>
+      <h1>My Projects</h1>
+      <p>Pick up where you left off, or start something new.</p>
+    </div>
+  </div>
+
+  <div class="projects-grid" id="projects-grid">
+    <!-- cards injected by JS -->
+  </div>
+</div>
+
+<!-- New Project Modal -->
+<div class="modal-backdrop" id="new-modal">
+  <div class="modal">
+    <h2>New project</h2>
+    <div class="form-group">
+      <label>Project name</label>
+      <input id="proj-name" type="text" placeholder="My awesome project"/>
+    </div>
+    <div class="form-group">
+      <label>Language</label>
+      <select id="proj-lang" style="width:100%;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:var(--radius);font-size:14px;outline:none;">
+        <option value="python">Python</option>
+        <option value="javascript">JavaScript</option>
+        <option value="cpp">C++</option>
+        <option value="html">HTML</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="create-btn" onclick="createProject()">Create</button>
+      <button class="btn btn-ghost"   onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal-backdrop" id="del-modal">
+  <div class="modal">
+    <h2>Delete project?</h2>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:8px">This cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="del-confirm-btn" onclick="confirmDelete()">Delete</button>
+      <button class="btn btn-ghost"  onclick="document.getElementById('del-modal').classList.remove('open')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = "https://ai-9i22.onrender.com";
+  const token = localStorage.getItem("token");
+  if (!token) window.location.href = "index.html";
+
+  document.getElementById("nav-email").textContent = localStorage.getItem("email") || "";
+
+  function logout() {
+    localStorage.clear();
+    window.location.href = "index.html";
+  }
+
+  function authHeaders() {
+    return { "Content-Type": "application/json", "Authorization": "Bearer " + token };
+  }
+
+  // ── Load projects ──────────────────────────────────────
+  async function loadProjects() {
+    const grid = document.getElementById("projects-grid");
+    grid.innerHTML = '<p style="color:var(--muted);font-size:14px">Loading…</p>';
+    try {
+      const res  = await fetch(API + "/projects", { headers: authHeaders() });
+      if (res.status === 401) { logout(); return; }
+      const list = await res.json();
+      renderGrid(list);
+    } catch {
+      grid.innerHTML = '<p style="color:var(--danger);font-size:14px">Could not load projects.</p>';
+    }
+  }
+
+  function renderGrid(list) {
+    const grid = document.getElementById("projects-grid");
+    grid.innerHTML = "";
+
+    // New project card
+    const newCard = document.createElement("div");
+    newCard.className = "project-card new-card";
+    newCard.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New project`;
+    newCard.onclick = () => document.getElementById("new-modal").classList.add("open");
+    grid.appendChild(newCard);
+
+    if (list.length === 0) {
+      const empty = document.createElement("div");
+      empty.style.gridColumn = "1/-1";
+      empty.innerHTML = '<div class="empty-state"><h3>No projects yet</h3><p>Create your first project to get started.</p></div>';
+      grid.appendChild(empty);
+      return;
+    }
+
+    list.forEach(p => {
+      const card = document.createElement("div");
+      card.className = "project-card";
+      const date = new Date(p.updated_at).toLocaleDateString(undefined, { month:"short", day:"numeric", year:"numeric" });
+      card.innerHTML = `
+        <div>
+          <div class="project-name">${escHtml(p.name)}</div>
+          <div class="project-meta" style="margin-top:6px">
+            <span class="lang-badge">${escHtml(p.language)}</span>
+            <span>Updated ${date}</span>
+          </div>
+        </div>
+        <div class="project-footer">
+          <button class="btn btn-danger" style="padding:6px 12px;font-size:12px" onclick="event.stopPropagation();openDelete('${p.id}')">Delete</button>
+          <button class="btn btn-primary" style="padding:6px 14px;font-size:12px" onclick="openProject('${p.id}')">Open →</button>
+        </div>`;
+      card.addEventListener("click", e => { if (!e.target.closest("button")) openProject(p.id); });
+      grid.appendChild(card);
+    });
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  function openProject(id) {
+    window.location.href = `editor.html?project=${id}`;
+  }
+
+  // ── New project ────────────────────────────────────────
+  function closeModal() {
+    document.getElementById("new-modal").classList.remove("open");
+    document.getElementById("proj-name").value = "";
+  }
+
+  async function createProject() {
+    const name = document.getElementById("proj-name").value.trim() || "Untitled";
+    const lang = document.getElementById("proj-lang").value;
+    const btn  = document.getElementById("create-btn");
+    btn.disabled = true; btn.textContent = "Creating…";
+    try {
+      const res  = await fetch(API + "/projects", {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ name, language: lang })
+      });
+      const data = await res.json();
+      closeModal();
+      window.location.href = `editor.html?project=${data.id}`;
+    } catch {
+      alert("Could not create project.");
+    } finally {
+      btn.disabled = false; btn.textContent = "Create";
+    }
+  }
+
+  // ── Delete project ─────────────────────────────────────
+  let deleteId = null;
+  function openDelete(id) {
+    deleteId = id;
+    document.getElementById("del-modal").classList.add("open");
+  }
+
+  async function confirmDelete() {
+    if (!deleteId) return;
+    const btn = document.getElementById("del-confirm-btn");
+    btn.disabled = true; btn.textContent = "Deleting…";
+    try {
+      await fetch(API + "/projects/" + deleteId, { method:"DELETE", headers: authHeaders() });
+      document.getElementById("del-modal").classList.remove("open");
+      deleteId = null;
+      loadProjects();
+    } catch {
+      alert("Could not delete project.");
+    } finally {
+      btn.disabled = false; btn.textContent = "Delete";
+    }
+  }
+
+  // Enter key in new project modal
+  document.addEventListener("keydown", e => {
+    if (e.key === "Enter" && document.getElementById("new-modal").classList.contains("open")) createProject();
+    if (e.key === "Escape") { closeModal(); document.getElementById("del-modal").classList.remove("open"); }
+  });
+
+  loadProjects();
+</script>
+</body>
+</html>

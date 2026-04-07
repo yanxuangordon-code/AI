@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CodeSponge — Editor</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div class="editor-layout">
+
+  <!-- Top bar -->
+  <div class="editor-topbar">
+    <a href="dashboard.html" class="btn btn-ghost" style="padding:6px 12px;font-size:13px">← Projects</a>
+    <span class="project-title" id="project-title">Loading…</span>
+    <select id="lang-select" onchange="changeLanguage(this.value)">
+      <option value="python">Python</option>
+      <option value="javascript">JavaScript</option>
+      <option value="cpp">C++</option>
+      <option value="html">HTML</option>
+    </select>
+    <span class="save-status" id="save-status">All changes saved</span>
+    <button class="btn btn-ghost"    style="padding:6px 14px;font-size:13px" onclick="shareSnippet()">Share</button>
+    <button class="btn btn-primary"  style="padding:6px 14px;font-size:13px" id="run-btn" onclick="runCode()">▶ Run</button>
+  </div>
+
+  <!-- Body -->
+  <div class="editor-body">
+    <div class="editor-pane">
+      <div id="monaco-editor"></div>
+    </div>
+
+    <div class="output-pane" id="output-pane">
+      <div class="output-header">
+        <span>Output</span>
+        <button onclick="clearOutput()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px">Clear</button>
+      </div>
+      <div class="output-body">
+        <pre id="output">Run your code to see output here…</pre>
+      </div>
+      <iframe id="html-preview" style="display:none;flex:1;border:none;background:#fff;"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- Share modal -->
+<div class="modal-backdrop" id="share-modal">
+  <div class="modal">
+    <h2>Share snippet</h2>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Anyone with this link can view your code.</p>
+    <input id="share-link" type="text" readonly onclick="this.select()" style="font-size:13px"/>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="copyShareLink()">Copy link</button>
+      <button class="btn btn-ghost"   onclick="document.getElementById('share-modal').classList.remove('open')">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+<script>
+  const API   = "https://ai-9i22.onrender.com";
+  const token = localStorage.getItem("token");
+  if (!token) window.location.href = "index.html";
+
+  const params    = new URLSearchParams(window.location.search);
+  const projectId = params.get("project");
+  if (!projectId) window.location.href = "dashboard.html";
+
+  function authHeaders() {
+    return { "Content-Type": "application/json", "Authorization": "Bearer " + token };
+  }
+
+  // ── Monaco ─────────────────────────────────────────────
+  let editor;
+  require.config({ paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs" } });
+  require(["vs/editor/editor.main"], () => {
+    editor = monaco.editor.create(document.getElementById("monaco-editor"), {
+      value: "",
+      language: "python",
+      theme: "vs-dark",
+      fontSize: 14,
+      minimap: { enabled: false },
+      automaticLayout: true,
+      scrollBeyondLastLine: false,
+      padding: { top: 16 },
+    });
+
+    // Auto-save on change (debounced)
+    let saveTimer;
+    editor.onDidChangeModelContent(() => {
+      clearTimeout(saveTimer);
+      setSaveStatus("Saving…");
+      saveTimer = setTimeout(saveProject, 1200);
+    });
+
+    loadProject();
+  });
+
+  // ── Load project ───────────────────────────────────────
+  async function loadProject() {
+    // Check for shared snippet in URL
+    const snippet = params.get("snippet");
+    if (snippet) { loadSnippet(snippet); return; }
+
+    try {
+      const res  = await fetch(`${API}/projects/${projectId}`, { headers: authHeaders() });
+      if (res.status === 401) { window.location.href = "index.html"; return; }
+      const data = await res.json();
+      document.title = data.name + " — CodeSponge";
+      document.getElementById("project-title").textContent = data.name;
+      document.getElementById("lang-select").value = data.language;
+      setLanguage(data.language);
+      editor.setValue(data.code || getDefaultCode(data.language));
+      setSaveStatus("All changes saved");
+    } catch {
+      document.getElementById("project-title").textContent = "Error loading project";
+    }
+  }
+
+  async function loadSnippet(id) {
+    try {
+      const res  = await fetch(`${API}/snippets/${id}`);
+      const data = await res.json();
+      document.getElementById("lang-select").value = data.language;
+      setLanguage(data.language);
+      editor.setValue(data.code);
+      setSaveStatus("Viewing shared snippet");
+    } catch { alert("Could not load snippet."); }
+  }
+
+  // ── Save project ───────────────────────────────────────
+  async function saveProject() {
+    if (params.get("snippet")) return; // don't save shared snippets
+    try {
+      await fetch(`${API}/projects/${projectId}`, {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify({ code: editor.getValue(), language: document.getElementById("lang-select").value })
+      });
+      setSaveStatus("All changes saved");
+    } catch {
+      setSaveStatus("Save failed");
+    }
+  }
+
+  function setSaveStatus(msg) {
+    document.getElementById("save-status").textContent = msg;
+  }
+
+  // ── Language ───────────────────────────────────────────
+  function changeLanguage(lang) {
+    setLanguage(lang);
+    editor.setValue(getDefaultCode(lang));
+    saveProject();
+  }
+
+  function setLanguage(lang) {
+    const map = { cpp: "cpp", javascript: "javascript", python: "python", html: "html" };
+    monaco.editor.setModelLanguage(editor.getModel(), map[lang] || "plaintext");
+    const isHtml = lang === "html";
+    document.getElementById("output").parentElement.style.display   = isHtml ? "none" : "";
+    document.getElementById("html-preview").style.display           = isHtml ? "flex"  : "none";
+  }
+
+  // ── Run code ───────────────────────────────────────────
+  async function runCode() {
+    const lang = document.getElementById("lang-select").value;
+    const code = editor.getValue();
+    const btn  = document.getElementById("run-btn");
+
+    if (lang === "html") {
+      document.getElementById("html-preview").srcdoc = code;
+      return;
+    }
+
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+    const out = document.getElementById("output");
+    out.textContent = "Running…";
+    out.className   = "";
+
+    try {
+      const res  = await fetch(`${API}/run`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ language: lang, code })
+      });
+      const data = await res.json();
+      if (data.error && data.error.trim()) {
+        out.textContent = data.error;
+        out.className   = "has-error";
+      } else {
+        out.textContent = data.output || "(no output)";
+        out.className   = "";
+      }
+    } catch {
+      out.textContent = "Could not connect to server.";
+      out.className   = "has-error";
+    } finally {
+      btn.disabled = false; btn.innerHTML = "▶ Run";
+    }
+  }
+
+  function clearOutput() {
+    const out = document.getElementById("output");
+    out.textContent = "Run your code to see output here…";
+    out.className   = "";
+  }
+
+  // ── Share snippet ──────────────────────────────────────
+  async function shareSnippet() {
+    try {
+      const res  = await fetch(`${API}/snippets`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ language: document.getElementById("lang-select").value, code: editor.getValue() })
+      });
+      const data = await res.json();
+      const url  = `${window.location.origin}${window.location.pathname}?snippet=${data.id}`;
+      document.getElementById("share-link").value = url;
+      document.getElementById("share-modal").classList.add("open");
+    } catch { alert("Could not create share link."); }
+  }
+
+  function copyShareLink() {
+    const input = document.getElementById("share-link");
+    input.select();
+    document.execCommand("copy");
+    const btn = event.target;
+    btn.textContent = "Copied!";
+    setTimeout(() => btn.textContent = "Copy link", 2000);
+  }
+
+  // ── Keyboard shortcuts ─────────────────────────────────
+  document.addEventListener("keydown", e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); runCode(); }
+    if (e.key === "Escape") document.getElementById("share-modal").classList.remove("open");
+  });
+
+  function getDefaultCode(lang) {
+    return {
+      python:     '# Python\nprint("Hello, World!")',
+      javascript: '// JavaScript\nconsole.log("Hello, World!");',
+      cpp:        '#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello, World!" << endl;\n    return 0;\n}',
+      html:       '<!DOCTYPE html>\n<html>\n<body>\n  <h1>Hello, World!</h1>\n</body>\n</html>',
+    }[lang] || "";
+  }
+</script>
+</body>
+</html>
