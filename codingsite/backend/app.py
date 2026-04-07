@@ -1,11 +1,11 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from flask_mail import Mail, Message
 from flask_jwt_extended import (
     JWTManager, create_access_token,
     jwt_required, get_jwt_identity
 )
 from werkzeug.security import generate_password_hash, check_password_hash
+import resend
 import subprocess, sqlite3, uuid, os, tempfile, random, string
 from datetime import datetime, timedelta
 
@@ -16,15 +16,9 @@ CORS(app)
 app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "change-me-in-production")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=30)
 
-app.config["MAIL_SERVER"]   = "smtp.gmail.com"
-app.config["MAIL_PORT"]     = 587
-app.config["MAIL_USE_TLS"]  = True
-app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")   # your Gmail
-app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")   # Gmail app password
-app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_USERNAME")
+resend.api_key = os.environ.get("RESEND_API_KEY")
 
-jwt  = JWTManager(app)
-mail = Mail(app)
+jwt = JWTManager(app)
 
 # ── Database ─────────────────────────────────────────────────────────────────
 def get_db():
@@ -96,12 +90,12 @@ def send_code():
     con.close()
 
     try:
-        msg = Message(
-            subject="Your CodeSponge verification code",
-            recipients=[email],
-            body=f"Your verification code is: {code}\n\nIt expires in 10 minutes."
-        )
-        mail.send(msg)
+        resend.Emails.send({
+            "from": "CodeSponge <onboarding@resend.dev>",
+            "to": [email],
+            "subject": "Your CodeSponge verification code",
+            "text": f"Your verification code is: {code}\n\nIt expires in 10 minutes."
+        })
     except Exception as e:
         return jsonify({"error": f"Could not send email: {str(e)}"}), 500
 

@@ -1,6 +1,6 @@
 flask
 flask-cors
-flask-mail
 flask-jwt-extended
 werkzeug
+resend
 gunicorn
