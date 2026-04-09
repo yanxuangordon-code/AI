@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CodeSponge — Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; margin: 0; font-family: 'Inter', sans-serif; }
+
+:root {
+  --accent: #4f8ef7;
+  --success: #3fb950;
+  --danger: #f85149;
+  --warning: #e3b341;
+  --purple: #a371f7;
+  --surface: #0d1117;
+  --surface2: #161b22;
+  --surface3: #1c2128;
+  --surface4: #22272e;
+  --border: rgba(255,255,255,.08);
+  --text: #e6edf3;
+  --muted: #7d8590;
+  --topbar: 50px;
+  --sidebar: 220px;
+  --statusbar: 22px;
+  --font: 'Inter', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+/* ── Layout shells ── */
+.layout { display: flex; flex-direction: column; height: 100vh; }
+
+/* ── Topbar ── */
+.topbar {
+  height: var(--topbar); flex-shrink: 0;
+  background: var(--surface2); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px; padding: 0 12px;
+  user-select: none; z-index: 20;
+}
+.brand { display: flex; align-items: center; gap: 7px; text-decoration: none; color: var(--text); font-weight: 800; font-size: 14px; flex-shrink: 0; }
+.brand-icon { width: 24px; height: 24px; border-radius: 6px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff; flex-shrink: 0; }
+.brand-text span { color: var(--accent); }
+.tb-sep { width: 1px; height: 18px; background: var(--border); flex-shrink: 0; margin: 0 2px; }
+
+.proj-title {
+  background: none; border: none; color: var(--text);
+  font-size: 13px; font-weight: 600; font-family: var(--font);
+  outline: none; padding: 4px 7px; border-radius: 6px;
+  transition: background .15s; max-width: 200px;
+  border-bottom: 1px solid transparent;
+}
+.proj-title:hover { background: var(--surface3); }
+.proj-title:focus { background: var(--surface3); box-shadow: 0 0 0 1px var(--accent); }
+
+.tb-spacer { flex: 1; }
+
+/* Save pill */
+.save-pill { display: flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 20px; background: var(--surface3); border: 1px solid var(--border); font-size: 11px; font-weight: 500; color: var(--muted); transition: all .2s; }
+.save-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); flex-shrink: 0; transition: background .2s; }
+.save-pill.saving .save-dot { background: var(--warning); animation: pulse 1s infinite; }
+.save-pill.error  .save-dot { background: var(--danger); }
+.save-pill.saving { color: var(--warning); }
+.save-pill.error  { color: var(--danger); }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
+@keyframes spin   { to { transform: rotate(360deg); } }
+
+/* Topbar buttons */
+.tb-btn {
+  background: var(--surface3); border: 1px solid var(--border); color: var(--text);
+  border-radius: 7px; padding: 5px 11px; font-size: 11px; font-weight: 600;
+  font-family: var(--font); cursor: pointer; transition: all .15s;
+  display: flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0;
+}
+.tb-btn:hover { border-color: rgba(255,255,255,.2); background: var(--surface4); }
+.tb-btn:disabled { opacity: .5; cursor: not-allowed; }
+.tb-btn.accent { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tb-btn.accent:hover { background: #6aa3f9; }
+.tb-btn.success { background: var(--success); border-color: var(--success); color: #0a1628; font-weight: 700; }
+.tb-btn.success:hover { background: #46c55a; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(63,185,80,.3); }
+.tb-btn.success:active { transform: none; }
+.tb-btn.purple { background: rgba(163,113,247,.2); border-color: rgba(163,113,247,.4); color: var(--purple); }
+.tb-btn.purple:hover { background: rgba(163,113,247,.3); }
+
+/* ── Body row ── */
+.body-row { display: flex; flex: 1; overflow: hidden; min-height: 0; }
+
+/* ── File tree sidebar ── */
+.sidebar {
+  width: var(--sidebar); flex-shrink: 0;
+  background: var(--surface2); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.sidebar-header {
+  padding: 10px 12px 8px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.sidebar-title { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+.sidebar-actions { display: flex; gap: 4px; }
+.icon-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 3px; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all .15s; }
+.icon-btn:hover { background: var(--surface3); color: var(--text); }
+
+.file-tree { flex: 1; overflow-y: auto; padding: 6px 0; }
+.file-tree::-webkit-scrollbar { width: 4px; }
+.file-tree::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.file-item {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 12px; cursor: pointer;
+  font-size: 12px; color: var(--muted);
+  border-left: 2px solid transparent;
+  transition: all .1s; position: relative;
+  user-select: none;
+}
+.file-item:hover { background: var(--surface3); color: var(--text); }
+.file-item.active { background: var(--surface3); color: var(--text); border-left-color: var(--accent); }
+.file-item-icon { font-size: 13px; flex-shrink: 0; }
+.file-item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-item-actions { display: none; gap: 2px; flex-shrink: 0; }
+.file-item:hover .file-item-actions { display: flex; }
+.file-action-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 2px 4px; border-radius: 3px; font-size: 11px; line-height: 1; transition: all .1s; }
+.file-action-btn:hover { background: var(--surface4); color: var(--text); }
+.file-action-btn.del:hover { color: var(--danger); }
+
+.file-item-input {
+  flex: 1; background: var(--surface4); border: 1px solid var(--accent);
+  color: var(--text); border-radius: 4px; padding: 1px 5px;
+  font-size: 12px; font-family: var(--font); outline: none; min-width: 0;
+}
+
+/* ── Editor area ── */
+.editor-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+/* Tabs */
+.tabs-bar {
+  height: 36px; flex-shrink: 0;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  display: flex; align-items: stretch; overflow-x: auto; overflow-y: hidden;
+}
+.tabs-bar::-webkit-scrollbar { height: 0; }
+.tab {
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 14px; border-right: 1px solid var(--border);
+  font-size: 12px; color: var(--muted); cursor: pointer;
+  white-space: nowrap; flex-shrink: 0;
+  border-bottom: 2px solid transparent;
+  transition: color .1s;
+  position: relative;
+}
+.tab:hover { color: var(--text); background: var(--surface2); }
+.tab.active { color: var(--text); border-bottom-color: var(--accent); background: var(--surface2); }
+.tab-close { opacity: 0; background: none; border: none; color: var(--muted); cursor: pointer; padding: 1px 3px; border-radius: 3px; font-size: 13px; line-height: 1; }
+.tab:hover .tab-close { opacity: 1; }
+.tab-close:hover { background: var(--surface4); color: var(--text); }
+.tab-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--warning); flex-shrink: 0; display: none; }
+.tab.unsaved .tab-dot { display: block; }
+
+/* Monaco host */
+.monaco-wrap { flex: 1; position: relative; overflow: hidden; }
+#monaco-editor { position: absolute; inset: 0; }
+
+/* ── Resizer ── */
+.resizer {
+  width: 5px; flex-shrink: 0; background: var(--border);
+  cursor: col-resize; transition: background .15s; position: relative; z-index: 5;
+}
+.resizer::before { content:''; position:absolute; top:0;bottom:0;left:-5px;right:-5px; }
+.resizer:hover, .resizer.dragging { background: var(--accent); }
+
+/* ── Output panel ── */
+.output-panel {
+  flex-shrink: 0; display: flex; flex-direction: column;
+  background: var(--surface2); min-width: 160px; overflow: hidden;
+}
+.output-header {
+  height: 36px; flex-shrink: 0;
+  display: flex; align-items: stretch;
+  border-bottom: 1px solid var(--border); background: var(--surface2);
+}
+.out-tab {
+  display: flex; align-items: center; padding: 0 14px;
+  font-size: 11px; font-weight: 600; color: var(--muted); cursor: pointer;
+  border-bottom: 2px solid transparent; white-space: nowrap;
+  transition: color .1s;
+}
+.out-tab:hover { color: var(--text); }
+.out-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+.out-spacer { flex: 1; }
+.clear-btn { background: none; border: none; color: var(--muted); font-size: 11px; cursor: pointer; padding: 0 10px; font-family: var(--font); transition: color .15s; }
+.clear-btn:hover { color: var(--text); }
+
+.output-body { flex: 1; overflow-y: auto; padding: 12px 14px; min-height: 0; }
+.output-body::-webkit-scrollbar { width: 5px; }
+.output-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+#output-pre {
+  font-family: var(--mono); font-size: 12px;
+  white-space: pre-wrap; line-height: 1.75; margin: 0;
+  color: var(--success);
+}
+#output-pre.idle  { color: var(--muted); }
+#output-pre.error { color: var(--danger); }
+#output-pre.running { color: var(--warning); }
+#html-frame { flex: 1; border: none; background: #fff; display: none; min-height: 0; }
+
+/* ── Loading overlay ── */
+#loading-overlay {
+  position: absolute; inset: 0; background: var(--surface);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; z-index: 50; transition: opacity .3s;
+}
+.load-spin { width: 30px; height: 30px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+#load-msg  { font-size: 13px; color: var(--text); font-weight: 500; margin: 0; }
+#load-hint { font-size: 11px; color: var(--muted); opacity: 0; transition: opacity .5s; margin: 0; max-width: 260px; text-align: center; line-height: 1.6; }
+#load-hint.show { opacity: 1; }
+
+/* ── Status bar ── */
+.statusbar {
+  height: var(--statusbar); flex-shrink: 0;
+  background: var(--accent); display: flex; align-items: center;
+  padding: 0 12px; gap: 14px;
+}
+.sb-item { font-size: 10px; color: rgba(255,255,255,.8); display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.sb-item b { color: #fff; font-weight: 700; }
+.sb-right { margin-left: auto; display: flex; gap: 14px; }
+.sb-dot { opacity: .4; }
+
+/* ── Modals ── */
+.modal-back {
+  position: fixed; inset: 0; background: rgba(0,0,0,.65); backdrop-filter: blur(5px);
+  display: none; align-items: center; justify-content: center; z-index: 200;
+}
+.modal-back.open { display: flex; }
+.modal-box {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 24px; width: 420px; max-width: 94vw;
+  box-shadow: 0 24px 64px rgba(0,0,0,.7);
+  animation: modal-in .2s ease;
+}
+@keyframes modal-in { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)} }
+.modal-title { font-size: 15px; font-weight: 800; margin: 0 0 4px; }
+.modal-sub   { font-size: 12px; color: var(--muted); margin: 0 0 18px; line-height: 1.5; }
+.modal-input {
+  width: 100%; background: var(--surface3); border: 1px solid var(--border);
+  color: var(--text); border-radius: 7px; padding: 9px 11px;
+  font-size: 13px; font-family: var(--font); outline: none; transition: border-color .15s;
+}
+.modal-input:focus { border-color: var(--accent); }
+.modal-actions { display: flex; gap: 8px; margin-top: 18px; justify-content: flex-end; }
+.btn-prim { background: var(--accent); border: none; color: #fff; border-radius: 7px; padding: 8px 14px; font-size: 12px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: all .15s; }
+.btn-prim:hover { background: #6aa3f9; }
+.btn-prim:disabled { opacity:.5; cursor:not-allowed; }
+.btn-ghost { background: none; border: 1px solid var(--border); color: var(--text); border-radius: 7px; padding: 8px 14px; font-size: 12px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: all .15s; }
+.btn-ghost:hover { border-color: rgba(255,255,255,.2); }
+.btn-danger { background: var(--danger); border: none; color: #fff; border-radius: 7px; padding: 8px 14px; font-size: 12px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: all .15s; }
+.btn-danger:hover { background: #ff6b68; }
+
+/* Host modal */
+.host-url-wrap { display: flex; gap: 8px; margin-top: 14px; }
+.host-url-input { flex: 1; background: var(--surface3); border: 1px solid var(--border); color: var(--text); border-radius: 7px; padding: 9px 11px; font-size: 12px; font-family: var(--mono); outline: none; }
+.host-status { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+.host-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(63,185,80,.15); border: 1px solid rgba(63,185,80,.3); color: var(--success); border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 600; }
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.2); }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ── Topbar ── -->
+  <div class="topbar">
+    <a href="dashboard.html" class="tb-btn" style="padding:5px 9px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </a>
+    <a href="dashboard.html" class="brand">
+      <div class="brand-icon">CS</div>
+      <span class="brand-text">Code<span>Sponge</span></span>
+    </a>
+    <div class="tb-sep"></div>
+    <input class="proj-title" id="proj-title" value="Loading..." onblur="renameProject()" onkeydown="if(event.key==='Enter')this.blur()" spellcheck="false"/>
+    <div class="tb-spacer"></div>
+
+    <div class="save-pill" id="save-pill"><div class="save-dot"></div><span id="save-txt">Saved</span></div>
+
+    <button class="tb-btn" id="add-file-btn" onclick="openAddFileModal()" title="Add new file">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      New file
+    </button>
+
+    <button class="tb-btn purple" id="host-btn" onclick="openHostModal()" title="Host this website">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      Host
+    </button>
+
+    <button class="tb-btn" onclick="shareProject()" title="Share a snippet">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+      Share
+    </button>
+
+    <button class="tb-btn success" id="run-btn" onclick="runCode()">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Run
+    </button>
+  </div>
+
+  <!-- ── Body row ── -->
+  <div class="body-row" style="position:relative">
+
+    <!-- Loading overlay -->
+    <div id="loading-overlay">
+      <div class="load-spin"></div>
+      <p id="load-msg">Loading project...</p>
+      <p id="load-hint">The server is starting up — this can take up to 30 seconds.</p>
+    </div>
+
+    <!-- File tree sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-title">Files</span>
+        <div class="sidebar-actions">
+          <button class="icon-btn" onclick="openAddFileModal()" title="New file">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="file-tree" id="file-tree"></div>
+    </div>
+
+    <!-- Editor + resizer + output -->
+    <div style="display:flex;flex:1;overflow:hidden;min-width:0;" id="center-row">
+      <div class="editor-area" id="editor-area">
+        <div class="tabs-bar" id="tabs-bar"></div>
+        <div class="monaco-wrap">
+          <div id="monaco-editor"></div>
+        </div>
+      </div>
+
+      <div class="resizer" id="resizer"></div>
+
+      <div class="output-panel" id="output-panel">
+        <div class="output-header">
+          <div class="out-tab active" id="out-tab-console" onclick="switchOutTab('console')">Console</div>
+          <div class="out-tab" id="out-tab-preview" onclick="switchOutTab('preview')">Preview</div>
+          <div class="out-spacer"></div>
+          <button class="clear-btn" onclick="clearOutput()">Clear</button>
+        </div>
+        <div class="output-body" id="output-body">
+          <pre id="output-pre" class="idle">Press Run or Ctrl+Enter to execute...</pre>
+        </div>
+        <iframe id="html-frame" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Status bar ── -->
+  <div class="statusbar">
+    <div class="sb-item">CodeSponge</div>
+    <span class="sb-dot">·</span>
+    <div class="sb-item" id="sb-type">Multi-file</div>
+    <span class="sb-dot">·</span>
+    <div class="sb-item" id="sb-file"></div>
+    <div class="sb-right">
+      <div class="sb-item" id="sb-cursor">Ln 1, Col 1</div>
+      <span class="sb-dot">·</span>
+      <div class="sb-item">Ctrl+Enter <span style="opacity:.5">run</span></div>
+      <span class="sb-dot">·</span>
+      <div class="sb-item">Ctrl+S <span style="opacity:.5">save</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add file modal ── -->
+<div class="modal-back" id="add-file-modal">
+  <div class="modal-box">
+    <p class="modal-title">New file</p>
+    <p class="modal-sub">Enter a filename with extension, e.g. <b>main.py</b>, <b>index.html</b>, <b>style.css</b></p>
+    <input class="modal-input" id="new-file-name" placeholder="filename.py" autocomplete="off" spellcheck="false"/>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal('add-file-modal')">Cancel</button>
+      <button class="btn-prim" onclick="confirmAddFile()">Create file</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Rename file modal ── -->
+<div class="modal-back" id="rename-modal">
+  <div class="modal-box">
+    <p class="modal-title">Rename file</p>
+    <input class="modal-input" id="rename-input" autocomplete="off" spellcheck="false"/>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal('rename-modal')">Cancel</button>
+      <button class="btn-prim" onclick="confirmRename()">Rename</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete file modal ── -->
+<div class="modal-back" id="del-file-modal">
+  <div class="modal-box">
+    <p class="modal-title">Delete file?</p>
+    <p class="modal-sub" id="del-file-msg">This cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal('del-file-modal')">Cancel</button>
+      <button class="btn-danger" onclick="confirmDeleteFile()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Host modal ── -->
+<div class="modal-back" id="host-modal">
+  <div class="modal-box">
+    <p class="modal-title">&#127760; Host website</p>
+    <p class="modal-sub" id="host-sub">Deploy your HTML/CSS/JS files and get a public URL instantly.</p>
+    <div id="host-content">
+      <div id="host-url-section" style="display:none">
+        <div class="host-url-wrap">
+          <input class="host-url-input" id="host-url-input" readonly onclick="this.select()"/>
+          <button class="btn-prim" onclick="copyHostUrl()">Copy</button>
+          <a id="host-open-btn" href="#" target="_blank" class="btn-ghost" style="text-decoration:none">Open &#8599;</a>
+        </div>
+        <div class="host-status" id="host-status"></div>
+      </div>
+      <div id="host-deploy-section">
+        <p style="font-size:12px;color:var(--muted);margin:0 0 14px;line-height:1.6">
+          This will save all your files and deploy them as a live website. The URL will be public and anyone can view it.
+        </p>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal('host-modal')">Close</button>
+      <button class="btn-prim" id="deploy-btn" onclick="deployWebsite()">
+        <span id="deploy-btn-txt">&#128640; Deploy now</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Share modal ── -->
+<div class="modal-back" id="share-modal">
+  <div class="modal-box">
+    <p class="modal-title">Share project</p>
+    <p class="modal-sub">Anyone with this link can view and run your project.</p>
+    <div class="host-url-wrap">
+      <input class="host-url-input" id="share-url-input" readonly onclick="this.select()"/>
+      <button class="btn-prim" onclick="copyShareUrl()">Copy</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal('share-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+<script>
+var API   = "https://codesponge-backend.onrender.com";
+var token = localStorage.getItem("token");
+if (!token) window.location.href = "index.html";
+
+var params    = new URLSearchParams(window.location.search);
+var projectId = params.get("project");
+if (!projectId) window.location.href = "dashboard.html";
+
+function authH() { return { "Content-Type": "application/json", "Authorization": "Bearer " + token }; }
+
+// ── State ─────────────────────────────────────────────────
+var editor       = null;
+var files        = [];       // [{ id, name, content, language }]
+var activeFileId = null;
+var fileModels   = {};       // fileId -> monaco model
+var unsavedFiles = {};       // fileId -> true
+var projectType  = "multi";
+var renameTarget = null;
+var delFileTarget= null;
+
+// ── Monaco ────────────────────────────────────────────────
+require.config({ paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs" } });
+require(["vs/editor/editor.main"], function() {
+  editor = monaco.editor.create(document.getElementById("monaco-editor"), {
+    value: "",
+    language: "plaintext",
+    theme: "vs-dark",
+    fontSize: 14,
+    fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+    fontLigatures: true,
+    minimap: { enabled: false },
+    automaticLayout: true,
+    scrollBeyondLastLine: false,
+    padding: { top: 14, bottom: 14 },
+    cursorBlinking: "smooth",
+    cursorSmoothCaretAnimation: "on",
+    smoothScrolling: true,
+    renderLineHighlight: "gutter",
+    tabSize: 2,
+    scrollbar: { verticalScrollbarSize: 5, horizontalScrollbarSize: 5 },
+  });
+
+  editor.onDidChangeCursorPosition(function(e) {
+    document.getElementById("sb-cursor").textContent =
+      "Ln " + e.position.lineNumber + ", Col " + e.position.column;
+  });
+
+  editor.onDidChangeModelContent(function() {
+    if (!activeFileId) return;
+    if (!unsavedFiles[activeFileId]) {
+      unsavedFiles[activeFileId] = true;
+      renderTabs();
+    }
+    setSave("saving");
+    clearTimeout(editor._saveTimer);
+    editor._saveTimer = setTimeout(saveAll, 1500);
+  });
+
+  loadProject();
+});
+
+// ── Load ──────────────────────────────────────────────────
+async function loadProject() {
+  var hintTimer = setTimeout(function() {
+    document.getElementById("load-hint").classList.add("show");
+  }, 5000);
+
+  for (var attempt = 0; attempt < 3; attempt++) {
+    try {
+      if (attempt > 0) {
+        document.getElementById("load-msg").textContent = "Retrying... (" + (attempt+1) + "/3)";
+        await new Promise(function(r) { setTimeout(r, 2000); });
+      }
+      var res = await fetch(API + "/projects/" + projectId, { headers: authH() });
+      clearTimeout(hintTimer);
+      if (res.status === 401) { window.location.href = "index.html"; return; }
+      if (!res.ok) throw new Error("HTTP " + res.status);
+
+      var data = await res.json();
+      document.title = data.name + " - CodeSponge";
+      document.getElementById("proj-title").value = data.name;
+      projectType = data.project_type || "multi";
+
+      var typeLabels = { multi: "Multi-file", website: "Website" };
+      document.getElementById("sb-type").textContent = typeLabels[projectType] || "Multi-file";
+
+      // Show/hide host button
+      document.getElementById("host-btn").style.display = (projectType === "website") ? "" : "none";
+
+      // Load files
+      files = data.files || [];
+
+      // Seed default files if empty
+      if (files.length === 0) {
+        if (projectType === "website") {
+          files = [
+            { id: "f1", name: "index.html",  content: defaultHTML(),  language: "html" },
+            { id: "f2", name: "style.css",   content: defaultCSS(),   language: "css" },
+            { id: "f3", name: "script.js",   content: defaultJS(),    language: "javascript" },
+          ];
+        } else {
+          files = [
+            { id: "f1", name: "main.py", content: '# Python\nprint("Hello, World!")', language: "python" },
+          ];
+        }
+        await saveAll();
+      }
+
+      // Create Monaco models
+      files.forEach(function(f) {
+        fileModels[f.id] = monaco.editor.createModel(f.content || "", getLang(f.name));
+      });
+
+      renderFileTree();
+      if (files.length > 0) openFile(files[0].id);
+      hideOverlay();
+      return;
+    } catch(err) {
+      console.error("Load attempt " + (attempt+1) + " failed:", err);
+    }
+  }
+
+  clearTimeout(hintTimer);
+  document.getElementById("load-msg").textContent = "Could not load project.";
+  document.getElementById("load-hint").textContent = "Check your connection and refresh.";
+  document.getElementById("load-hint").classList.add("show");
+  setTimeout(hideOverlay, 2000);
+}
+
+function hideOverlay() {
+  var el = document.getElementById("loading-overlay");
+  el.style.opacity = "0";
+  setTimeout(function() { el.style.display = "none"; }, 300);
+}
+
+// ── File tree ─────────────────────────────────────────────
+function renderFileTree() {
+  var tree = document.getElementById("file-tree");
+  tree.innerHTML = "";
+  files.forEach(function(f) {
+    var item = document.createElement("div");
+    item.className = "file-item" + (f.id === activeFileId ? " active" : "");
+    item.setAttribute("data-id", f.id);
+
+    item.innerHTML =
+      '<span class="file-item-icon">' + fileIcon(f.name) + '</span>' +
+      '<span class="file-item-name">' + esc(f.name) + (unsavedFiles[f.id] ? ' <span style="color:var(--warning);font-size:10px">●</span>' : '') + '</span>' +
+      '<div class="file-item-actions">' +
+        '<button class="file-action-btn" onclick="event.stopPropagation();openRenameModal(\'' + f.id + '\')" title="Rename">✎</button>' +
+        (files.length > 1 ? '<button class="file-action-btn del" onclick="event.stopPropagation();openDelFileModal(\'' + f.id + '\')" title="Delete">✕</button>' : '') +
+      '</div>';
+
+    item.onclick = function() { openFile(f.id); };
+    tree.appendChild(item);
+  });
+}
+
+function fileIcon(name) {
+  var ext = name.split(".").pop().toLowerCase();
+  var icons = { html: "🌐", css: "🎨", js: "⚡", py: "🐍", cpp: "⚙️", c: "⚙️", ts: "📘", json: "📋", md: "📝", txt: "📄", sh: "💻" };
+  return icons[ext] || "📄";
+}
+
+function getLang(name) {
+  var ext = name.split(".").pop().toLowerCase();
+  var map = { js: "javascript", ts: "typescript", py: "python", cpp: "cpp", c: "cpp", html: "html", css: "css", json: "json", md: "markdown", sh: "shell" };
+  return map[ext] || "plaintext";
+}
+
+// ── Tabs ──────────────────────────────────────────────────
+var openTabs = []; // array of file IDs
+
+function openFile(fileId) {
+  var file = files.find(function(f) { return f.id === fileId; });
+  if (!file) return;
+
+  // Save current model content before switching
+  if (activeFileId && fileModels[activeFileId] && editor) {
+    var idx = files.findIndex(function(f) { return f.id === activeFileId; });
+    if (idx !== -1) files[idx].content = editor.getValue();
+  }
+
+  activeFileId = fileId;
+  if (!openTabs.includes(fileId)) openTabs.push(fileId);
+
+  if (!fileModels[fileId]) {
+    fileModels[fileId] = monaco.editor.createModel(file.content || "", getLang(file.name));
+  }
+  editor.setModel(fileModels[fileId]);
+
+  var langId = getLang(file.name);
+  document.getElementById("sb-file").textContent = file.name;
+
+  // Auto-switch to preview for html files in website projects
+  if (projectType === "website" && file.name.endsWith(".html")) {
+    // keep console visible by default
+  }
+
+  renderFileTree();
+  renderTabs();
+}
+
+function renderTabs() {
+  var bar = document.getElementById("tabs-bar");
+  bar.innerHTML = "";
+  openTabs.forEach(function(fid) {
+    var f = files.find(function(x) { return x.id === fid; });
+    if (!f) return;
+    var tab = document.createElement("div");
+    tab.className = "tab" + (fid === activeFileId ? " active" : "") + (unsavedFiles[fid] ? " unsaved" : "");
+    tab.innerHTML =
+      '<span style="font-size:11px;margin-right:2px">' + fileIcon(f.name) + '</span>' +
+      '<span>' + esc(f.name) + '</span>' +
+      '<div class="tab-dot"></div>' +
+      '<button class="tab-close" onclick="event.stopPropagation();closeTab(\'' + fid + '\')" title="Close">×</button>';
+    tab.onclick = function() { openFile(fid); };
+    bar.appendChild(tab);
+  });
+}
+
+function closeTab(fileId) {
+  openTabs = openTabs.filter(function(id) { return id !== fileId; });
+  if (activeFileId === fileId) {
+    if (openTabs.length > 0) openFile(openTabs[openTabs.length - 1]);
+    else { activeFileId = null; editor.setModel(monaco.editor.createModel("", "plaintext")); }
+  }
+  renderTabs();
+  renderFileTree();
+}
+
+// ── Save ──────────────────────────────────────────────────
+function setSave(state) {
+  var pill = document.getElementById("save-pill");
+  var txt  = document.getElementById("save-txt");
+  pill.className = "save-pill" + (state === "saving" ? " saving" : state === "error" ? " error" : "");
+  txt.textContent = state === "saving" ? "Saving..." : state === "error" ? "Save failed" : "Saved";
+}
+
+async function saveAll() {
+  if (activeFileId && fileModels[activeFileId] && editor) {
+    var idx = files.findIndex(function(f) { return f.id === activeFileId; });
+    if (idx !== -1) files[idx].content = editor.getValue();
+  }
+
+  try {
+    var res = await fetch(API + "/projects/" + projectId, {
+      method: "PUT", headers: authH(),
+      body: JSON.stringify({ files: files })
+    });
+    if (res.ok) {
+      unsavedFiles = {};
+      setSave("saved");
+      renderTabs();
+      renderFileTree();
+    } else {
+      setSave("error");
+    }
+  } catch(e) { setSave("error"); }
+}
+
+async function renameProject() {
+  var name = document.getElementById("proj-title").value.trim();
+  if (!name) return;
+  document.title = name + " - CodeSponge";
+  try {
+    await fetch(API + "/projects/" + projectId, {
+      method: "PUT", headers: authH(),
+      body: JSON.stringify({ name: name, files: files })
+    });
+  } catch(e) {}
+}
+
+// ── Add file ──────────────────────────────────────────────
+function openAddFileModal() {
+  document.getElementById("new-file-name").value = "";
+  openModal("add-file-modal");
+  setTimeout(function() { document.getElementById("new-file-name").focus(); }, 100);
+}
+
+async function confirmAddFile() {
+  var name = document.getElementById("new-file-name").value.trim();
+  if (!name) return;
+  // Check duplicate
+  if (files.find(function(f) { return f.name === name; })) {
+    alert("A file named \"" + name + "\" already exists.");
+    return;
+  }
+  var newFile = { id: "f" + Date.now(), name: name, content: "", language: getLang(name) };
+  files.push(newFile);
+  fileModels[newFile.id] = monaco.editor.createModel("", getLang(name));
+  renderFileTree();
+  openFile(newFile.id);
+  closeModal("add-file-modal");
+  await saveAll();
+}
+
+// ── Rename file ───────────────────────────────────────────
+function openRenameModal(fileId) {
+  renameTarget = fileId;
+  var f = files.find(function(x) { return x.id === fileId; });
+  if (!f) return;
+  document.getElementById("rename-input").value = f.name;
+  openModal("rename-modal");
+  setTimeout(function() {
+    var inp = document.getElementById("rename-input");
+    inp.focus(); inp.select();
+  }, 100);
+}
+
+async function confirmRename() {
+  var name = document.getElementById("rename-input").value.trim();
+  if (!name || !renameTarget) return;
+  var idx = files.findIndex(function(f) { return f.id === renameTarget; });
+  if (idx === -1) return;
+  // Update model language if extension changed
+  if (fileModels[renameTarget]) {
+    monaco.editor.setModelLanguage(fileModels[renameTarget], getLang(name));
+  }
+  files[idx].name = name;
+  renderFileTree();
+  renderTabs();
+  closeModal("rename-modal");
+  await saveAll();
+}
+
+// ── Delete file ───────────────────────────────────────────
+function openDelFileModal(fileId) {
+  delFileTarget = fileId;
+  var f = files.find(function(x) { return x.id === fileId; });
+  document.getElementById("del-file-msg").textContent = 'Delete "' + (f ? f.name : "this file") + '"? This cannot be undone.';
+  openModal("del-file-modal");
+}
+
+async function confirmDeleteFile() {
+  if (!delFileTarget) return;
+  // Close tab if open
+  closeTab(delFileTarget);
+  if (fileModels[delFileTarget]) fileModels[delFileTarget].dispose();
+  delete fileModels[delFileTarget];
+  delete unsavedFiles[delFileTarget];
+  files = files.filter(function(f) { return f.id !== delFileTarget; });
+  delFileTarget = null;
+  renderFileTree();
+  closeModal("del-file-modal");
+  await saveAll();
+}
+
+// ── Run ───────────────────────────────────────────────────
+async function runCode() {
+  // Save current edits
+  if (activeFileId && editor) {
+    var idx = files.findIndex(function(f) { return f.id === activeFileId; });
+    if (idx !== -1) files[idx].content = editor.getValue();
+  }
+
+  var btn = document.getElementById("run-btn");
+
+  // Website / HTML preview
+  if (projectType === "website") {
+    var htmlFile = files.find(function(f) { return f.name === "index.html" || f.name.endsWith(".html"); });
+    if (!htmlFile) { showOutput("No HTML file found to preview.", "error"); return; }
+
+    // Inject CSS and JS into the HTML for preview
+    var html = htmlFile.content || "";
+    var cssFile = files.find(function(f) { return f.name.endsWith(".css"); });
+    var jsFile  = files.find(function(f) { return f.name.endsWith(".js"); });
+
+    if (cssFile && cssFile.content) {
+      var styleTag = "<style>" + cssFile.content + "<\/style>";
+      if (html.includes("</head>")) html = html.replace("</head>", styleTag + "</head>");
+      else html = styleTag + html;
+    }
+    if (jsFile && jsFile.content) {
+      var scriptTag = "<script>" + jsFile.content + "<\/scr" + "ipt>";
+      if (html.includes("</body>")) html = html.replace("</body>", scriptTag + "</body>");
+      else html = html + scriptTag;
+    }
+
+    document.getElementById("html-frame").srcdoc = html;
+    switchOutTab("preview");
+    return;
+  }
+
+  // Single-language multi-file run (Python/JS/C++)
+  // Concatenate all files of same type
+  var mainLangs = { python: "py", javascript: "js", cpp: "cpp" };
+  var allCode = "";
+  var lang = null;
+
+  // Detect main language from first non-html file
+  for (var i = 0; i < files.length; i++) {
+    var ext = files[i].name.split(".").pop().toLowerCase();
+    if (ext === "py") { lang = "python"; break; }
+    if (ext === "js") { lang = "javascript"; break; }
+    if (ext === "cpp" || ext === "c") { lang = "cpp"; break; }
+  }
+
+  if (!lang) { showOutput("No runnable files found.", "error"); return; }
+
+  // Use active file if it's runnable, else use first runnable file
+  var activeFile = files.find(function(f) { return f.id === activeFileId; });
+  var ext = activeFile ? activeFile.name.split(".").pop().toLowerCase() : "";
+  var runFile = (ext === "py" || ext === "js" || ext === "cpp" || ext === "c") ? activeFile : files.find(function(f) {
+    var e = f.name.split(".").pop().toLowerCase();
+    return e === "py" || e === "js" || e === "cpp" || e === "c";
+  });
+
+  if (!runFile) { showOutput("No runnable file selected.", "error"); return; }
+  allCode = runFile.content || "";
+
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .7s linear infinite"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Running...';
+  showOutput("Running...", "running");
+  switchOutTab("console");
+
+  try {
+    var res  = await fetch(API + "/run", {
+      method: "POST", headers: authH(),
+      body: JSON.stringify({ language: lang, code: allCode })
+    });
+    var data = await res.json();
+    if (data.error && data.error.trim()) showOutput(data.error, "error");
+    else showOutput(data.output || "(no output)", "");
+  } catch(e) {
+    showOutput("Could not connect to server.", "error");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Run';
+  }
+}
+
+function showOutput(text, cls) {
+  var pre = document.getElementById("output-pre");
+  pre.textContent = text;
+  pre.className   = cls || "";
+}
+
+function clearOutput() {
+  showOutput("Press Run or Ctrl+Enter to execute...", "idle");
+}
+
+function switchOutTab(tab) {
+  var isConsole = (tab === "console");
+  document.getElementById("out-tab-console").className = "out-tab" + (isConsole  ? " active" : "");
+  document.getElementById("out-tab-preview").className = "out-tab" + (!isConsole ? " active" : "");
+  document.getElementById("output-body").style.display = isConsole ? ""     : "none";
+  document.getElementById("html-frame").style.display  = isConsole ? "none" : "block";
+  document.getElementById("html-frame").style.flex     = isConsole ? ""     : "1";
+}
+
+// ── Host website ──────────────────────────────────────────
+async function openHostModal() {
+  // Load existing hosted URL if any
+  try {
+    var res  = await fetch(API + "/projects/" + projectId, { headers: authH() });
+    var data = await res.json();
+    if (data.hosted_url) {
+      showHostedUrl(data.hosted_url);
+    }
+  } catch(e) {}
+  openModal("host-modal");
+}
+
+function showHostedUrl(url) {
+  document.getElementById("host-url-section").style.display = "";
+  document.getElementById("host-url-input").value = url;
+  document.getElementById("host-open-btn").href   = url;
+  document.getElementById("host-status").innerHTML =
+    '<span class="host-badge">&#127760; Live</span> Your site is publicly accessible at the URL above.';
+  document.getElementById("deploy-btn-txt").textContent = "&#128640; Redeploy";
+}
+
+async function deployWebsite() {
+  // Save first
+  await saveAll();
+
+  var btn = document.getElementById("deploy-btn");
+  btn.disabled = true;
+  document.getElementById("deploy-btn-txt").textContent = "Deploying...";
+
+  try {
+    var res  = await fetch(API + "/projects/" + projectId + "/host", {
+      method: "POST", headers: authH(),
+      body: JSON.stringify({ files: files })
+    });
+    var data = await res.json();
+    if (data.url) {
+      showHostedUrl(data.url);
+    } else {
+      document.getElementById("host-status").textContent = "Deployment failed: " + (data.error || "Unknown error");
+    }
+  } catch(e) {
+    document.getElementById("host-status").textContent = "Could not connect to server.";
+  } finally {
+    btn.disabled = false;
+    document.getElementById("deploy-btn-txt").textContent = "&#128640; Redeploy";
+  }
+}
+
+function copyHostUrl() {
+  var val = document.getElementById("host-url-input").value;
+  navigator.clipboard.writeText(val).catch(function() {
+    document.getElementById("host-url-input").select();
+    document.execCommand("copy");
+  });
+}
+
+// ── Share ─────────────────────────────────────────────────
+async function shareProject() {
+  try {
+    var allCode = files.map(function(f) { return "// === " + f.name + " ===\n" + (f.content||""); }).join("\n\n");
+    var mainLang = "javascript";
+    for (var i = 0; i < files.length; i++) {
+      var ext = files[i].name.split(".").pop().toLowerCase();
+      if (ext === "py") { mainLang = "python"; break; }
+      if (ext === "cpp") { mainLang = "cpp"; break; }
+      if (ext === "html") { mainLang = "html"; break; }
+    }
+    var res  = await fetch(API + "/snippets", {
+      method: "POST", headers: authH(),
+      body: JSON.stringify({ language: mainLang, code: allCode })
+    });
+    var data = await res.json();
+    var url  = location.origin + "/AI/editor.html?snippet=" + data.id;
+    document.getElementById("share-url-input").value = url;
+    openModal("share-modal");
+  } catch(e) { alert("Could not create share link."); }
+}
+
+function copyShareUrl() {
+  var val = document.getElementById("share-url-input").value;
+  navigator.clipboard.writeText(val).catch(function() {
+    document.getElementById("share-url-input").select();
+    document.execCommand("copy");
+  });
+}
+
+// ── Resizer ───────────────────────────────────────────────
+(function() {
+  var resizer  = document.getElementById("resizer");
+  var edArea   = document.getElementById("editor-area");
+  var outPanel = document.getElementById("output-panel");
+  var row      = document.getElementById("center-row");
+  var dragging = false, startX, startEW, startOW;
+
+  var saved = parseFloat(localStorage.getItem("cs_mf_editor_pct"));
+  if (saved && saved > 15 && saved < 90) {
+    edArea.style.flex  = "none"; outPanel.style.flex = "none";
+    edArea.style.width = saved + "%"; outPanel.style.width = (100 - saved) + "%";
+  } else {
+    edArea.style.flex = "1"; outPanel.style.width = "360px"; outPanel.style.flex = "none";
+  }
+
+  resizer.addEventListener("mousedown", function(e) {
+    dragging = true; startX = e.clientX;
+    startEW = edArea.getBoundingClientRect().width;
+    startOW = outPanel.getBoundingClientRect().width;
+    resizer.classList.add("dragging");
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    e.preventDefault();
+  });
+  document.addEventListener("mousemove", function(e) {
+    if (!dragging) return;
+    var dx = e.clientX - startX;
+    var totalW = row.getBoundingClientRect().width - resizer.getBoundingClientRect().width;
+    var newEW = Math.max(180, Math.min(startEW + dx, totalW - 160));
+    edArea.style.flex = "none"; outPanel.style.flex = "none";
+    edArea.style.width = newEW + "px"; outPanel.style.width = (totalW - newEW) + "px";
+  });
+  document.addEventListener("mouseup", function() {
+    if (!dragging) return;
+    dragging = false; resizer.classList.remove("dragging");
+    document.body.style.cursor = ""; document.body.style.userSelect = "";
+    var totalW = row.getBoundingClientRect().width;
+    localStorage.setItem("cs_mf_editor_pct", ((edArea.getBoundingClientRect().width / totalW) * 100).toFixed(2));
+  });
+})();
+
+// ── Modals ────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add("open"); }
+function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+
+// Click backdrop to close
+["add-file-modal","rename-modal","del-file-modal","host-modal","share-modal"].forEach(function(id) {
+  document.getElementById(id).addEventListener("click", function(e) {
+    if (e.target === this) closeModal(id);
+  });
+});
+
+// ── Keyboard ──────────────────────────────────────────────
+document.addEventListener("keydown", function(e) {
+  if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); runCode(); }
+  if ((e.metaKey || e.ctrlKey) && e.key === "s")     { e.preventDefault(); saveAll(); }
+  if (e.key === "Escape") {
+    ["add-file-modal","rename-modal","del-file-modal","host-modal","share-modal"].forEach(closeModal);
+  }
+  if (e.key === "Enter" && document.getElementById("add-file-modal").classList.contains("open")) {
+    e.preventDefault(); confirmAddFile();
+  }
+  if (e.key === "Enter" && document.getElementById("rename-modal").classList.contains("open")) {
+    e.preventDefault(); confirmRename();
+  }
+});
+
+// ── Default file contents ─────────────────────────────────
+function defaultHTML() {
+  return '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8"/>\n  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>\n  <title>My Website</title>\n  <link rel="stylesheet" href="style.css"/>\n</head>\n<body>\n  <h1>Hello, World!</h1>\n  <p>Edit index.html, style.css and script.js to build your site.</p>\n  <script src="script.js"><\/scr' + 'ipt>\n</body>\n</html>';
+}
+function defaultCSS() {
+  return '*, *::before, *::after { box-sizing: border-box; }\nbody {\n  font-family: sans-serif;\n  margin: 0;\n  padding: 40px;\n  background: #0d1117;\n  color: #e6edf3;\n}\n\nh1 {\n  font-size: 2rem;\n  margin-bottom: 12px;\n}';
+}
+function defaultJS() {
+  return '// script.js\nconsole.log("Hello from script.js!");';
+}
+
+// ── Utils ─────────────────────────────────────────────────
+function esc(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+</script>
+</body>
+</html>
