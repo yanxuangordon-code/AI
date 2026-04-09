@@ -1,128 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CodeSponge — Editor</title>
-  <link rel="stylesheet" href="style.css"/>
-  <style>
-    html, body { height: 100%; overflow: hidden; }
-    .editor-layout { display: flex; flex-direction: column; height: 100vh; }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CodeSponge — Editor</title>
+<link rel="stylesheet" href="style.css"/>
+<style>
+html, body { height: 100%; overflow: hidden; }
+.editor-layout { display: flex; flex-direction: column; height: 100vh; }
 
-    /* Top bar */
-    .editor-topbar {
-      height: 50px;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; gap: 10px;
-      padding: 0 14px; flex-shrink: 0;
-    }
-    .topbar-brand { font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 6px; margin-right: 4px; }
-    .topbar-brand span { color: var(--accent); }
-    .topbar-sep { color: var(--border); font-size: 20px; font-weight: 200; }
-    .project-title-input {
-      background: none; border: none; color: var(--text);
-      font-size: 14px; font-weight: 600; font-family: var(--font);
-      outline: none; max-width: 200px;
-      border-bottom: 1px solid transparent;
-      padding: 2px 0;
-      transition: border-color .15s;
-    }
-    .project-title-input:focus { border-bottom-color: var(--accent); }
-    .topbar-spacer { flex: 1; }
-    .save-indicator {
-      font-size: 12px; color: var(--muted);
-      display: flex; align-items: center; gap: 6px;
-    }
-    .save-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--success); flex-shrink: 0;
-      transition: background .2s;
-    }
-    .save-dot.saving { background: #e3b341; }
-    .save-dot.error  { background: var(--danger); }
-    .lang-select-wrap select {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--text);
-      border-radius: 7px;
-      padding: 5px 10px;
-      font-size: 13px;
-      font-family: var(--font);
-      outline: none;
-      cursor: pointer;
-    }
-    .lang-select-wrap select:focus { border-color: var(--accent); }
-    .run-btn {
-      background: var(--success);
-      color: #0d1117;
-      font-weight: 700;
-      padding: 6px 16px;
-      font-size: 13px;
-      gap: 6px;
-    }
-    .run-btn:hover { background: #46c55a; }
-    .run-btn:disabled { opacity: .6; }
+/* Top bar */
+.editor-topbar {
+  height: 50px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 14px; flex-shrink: 0;
+}
+.topbar-brand { font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 6px; margin-right: 4px; }
+.topbar-brand span { color: var(--accent); }
+.topbar-sep { color: var(--border); font-size: 20px; font-weight: 200; }
+.project-title-input {
+  background: none; border: none; color: var(--text);
+  font-size: 14px; font-weight: 600; font-family: var(--font);
+  outline: none; max-width: 200px;
+  border-bottom: 1px solid transparent;
+  padding: 2px 0;
+  transition: border-color .15s;
+}
+.project-title-input:focus { border-bottom-color: var(--accent); }
+.topbar-spacer { flex: 1; }
+.save-indicator {
+  font-size: 12px; color: var(--muted);
+  display: flex; align-items: center; gap: 6px;
+}
+.save-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--success); flex-shrink: 0;
+  transition: background .2s;
+}
+.save-dot.saving { background: #e3b341; }
+.save-dot.error { background: var(--danger); }
+.lang-select-wrap select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 7px;
+  padding: 5px 10px;
+  font-size: 13px;
+  font-family: var(--font);
+  outline: none;
+  cursor: pointer;
+}
+.lang-select-wrap select:focus { border-color: var(--accent); }
+.run-btn {
+  background: var(--success);
+  color: #0d1117;
+  font-weight: 700;
+  padding: 6px 16px;
+  font-size: 13px;
+  gap: 6px;
+}
+.run-btn:hover { background: #46c55a; }
+.run-btn:disabled { opacity: .6; }
 
-    /* Body */
-    .editor-body { display: flex; flex: 1; overflow: hidden; }
-    .editor-pane { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    #monaco-editor { flex: 1; }
+/* Body */
+.editor-body { display: flex; flex: 1; overflow: hidden; }
+.editor-pane { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+#monaco-editor { flex: 1; }
 
-    /* Output pane */
-    .output-pane {
-      width: 360px; flex-shrink: 0;
-      border-left: 1px solid var(--border);
-      display: flex; flex-direction: column;
-      background: var(--surface);
-    }
-    .output-tabs {
-      display: flex; border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-    .output-tab {
-      padding: 9px 16px;
-      font-size: 12px; font-weight: 600; color: var(--muted);
-      cursor: pointer; border-bottom: 2px solid transparent;
-      transition: color .15s;
-    }
-    .output-tab.active { color: var(--text); border-bottom-color: var(--accent); }
-    .output-body { flex: 1; overflow-y: auto; padding: 16px; }
-    #output {
-      font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-      font-size: 13px; white-space: pre-wrap;
-      color: var(--success); line-height: 1.7;
-      min-height: 60px;
-    }
-    #output.has-error { color: var(--danger); }
-    #output.idle { color: var(--muted); }
-    #html-preview { flex: 1; border: none; background: #fff; display: none; }
-    .output-toolbar {
-      padding: 8px 12px;
-      border-top: 1px solid var(--border);
-      display: flex; gap: 8px; flex-shrink: 0;
-    }
+/* Loading overlay */
+#loading-overlay {
+  position: absolute;
+  top: 50px; left: 0; right: 360px; bottom: 24px;
+  background: var(--surface);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 14px; z-index: 10;
+}
+#loading-overlay .spinner {
+  width: 28px; height: 28px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+#loading-overlay p { font-size: 13px; color: var(--muted); }
+#loading-overlay small { font-size: 11px; color: var(--muted); opacity: 0; transition: opacity .5s; }
+#loading-overlay small.visible { opacity: 1; }
 
-    /* Status bar (bottom) */
-    .status-bar {
-      height: 24px; background: var(--accent);
-      display: flex; align-items: center;
-      padding: 0 14px; gap: 20px; flex-shrink: 0;
-    }
-    .status-item {
-      font-size: 11px; color: rgba(255,255,255,.85);
-      display: flex; align-items: center; gap: 5px;
-    }
-    .status-item a { color: inherit; }
-    .status-right { margin-left: auto; display: flex; gap: 20px; }
+/* Output pane */
+.output-pane {
+  width: 360px; flex-shrink: 0;
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  background: var(--surface);
+}
+.output-tabs {
+  display: flex; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.output-tab {
+  padding: 9px 16px;
+  font-size: 12px; font-weight: 600; color: var(--muted);
+  cursor: pointer; border-bottom: 2px solid transparent;
+  transition: color .15s;
+}
+.output-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+.output-body { flex: 1; overflow-y: auto; padding: 16px; }
+#output {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 13px; white-space: pre-wrap;
+  color: var(--success); line-height: 1.7;
+  min-height: 60px;
+}
+#output.has-error { color: var(--danger); }
+#output.idle { color: var(--muted); }
+#html-preview { flex: 1; border: none; background: #fff; display: none; }
+.output-toolbar {
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 8px; flex-shrink: 0;
+}
 
-    /* Share modal */
-    .modal { padding: 28px; }
-    .modal h2 { font-size: 17px; margin-bottom: 6px; }
-    .modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
-    .share-input-wrap { display: flex; gap: 8px; }
-    .share-input-wrap input { flex: 1; font-size: 13px; }
-  </style>
+/* Status bar (bottom) */
+.status-bar {
+  height: 24px; background: var(--accent);
+  display: flex; align-items: center;
+  padding: 0 14px; gap: 20px; flex-shrink: 0;
+}
+.status-item {
+  font-size: 11px; color: rgba(255,255,255,.85);
+  display: flex; align-items: center; gap: 5px;
+}
+.status-right { margin-left: auto; display: flex; gap: 20px; }
+
+/* Share modal */
+.modal { padding: 28px; }
+.modal h2 { font-size: 17px; margin-bottom: 6px; }
+.modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+.share-input-wrap { display: flex; gap: 8px; }
+.share-input-wrap input { flex: 1; font-size: 13px; }
+</style>
 </head>
 <body>
 <div class="editor-layout">
@@ -152,7 +171,15 @@
   </div>
 
   <!-- Editor + Output -->
-  <div class="editor-body">
+  <div class="editor-body" style="position:relative">
+
+    <!-- Loading overlay — shown while project loads, hidden after -->
+    <div id="loading-overlay">
+      <div class="spinner"></div>
+      <p id="loading-msg">Loading project…</p>
+      <small id="loading-hint">Server is starting up, this may take up to 30 seconds…</small>
+    </div>
+
     <div class="editor-pane">
       <div id="monaco-editor"></div>
     </div>
@@ -200,334 +227,364 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
 <script>
-  const API   = "https://codesponge-backend.onrender.com";
-  const token = localStorage.getItem("token");
-  if (!token) window.location.href = "index.html";
+const API = "https://codesponge-backend.onrender.com";
+const token = localStorage.getItem("token");
+if (!token) window.location.href = "index.html";
 
-  const params    = new URLSearchParams(window.location.search);
-  const projectId = params.get("project");
-  if (!projectId && !params.get("snippet")) window.location.href = "dashboard.html";
+const params = new URLSearchParams(window.location.search);
+const projectId = params.get("project");
+if (!projectId && !params.get("snippet")) window.location.href = "dashboard.html";
 
-  function authH() { return { "Content-Type": "application/json", "Authorization": "Bearer " + token }; }
+function authH() { return { "Content-Type": "application/json", "Authorization": "Bearer " + token }; }
 
-  let editor, currentLang = "python";
+let editor, currentLang = "python";
 
-  require.config({ paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs" } });
-  require(["vs/editor/editor.main"], () => {
+require.config({ paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs" } });
 
-    // ── Ghost text (inline completion) provider ──────────────
-    const SNIPPETS = {
-      python: [
-        { trigger: /def\s+(\w*)$/,         insert: "function_name(params):\n    pass" },
-        { trigger: /for\s+$/,              insert: "i in range(10):\n    " },
-        { trigger: /for\s+\w+\s+in\s+$/,  insert: "range(10):\n    " },
-        { trigger: /if\s+$/,               insert: "condition:\n    " },
-        { trigger: /while\s+$/,            insert: "True:\n    " },
-        { trigger: /class\s+(\w*)$/,       insert: "ClassName:\n    def __init__(self):\n        pass" },
-        { trigger: /import\s+$/,           insert: "os" },
-        { trigger: /print\s*\($/,          insert: '"Hello, World!")' },
-        { trigger: /try:\s*$/,             insert: "\nexcept Exception as e:\n    print(e)" },
-        { trigger: /with\s+open\s*\($/,    insert: '"file.txt", "r") as f:\n    content = f.read()' },
-        { trigger: /return\s+$/,           insert: "result" },
-        { trigger: /self\.\s*$/,           insert: "attribute" },
-        { trigger: /#\s*TODO\s*$/,         insert: ": implement this" },
-        { trigger: /lambda\s+$/,           insert: "x: x * 2" },
-        { trigger: /list\s*\($/,           insert: "range(10))" },
-      ],
-      javascript: [
-        { trigger: /function\s+(\w*)$/,    insert: "name(params) {\n  \n}" },
-        { trigger: /const\s+(\w*)\s*=\s*$/, insert: "value;" },
-        { trigger: /let\s+(\w*)\s*=\s*$/,  insert: "value;" },
-        { trigger: /for\s+\($/,            insert: "let i = 0; i < 10; i++) {\n  \n}" },
-        { trigger: /if\s+\($/,             insert: "condition) {\n  \n}" },
-        { trigger: /console\.log\s*\($/,   insert: '"Hello, World!")' },
-        { trigger: /\.forEach\s*\($/,      insert: "(item) => {\n  \n});" },
-        { trigger: /\.map\s*\($/,          insert: "(item) => item);" },
-        { trigger: /\.filter\s*\($/,       insert: "(item) => item);" },
-        { trigger: /async\s+function\s*$/, insert: "name() {\n  \n}" },
-        { trigger: /await\s+$/,            insert: "fetch(url)" },
-        { trigger: /return\s+$/,           insert: "result;" },
-        { trigger: /class\s+(\w*)$/,       insert: "ClassName {\n  constructor() {\n    \n  }\n}" },
-        { trigger: /import\s+\{$/,         insert: " } from 'module';" },
-        { trigger: /\/\/\s*TODO\s*$/,      insert: ": implement this" },
-      ],
-      cpp: [
-        { trigger: /int\s+main\s*\($/,     insert: ") {\n    \n    return 0;\n}" },
-        { trigger: /cout\s*<<\s*$/,        insert: '"Hello, World!" << endl;' },
-        { trigger: /for\s+\($/,            insert: "int i = 0; i < 10; i++) {\n    \n}" },
-        { trigger: /if\s+\($/,             insert: "condition) {\n    \n}" },
-        { trigger: /while\s+\($/,          insert: "condition) {\n    \n}" },
-        { trigger: /void\s+(\w*)$/,        insert: "functionName() {\n    \n}" },
-        { trigger: /int\s+(\w+)\s*=\s*$/,  insert: "0;" },
-        { trigger: /std::\s*$/,            insert: "string" },
-        { trigger: /#include\s+<$/,        insert: "iostream>" },
-        { trigger: /cin\s*>>\s*$/,         insert: "variable;" },
-        { trigger: /return\s+$/,           insert: "0;" },
-        { trigger: /class\s+(\w*)$/,       insert: "ClassName {\npublic:\n    \n};" },
-        { trigger: /\/\/\s*TODO\s*$/,      insert: ": implement this" },
-      ],
-      html: [
-        { trigger: /<div\s*$/,             insert: 'class="">\n  \n</div>' },
-        { trigger: /<p\s*$/,               insert: 'class="">' },
-        { trigger: /<h1\s*$/,              insert: 'class="">' },
-        { trigger: /<a\s*$/,               insert: 'href="#">Link</a>' },
-        { trigger: /<img\s*$/,             insert: 'src="" alt="">' },
-        { trigger: /<input\s*$/,           insert: 'type="text" placeholder="">' },
-        { trigger: /<button\s*$/,          insert: 'class="">Click me</button>' },
-        { trigger: /<style\s*$/,           insert: '>\n  body {\n    \n  }\n</style>' },
-        { trigger: /<script\s*$/,          insert: '>\n  \n</script>' },
-        { trigger: /<form\s*$/,            insert: 'action="" method="post">' },
-        { trigger: /<ul\s*$/,              insert: '>\n  <li></li>\n</ul>' },
-        { trigger: /<table\s*$/,           insert: '>\n  <tr><td></td></tr>\n</table>' },
-      ],
-    };
+require(["vs/editor/editor.main"], () => {
 
-    monaco.languages.registerInlineCompletionsProvider(
-      ["python","javascript","cpp","html"],
-      {
-        provideInlineCompletions(model, position) {
-          const line    = model.getLineContent(position.lineNumber);
-          const before  = line.substring(0, position.column - 1);
-          const snippets = SNIPPETS[currentLang] || [];
-          for (const s of snippets) {
-            if (s.trigger.test(before)) {
-              return {
-                items: [{
-                  insertText: s.insert,
-                  range: {
-                    startLineNumber: position.lineNumber,
-                    startColumn:     position.column,
-                    endLineNumber:   position.lineNumber,
-                    endColumn:       position.column,
-                  }
-                }]
-              };
-            }
+  // ── Ghost text (inline completion) provider ──────────────
+  const SNIPPETS = {
+    python: [
+      { trigger: /def\s+(\w*)$/, insert: "function_name(params):\n    pass" },
+      { trigger: /for\s+$/, insert: "i in range(10):\n    " },
+      { trigger: /for\s+\w+\s+in\s+$/, insert: "range(10):\n    " },
+      { trigger: /if\s+$/, insert: "condition:\n    " },
+      { trigger: /while\s+$/, insert: "True:\n    " },
+      { trigger: /class\s+(\w*)$/, insert: "ClassName:\n    def __init__(self):\n        pass" },
+      { trigger: /import\s+$/, insert: "os" },
+      { trigger: /print\s*\($/, insert: '"Hello, World!")' },
+      { trigger: /try:\s*$/, insert: "\nexcept Exception as e:\n    print(e)" },
+      { trigger: /with\s+open\s*\($/, insert: '"file.txt", "r") as f:\n    content = f.read()' },
+      { trigger: /return\s+$/, insert: "result" },
+      { trigger: /self\.\s*$/, insert: "attribute" },
+      { trigger: /#\s*TODO\s*$/, insert: ": implement this" },
+      { trigger: /lambda\s+$/, insert: "x: x * 2" },
+      { trigger: /list\s*\($/, insert: "range(10))" },
+    ],
+    javascript: [
+      { trigger: /function\s+(\w*)$/, insert: "name(params) {\n  \n}" },
+      { trigger: /const\s+(\w*)\s*=\s*$/, insert: "value;" },
+      { trigger: /let\s+(\w*)\s*=\s*$/, insert: "value;" },
+      { trigger: /for\s+\($/, insert: "let i = 0; i < 10; i++) {\n  \n}" },
+      { trigger: /if\s+\($/, insert: "condition) {\n  \n}" },
+      { trigger: /console\.log\s*\($/, insert: '"Hello, World!")' },
+      { trigger: /\.forEach\s*\($/, insert: "(item) => {\n  \n});" },
+      { trigger: /\.map\s*\($/, insert: "(item) => item);" },
+      { trigger: /\.filter\s*\($/, insert: "(item) => item);" },
+      { trigger: /async\s+function\s*$/, insert: "name() {\n  \n}" },
+      { trigger: /await\s+$/, insert: "fetch(url)" },
+      { trigger: /return\s+$/, insert: "result;" },
+      { trigger: /class\s+(\w*)$/, insert: "ClassName {\n  constructor() {\n    \n  }\n}" },
+      { trigger: /import\s+\{$/, insert: " } from 'module';" },
+      { trigger: /\/\/\s*TODO\s*$/, insert: ": implement this" },
+    ],
+    cpp: [
+      { trigger: /int\s+main\s*\($/, insert: ") {\n  \n  return 0;\n}" },
+      { trigger: /cout\s*<<\s*$/, insert: '"Hello, World!" << endl;' },
+      { trigger: /for\s+\($/, insert: "int i = 0; i < 10; i++) {\n  \n}" },
+      { trigger: /if\s+\($/, insert: "condition) {\n  \n}" },
+      { trigger: /while\s+\($/, insert: "condition) {\n  \n}" },
+      { trigger: /void\s+(\w*)$/, insert: "functionName() {\n  \n}" },
+      { trigger: /int\s+(\w+)\s*=\s*$/, insert: "0;" },
+      { trigger: /std::\s*$/, insert: "string" },
+      { trigger: /#include\s+<$/, insert: "iostream>" },
+      { trigger: /cin\s*>>\s*$/, insert: "variable;" },
+      { trigger: /return\s+$/, insert: "0;" },
+      { trigger: /class\s+(\w*)$/, insert: "ClassName {\npublic:\n  \n};" },
+      { trigger: /\/\/\s*TODO\s*$/, insert: ": implement this" },
+    ],
+    html: [
+      { trigger: /<div\s*$/, insert: 'class="">\n  \n</div>' },
+      { trigger: /<p\s*$/, insert: 'class="">' },
+      { trigger: /<h1\s*$/, insert: 'class="">' },
+      { trigger: /<a\s*$/, insert: 'href="#">Link</a>' },
+      { trigger: /<img\s*$/, insert: 'src="" alt="">' },
+      { trigger: /<input\s*$/, insert: 'type="text" placeholder="">' },
+      { trigger: /<button\s*$/, insert: 'class="">Click me</button>' },
+      { trigger: /<style\s*$/, insert: '>\n  body {\n    \n  }\n</style>' },
+      { trigger: /<script\s*$/, insert: '>\n  \n</script>' },
+      { trigger: /<form\s*$/, insert: 'action="" method="post">' },
+      { trigger: /<ul\s*$/, insert: '>\n  <li></li>\n</ul>' },
+      { trigger: /<table\s*$/, insert: '>\n  <tr><td></td></tr>\n</table>' },
+    ],
+  };
+
+  monaco.languages.registerInlineCompletionsProvider(
+    ["python","javascript","cpp","html"],
+    {
+      provideInlineCompletions(model, position) {
+        const line = model.getLineContent(position.lineNumber);
+        const before = line.substring(0, position.column - 1);
+        const snippets = SNIPPETS[currentLang] || [];
+        for (const s of snippets) {
+          if (s.trigger.test(before)) {
+            return {
+              items: [{
+                insertText: s.insert,
+                range: {
+                  startLineNumber: position.lineNumber,
+                  startColumn: position.column,
+                  endLineNumber: position.lineNumber,
+                  endColumn: position.column,
+                }
+              }]
+            };
           }
-          return { items: [] };
-        },
-        freeInlineCompletions() {}
-      }
-    );
+        }
+        return { items: [] };
+      },
+      freeInlineCompletions() {}
+    }
+  );
 
-    editor = monaco.editor.create(document.getElementById("monaco-editor"), {
-      value: "",
-      language: "python",
-      theme: "vs-dark",
-      fontSize: 14,
-      minimap: { enabled: false },
-      automaticLayout: true,
-      scrollBeyondLastLine: false,
-      padding: { top: 14, bottom: 14 },
-      fontLigatures: true,
-      cursorBlinking: "smooth",
-      smoothScrolling: true,
-      renderWhitespace: "selection",
-      inlineSuggest: { enabled: true },      // enable ghost text
-      quickSuggestions: { other: true, comments: false, strings: false },
-    });
-
-    let saveTimer;
-    editor.onDidChangeModelContent(() => {
-      clearTimeout(saveTimer);
-      setSaveStatus("saving");
-      saveTimer = setTimeout(saveProject, 1500);
-    });
-
-    // Accept ghost text with Tab key
-    editor.addCommand(monaco.KeyCode.Tab, () => {
-      const handled = editor.getAction("editor.action.inlineSuggest.commit");
-      if (handled) handled.run();
-      else editor.trigger("keyboard", "tab", {});
-    });
-
-    loadProject();
+  editor = monaco.editor.create(document.getElementById("monaco-editor"), {
+    value: "",
+    language: "python",
+    theme: "vs-dark",
+    fontSize: 14,
+    minimap: { enabled: false },
+    automaticLayout: true,
+    scrollBeyondLastLine: false,
+    padding: { top: 14, bottom: 14 },
+    fontLigatures: true,
+    cursorBlinking: "smooth",
+    smoothScrolling: true,
+    renderWhitespace: "selection",
+    inlineSuggest: { enabled: true },
+    quickSuggestions: { other: true, comments: false, strings: false },
+    readOnly: false, // always start editable — overlay handles the visual lock
   });
 
-  function setSaveStatus(state) {
-    const dot = document.getElementById("save-dot");
-    const txt = document.getElementById("save-status");
-    if (state === "saving") { dot.className = "save-dot saving"; txt.textContent = "Saving…"; }
-    else if (state === "saved") { dot.className = "save-dot"; txt.textContent = "Saved"; }
-    else { dot.className = "save-dot error"; txt.textContent = "Save failed"; }
-  }
+  let saveTimer;
+  editor.onDidChangeModelContent(() => {
+    clearTimeout(saveTimer);
+    setSaveStatus("saving");
+    saveTimer = setTimeout(saveProject, 1500);
+  });
 
-  async function loadProject() {
-    const snippet = params.get("snippet");
-    if (snippet) { loadSnippet(snippet); return; }
+  editor.addCommand(monaco.KeyCode.Tab, () => {
+    const handled = editor.getAction("editor.action.inlineSuggest.commit");
+    if (handled) handled.run();
+    else editor.trigger("keyboard", "tab", {});
+  });
 
-    editor.setValue("// Loading project...");
-    editor.updateOptions({ readOnly: true });
+  loadProject();
+});
 
-    const titleEl = document.getElementById("project-title");
-    const wakeTimer = setTimeout(() => {
-      titleEl.value = "Server starting up…";
-    }, 6000);
+function hideLoadingOverlay() {
+  const overlay = document.getElementById("loading-overlay");
+  overlay.style.transition = "opacity .3s";
+  overlay.style.opacity = "0";
+  setTimeout(() => overlay.style.display = "none", 300);
+}
 
+function setSaveStatus(state) {
+  const dot = document.getElementById("save-dot");
+  const txt = document.getElementById("save-status");
+  if (state === "saving")     { dot.className = "save-dot saving"; txt.textContent = "Saving…"; }
+  else if (state === "saved") { dot.className = "save-dot";        txt.textContent = "Saved"; }
+  else                        { dot.className = "save-dot error";  txt.textContent = "Save failed"; }
+}
+
+async function loadProject() {
+  const snippet = params.get("snippet");
+  if (snippet) { loadSnippet(snippet); return; }
+
+  const titleEl = document.getElementById("project-title");
+  const hint    = document.getElementById("loading-hint");
+
+  // Show the "slow server" hint after 6 seconds
+  const hintTimer = setTimeout(() => hint.classList.add("visible"), 6000);
+
+  // Retry loop — try up to 3 times with a 2s gap (handles Render cold start)
+  let lastErr;
+  for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const res  = await fetch(`${API}/projects/${projectId}`, { headers: authH() });
-      clearTimeout(wakeTimer);
+      if (attempt > 0) {
+        document.getElementById("loading-msg").textContent = `Retrying… (attempt ${attempt + 1}/3)`;
+        await new Promise(r => setTimeout(r, 2000));
+      }
+
+      const res = await fetch(`${API}/projects/${projectId}`, { headers: authH() });
+      clearTimeout(hintTimer);
+
       if (res.status === 401) { window.location.href = "index.html"; return; }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
       const data = await res.json();
-      document.title = data.name + " — CodeSponge";
-      titleEl.value = data.name;
+
+      document.title    = data.name + " — CodeSponge";
+      titleEl.value     = data.name;
       document.getElementById("lang-select").value = data.language;
       setLanguage(data.language);
       editor.setValue(data.code || getDefaultCode(data.language));
-      editor.updateOptions({ readOnly: false });
       setSaveStatus("saved");
-    } catch {
-      clearTimeout(wakeTimer);
-      titleEl.value = "Error loading";
-      editor.setValue("// Could not load project. Check your connection and refresh.");
-      editor.updateOptions({ readOnly: false });
-    }
-  }
-
-  async function loadSnippet(id) {
-    try {
-      const res  = await fetch(`${API}/snippets/${id}`);
-      const data = await res.json();
-      document.getElementById("lang-select").value = data.language;
-      setLanguage(data.language);
-      editor.setValue(data.code);
-      document.getElementById("save-status").textContent = "Shared snippet (read-only)";
-      document.getElementById("save-dot").style.display = "none";
-    } catch { alert("Could not load snippet."); }
-  }
-
-  async function saveProject() {
-    if (params.get("snippet")) return;
-    try {
-      const r = await fetch(`${API}/projects/${projectId}`, {
-        method: "PUT", headers: authH(),
-        body: JSON.stringify({ code: editor.getValue(), language: currentLang })
-      });
-      setSaveStatus(r.ok ? "saved" : "error");
-    } catch { setSaveStatus("error"); }
-  }
-
-  async function renameProject() {
-    if (params.get("snippet")) return;
-    const name = document.getElementById("project-title").value.trim();
-    if (!name) return;
-    document.title = name + " — CodeSponge";
-    // Optimistic rename — save via PUT with current code
-    try {
-      await fetch(`${API}/projects/${projectId}`, {
-        method: "PUT", headers: authH(),
-        body: JSON.stringify({ code: editor.getValue(), language: currentLang, name })
-      });
-    } catch {}
-  }
-
-  function changeLanguage(lang) {
-    setLanguage(lang);
-    editor.setValue(getDefaultCode(lang));
-    saveProject();
-  }
-
-  function setLanguage(lang) {
-    currentLang = lang;
-    const map = { cpp: "cpp", javascript: "javascript", python: "python", html: "html" };
-    monaco.editor.setModelLanguage(editor.getModel(), map[lang] || "plaintext");
-    document.getElementById("status-lang").textContent =
-      { python: "Python", javascript: "JavaScript", cpp: "C++", html: "HTML" }[lang] || lang;
-    const isHtml = lang === "html";
-    document.getElementById("tab-preview").style.display = isHtml ? "" : "none";
-    if (isHtml) switchTab("preview"); else switchTab("output");
-  }
-
-  function switchTab(tab) {
-    const isOutput  = tab === "output";
-    document.getElementById("tab-output").className  = "output-tab" + (isOutput ? " active" : "");
-    document.getElementById("tab-preview").className = "output-tab" + (!isOutput ? " active" : "");
-    document.getElementById("output-body").style.display    = isOutput ? "" : "none";
-    document.getElementById("html-preview").style.display   = isOutput ? "none" : "flex";
-    document.querySelector(".output-toolbar").style.display = isOutput ? "" : "none";
-  }
-
-  async function runCode() {
-    const code = editor.getValue();
-    const btn  = document.getElementById("run-btn");
-
-    if (currentLang === "html") {
-      document.getElementById("html-preview").srcdoc = code;
-      switchTab("preview");
+      hideLoadingOverlay(); // ← SUCCESS: remove overlay, editor becomes usable
       return;
-    }
 
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner" style="border-top-color:#0d1117;border-color:rgba(0,0,0,.2);"></span>';
-    const out = document.getElementById("output");
-    out.className   = "idle";
-    out.textContent = "Running…";
-
-    try {
-      const res  = await fetch(`${API}/run`, {
-        method: "POST", headers: authH(),
-        body: JSON.stringify({ language: currentLang, code })
-      });
-      const data = await res.json();
-      if (data.error?.trim()) {
-        out.textContent = data.error;
-        out.className   = "has-error";
-      } else {
-        out.textContent = data.output || "(no output)";
-        out.className   = "";
-      }
-    } catch {
-      out.textContent = "Could not connect to server.";
-      out.className   = "has-error";
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = "▶ Run";
+    } catch (err) {
+      lastErr = err;
     }
   }
 
-  function clearOutput() {
-    const out = document.getElementById("output");
-    out.textContent = "Press Run or use Ctrl+Enter to run your code…";
-    out.className   = "idle";
-  }
+  // All 3 attempts failed
+  clearTimeout(hintTimer);
+  titleEl.value = "Error loading";
+  document.getElementById("loading-msg").textContent = "Could not load project.";
+  hint.textContent = "Check your connection and refresh the page.";
+  hint.classList.add("visible");
+  // Hide overlay anyway so the user isn't stuck — let them at least type
+  setTimeout(hideLoadingOverlay, 1500);
+}
 
-  async function shareSnippet() {
-    try {
-      const res  = await fetch(`${API}/snippets`, {
-        method: "POST", headers: authH(),
-        body: JSON.stringify({ language: currentLang, code: editor.getValue() })
-      });
-      const data = await res.json();
-      const url  = `${location.origin}${location.pathname}?snippet=${data.id}`;
-      document.getElementById("share-link").value = url;
-      document.getElementById("share-modal").classList.add("open");
-    } catch { alert("Could not create share link."); }
+async function loadSnippet(id) {
+  try {
+    const res  = await fetch(`${API}/snippets/${id}`);
+    const data = await res.json();
+    document.getElementById("lang-select").value = data.language;
+    setLanguage(data.language);
+    editor.setValue(data.code);
+    document.getElementById("save-status").textContent = "Shared snippet (read-only)";
+    document.getElementById("save-dot").style.display = "none";
+    hideLoadingOverlay();
+  } catch {
+    alert("Could not load snippet.");
+    hideLoadingOverlay();
   }
+}
 
-  function copyShareLink() {
-    navigator.clipboard.writeText(document.getElementById("share-link").value).catch(() => {
-      document.getElementById("share-link").select();
-      document.execCommand("copy");
+async function saveProject() {
+  if (params.get("snippet")) return;
+  try {
+    const r = await fetch(`${API}/projects/${projectId}`, {
+      method: "PUT", headers: authH(),
+      body: JSON.stringify({ code: editor.getValue(), language: currentLang })
     });
-    const btn = document.getElementById("copy-btn");
-    btn.textContent = "✓ Copied!";
-    setTimeout(() => btn.textContent = "Copy", 2000);
+    setSaveStatus(r.ok ? "saved" : "error");
+  } catch { setSaveStatus("error"); }
+}
+
+async function renameProject() {
+  if (params.get("snippet")) return;
+  const name = document.getElementById("project-title").value.trim();
+  if (!name) return;
+  document.title = name + " — CodeSponge";
+  try {
+    await fetch(`${API}/projects/${projectId}`, {
+      method: "PUT", headers: authH(),
+      body: JSON.stringify({ code: editor.getValue(), language: currentLang, name })
+    });
+  } catch {}
+}
+
+function changeLanguage(lang) {
+  setLanguage(lang);
+  editor.setValue(getDefaultCode(lang));
+  saveProject();
+}
+
+function setLanguage(lang) {
+  currentLang = lang;
+  const map = { cpp: "cpp", javascript: "javascript", python: "python", html: "html" };
+  monaco.editor.setModelLanguage(editor.getModel(), map[lang] || "plaintext");
+  document.getElementById("status-lang").textContent =
+    { python: "Python", javascript: "JavaScript", cpp: "C++", html: "HTML" }[lang] || lang;
+  const isHtml = lang === "html";
+  document.getElementById("tab-preview").style.display = isHtml ? "" : "none";
+  if (isHtml) switchTab("preview"); else switchTab("output");
+}
+
+function switchTab(tab) {
+  const isOutput = tab === "output";
+  document.getElementById("tab-output").className  = "output-tab" + (isOutput  ? " active" : "");
+  document.getElementById("tab-preview").className = "output-tab" + (!isOutput ? " active" : "");
+  document.getElementById("output-body").style.display    = isOutput ? ""     : "none";
+  document.getElementById("html-preview").style.display   = isOutput ? "none" : "flex";
+  document.querySelector(".output-toolbar").style.display = isOutput ? ""     : "none";
+}
+
+async function runCode() {
+  const code = editor.getValue();
+  const btn  = document.getElementById("run-btn");
+
+  if (currentLang === "html") {
+    document.getElementById("html-preview").srcdoc = code;
+    switchTab("preview");
+    return;
   }
 
-  document.addEventListener("keydown", e => {
-    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); runCode(); }
-    if ((e.metaKey || e.ctrlKey) && e.key === "s")     { e.preventDefault(); saveProject(); }
-    if (e.key === "Escape") document.getElementById("share-modal").classList.remove("open");
+  btn.disabled  = true;
+  btn.innerHTML = '<span class="spinner" style="border-top-color:#0d1117;border-color:rgba(0,0,0,.2);"></span>';
+  const out = document.getElementById("output");
+  out.className   = "idle";
+  out.textContent = "Running…";
+
+  try {
+    const res  = await fetch(`${API}/run`, {
+      method: "POST", headers: authH(),
+      body: JSON.stringify({ language: currentLang, code })
+    });
+    const data = await res.json();
+    if (data.error?.trim()) {
+      out.textContent = data.error;
+      out.className   = "has-error";
+    } else {
+      out.textContent = data.output || "(no output)";
+      out.className   = "";
+    }
+  } catch {
+    out.textContent = "Could not connect to server.";
+    out.className   = "has-error";
+  } finally {
+    btn.disabled  = false;
+    btn.innerHTML = "▶ Run";
+  }
+}
+
+function clearOutput() {
+  const out = document.getElementById("output");
+  out.textContent = "Press Run or use Ctrl+Enter to run your code…";
+  out.className   = "idle";
+}
+
+async function shareSnippet() {
+  try {
+    const res  = await fetch(`${API}/snippets`, {
+      method: "POST", headers: authH(),
+      body: JSON.stringify({ language: currentLang, code: editor.getValue() })
+    });
+    const data = await res.json();
+    const url  = `${location.origin}${location.pathname}?snippet=${data.id}`;
+    document.getElementById("share-link").value = url;
+    document.getElementById("share-modal").classList.add("open");
+  } catch { alert("Could not create share link."); }
+}
+
+function copyShareLink() {
+  navigator.clipboard.writeText(document.getElementById("share-link").value).catch(() => {
+    document.getElementById("share-link").select();
+    document.execCommand("copy");
   });
+  const btn = document.getElementById("copy-btn");
+  btn.textContent = "✓ Copied!";
+  setTimeout(() => btn.textContent = "Copy", 2000);
+}
 
-  function getDefaultCode(lang) {
-    return {
-      python:     '# Python\nprint("Hello, World!")',
-      javascript: '// JavaScript\nconsole.log("Hello, World!");',
-      cpp:        '#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello, World!" << endl;\n    return 0;\n}',
-      html:       '<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #0d1117; color: #e6edf3; }\n  </style>\n</head>\n<body>\n  <h1>Hello, World!</h1>\n</body>\n</html>',
-    }[lang] || "";
-  }
+document.addEventListener("keydown", e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); runCode(); }
+  if ((e.metaKey || e.ctrlKey) && e.key === "s")     { e.preventDefault(); saveProject(); }
+  if (e.key === "Escape") document.getElementById("share-modal").classList.remove("open");
+});
+
+function getDefaultCode(lang) {
+  return {
+    python:     '# Python\nprint("Hello, World!")',
+    javascript: '// JavaScript\nconsole.log("Hello, World!");',
+    cpp:        '#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello, World!" << endl;\n    return 0;\n}',
+    html:       '<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #0d1117; color: #e6edf3; }\n  </style>\n</head>\n<body>\n  <h1>Hello, World!</h1>\n</body>\n</html>',
+  }[lang] || "";
+}
 </script>
 </body>
 </html>
