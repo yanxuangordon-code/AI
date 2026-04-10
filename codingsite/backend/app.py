@@ -6,33 +6,34 @@ from flask_jwt_extended import (
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 import resend
-import subprocess, sqlite3, uuid, os, tempfile, random, string, json
+import subprocess, uuid, os, tempfile, random, string, json
+import psycopg2
+import psycopg2.extras
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
 CORS(app)
 
 # ── Config ───────────────────────────────────────────────────────────────────
-app.config["JWT_SECRET_KEY"]          = os.environ.get("JWT_SECRET_KEY", "change-me-in-production")
+app.config["JWT_SECRET_KEY"]           = os.environ.get("JWT_SECRET_KEY", "change-me")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=30)
-
 resend.api_key = os.environ.get("RESEND_API_KEY")
 jwt = JWTManager(app)
 
-# ── Hosted sites directory ────────────────────────────────────────────────────
-SITES_DIR = os.path.join(os.path.dirname(__file__), "sites")
+DATABASE_URL = os.environ.get("DATABASE_URL")
+SITES_DIR    = os.path.join(os.path.dirname(__file__), "sites")
 os.makedirs(SITES_DIR, exist_ok=True)
 
 # ── Database ──────────────────────────────────────────────────────────────────
 def get_db():
-    con = sqlite3.connect("codesponge.db")
-    con.row_factory = sqlite3.Row
+    con = psycopg2.connect(DATABASE_URL)
+    con.autocommit = False
     return con
 
 def init_db():
     con = get_db()
     cur = con.cursor()
-    cur.executescript("""
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id         TEXT PRIMARY KEY,
             email      TEXT UNIQUE NOT NULL,
@@ -40,15 +41,17 @@ def init_db():
             username   TEXT,
             bio        TEXT DEFAULT '',
             verified   INTEGER DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+    """)
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS verification_codes (
             email      TEXT PRIMARY KEY,
             code       TEXT NOT NULL,
             expires_at TIMESTAMP NOT NULL
-        );
-
+        )
+    """)
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS projects (
             id           TEXT PRIMARY KEY,
             user_id      TEXT NOT NULL,
@@ -58,17 +61,18 @@ def init_db():
             project_type TEXT DEFAULT 'single',
             files        TEXT DEFAULT '[]',
             hosted_url   TEXT DEFAULT NULL,
-            updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY(user_id) REFERENCES users(id)
-        );
-
+            updated_at   TIMESTAMP DEFAULT NOW()
+        )
+    """)
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS snippets (
             id         TEXT PRIMARY KEY,
             language   TEXT,
             code       TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+    """)
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS community_posts (
             id           TEXT PRIMARY KEY,
             user_id      TEXT NOT NULL,
@@ -83,38 +87,17 @@ def init_db():
             likes        INTEGER DEFAULT 0,
             forks        INTEGER DEFAULT 0,
             views        INTEGER DEFAULT 0,
-            published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY(user_id) REFERENCES users(id)
-        );
-
+            published_at TIMESTAMP DEFAULT NOW(),
+            updated_at   TIMESTAMP DEFAULT NOW()
+        )
+    """)
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS post_likes (
             user_id TEXT NOT NULL,
             post_id TEXT NOT NULL,
             PRIMARY KEY(user_id, post_id)
-        );
+        )
     """)
-
-    # Migrations for existing databases
-    try:
-        cur.execute("ALTER TABLE projects ADD COLUMN project_type TEXT DEFAULT 'single'")
-    except: pass
-    try:
-        cur.execute("ALTER TABLE projects ADD COLUMN files TEXT DEFAULT '[]'")
-    except: pass
-    try:
-        cur.execute("ALTER TABLE projects ADD COLUMN hosted_url TEXT DEFAULT NULL")
-    except: pass
-    try:
-        cur.execute("ALTER TABLE users ADD COLUMN username TEXT")
-    except: pass
-    try:
-        cur.execute("ALTER TABLE users ADD COLUMN bio TEXT DEFAULT ''")
-    except: pass
-    try:
-        cur.execute("UPDATE projects SET project_type='single' WHERE project_type IS NULL")
-    except: pass
-
     con.commit()
     con.close()
 
@@ -134,14 +117,22 @@ def get_default_code(lang):
     return defaults.get(lang, "")
 
 def optional_jwt_identity():
-    """Return user_id if JWT present, else None."""
     try:
         verify_jwt_in_request(optional=True)
         return get_jwt_identity()
     except:
         return None
 
-# ── Auth: Send verification code ──────────────────────────────────────────────
+def row_to_dict(cur, row):
+    """Convert a psycopg2 row to a dict using cursor description."""
+    if row is None:
+        return None
+    return {cur.description[i][0]: row[i] for i in range(len(row))}
+
+def rows_to_dicts(cur, rows):
+    return [row_to_dict(cur, r) for r in rows]
+
+# ── Auth: Send code ───────────────────────────────────────────────────────────
 @app.route("/auth/send-code", methods=["POST"])
 def send_code():
     data  = request.json
@@ -153,26 +144,27 @@ def send_code():
     expires = datetime.utcnow() + timedelta(minutes=10)
 
     con = get_db()
-    con.execute(
-        "INSERT OR REPLACE INTO verification_codes (email, code, expires_at) VALUES (?,?,?)",
-        (email, code, expires)
+    cur = con.cursor()
+    cur.execute(
+        "INSERT INTO verification_codes (email, code, expires_at) VALUES (%s,%s,%s) ON CONFLICT (email) DO UPDATE SET code=%s, expires_at=%s",
+        (email, code, expires, code, expires)
     )
     con.commit()
     con.close()
 
     try:
         resend.Emails.send({
-            "from": "CodeSponge <onboarding@resend.dev>",
-            "to":   [email],
+            "from":    "CodeSponge <onboarding@resend.dev>",
+            "to":      [email],
             "subject": "Your CodeSponge verification code",
-            "text": f"Your verification code is: {code}\n\nIt expires in 10 minutes."
+            "text":    f"Your verification code is: {code}\n\nIt expires in 10 minutes."
         })
     except Exception as e:
         return jsonify({"error": f"Could not send email: {str(e)}"}), 500
 
     return jsonify({"message": "Code sent"})
 
-# ── Auth: Sign up ─────────────────────────────────────────────────────────────
+# ── Auth: Signup ──────────────────────────────────────────────────────────────
 @app.route("/auth/signup", methods=["POST"])
 def signup():
     data     = request.json
@@ -186,31 +178,26 @@ def signup():
         return jsonify({"error": "Password must be at least 6 characters"}), 400
 
     con = get_db()
-    row = con.execute(
-        "SELECT code, expires_at FROM verification_codes WHERE email=?", (email,)
-    ).fetchone()
-    if not row:
-        con.close()
-        return jsonify({"error": "No verification code found. Request a new one."}), 400
-    if row["code"] != code:
-        con.close()
-        return jsonify({"error": "Incorrect verification code"}), 400
-    if datetime.utcnow() > datetime.fromisoformat(row["expires_at"]):
-        con.close()
-        return jsonify({"error": "Verification code has expired"}), 400
+    cur = con.cursor()
 
-    existing = con.execute("SELECT id FROM users WHERE email=?", (email,)).fetchone()
-    if existing:
-        con.close()
-        return jsonify({"error": "An account with this email already exists"}), 400
+    cur.execute("SELECT code, expires_at FROM verification_codes WHERE email=%s", (email,))
+    row = cur.fetchone()
+    if not row:
+        con.close(); return jsonify({"error": "No verification code found."}), 400
+    if row[1] < datetime.utcnow() or row[0] != code:
+        con.close(); return jsonify({"error": "Invalid or expired code"}), 400
+
+    cur.execute("SELECT id FROM users WHERE email=%s", (email,))
+    if cur.fetchone():
+        con.close(); return jsonify({"error": "Email already registered"}), 400
 
     user_id  = str(uuid.uuid4())
     username = email.split("@")[0]
-    con.execute(
-        "INSERT INTO users (id, email, password, username, verified) VALUES (?,?,?,?,1)",
+    cur.execute(
+        "INSERT INTO users (id, email, password, username, verified) VALUES (%s,%s,%s,%s,1)",
         (user_id, email, generate_password_hash(password), username)
     )
-    con.execute("DELETE FROM verification_codes WHERE email=?", (email,))
+    cur.execute("DELETE FROM verification_codes WHERE email=%s", (email,))
     con.commit()
     con.close()
 
@@ -224,14 +211,16 @@ def login():
     email    = (data.get("email") or "").strip().lower()
     password = data.get("password", "")
 
-    con  = get_db()
-    user = con.execute("SELECT * FROM users WHERE email=?", (email,)).fetchone()
+    con = get_db()
+    cur = con.cursor()
+    cur.execute("SELECT id, password FROM users WHERE email=%s", (email,))
+    row = cur.fetchone()
     con.close()
 
-    if not user or not check_password_hash(user["password"], password):
+    if not row or not check_password_hash(row[1], password):
         return jsonify({"error": "Invalid email or password"}), 401
 
-    token = create_access_token(identity=user["id"])
+    token = create_access_token(identity=row[0])
     return jsonify({"token": token, "email": email})
 
 # ── Projects: List ────────────────────────────────────────────────────────────
@@ -239,13 +228,14 @@ def login():
 @jwt_required()
 def list_projects():
     user_id = get_jwt_identity()
-    con  = get_db()
-    rows = con.execute(
-        "SELECT id, name, language, project_type, hosted_url, updated_at FROM projects WHERE user_id=? ORDER BY updated_at DESC",
+    con = get_db(); cur = con.cursor()
+    cur.execute(
+        "SELECT id, name, language, project_type, hosted_url, updated_at FROM projects WHERE user_id=%s ORDER BY updated_at DESC",
         (user_id,)
-    ).fetchall()
+    )
+    rows = rows_to_dicts(cur, cur.fetchall())
     con.close()
-    return jsonify([dict(r) for r in rows])
+    return jsonify(rows)
 
 # ── Projects: Create ──────────────────────────────────────────────────────────
 @app.route("/projects", methods=["POST"])
@@ -258,30 +248,23 @@ def create_project():
     lang    = data.get("language", "python") if ptype == "single" else "html"
     proj_id = str(uuid.uuid4())[:8]
 
-    # Default files for multi/website
-    if ptype == "website":
+    if ptype == "repo":
         files = json.dumps([
             {"id": "f1", "name": "index.html",  "content": get_default_html(), "language": "html"},
             {"id": "f2", "name": "style.css",   "content": get_default_css(),  "language": "css"},
             {"id": "f3", "name": "script.js",   "content": "// script.js\nconsole.log('Hello!');", "language": "javascript"},
         ])
         code = ""
-    elif ptype == "multi":
-        files = json.dumps([
-            {"id": "f1", "name": "main.py", "content": get_default_code("python"), "language": "python"},
-        ])
-        code = ""
     else:
         files = "[]"
         code  = get_default_code(lang)
 
-    con = get_db()
-    con.execute(
-        "INSERT INTO projects (id, user_id, name, language, code, project_type, files) VALUES (?,?,?,?,?,?,?)",
+    con = get_db(); cur = con.cursor()
+    cur.execute(
+        "INSERT INTO projects (id, user_id, name, language, code, project_type, files) VALUES (%s,%s,%s,%s,%s,%s,%s)",
         (proj_id, user_id, name, lang, code, ptype, files)
     )
-    con.commit()
-    con.close()
+    con.commit(); con.close()
     return jsonify({"id": proj_id, "name": name, "language": lang, "project_type": ptype})
 
 # ── Projects: Get ─────────────────────────────────────────────────────────────
@@ -289,20 +272,14 @@ def create_project():
 @jwt_required()
 def get_project(proj_id):
     user_id = get_jwt_identity()
-    con = get_db()
-    row = con.execute(
-        "SELECT * FROM projects WHERE id=? AND user_id=?", (proj_id, user_id)
-    ).fetchone()
+    con = get_db(); cur = con.cursor()
+    cur.execute("SELECT * FROM projects WHERE id=%s AND user_id=%s", (proj_id, user_id))
+    row = row_to_dict(cur, cur.fetchone())
     con.close()
-    if not row:
-        return jsonify({"error": "Project not found"}), 404
-    d = dict(row)
-    # Parse files JSON
-    try:
-        d["files"] = json.loads(d.get("files") or "[]")
-    except:
-        d["files"] = []
-    return jsonify(d)
+    if not row: return jsonify({"error": "Not found"}), 404
+    try:    row["files"] = json.loads(row.get("files") or "[]")
+    except: row["files"] = []
+    return jsonify(row)
 
 # ── Projects: Update ──────────────────────────────────────────────────────────
 @app.route("/projects/<proj_id>", methods=["PUT"])
@@ -310,32 +287,19 @@ def get_project(proj_id):
 def update_project(proj_id):
     user_id = get_jwt_identity()
     data    = request.json
-    con     = get_db()
+    con = get_db(); cur = con.cursor()
 
-    # Build update dynamically
-    fields = []
-    values = []
-
-    if "name" in data:
-        fields.append("name=?"); values.append(data["name"])
-    if "code" in data:
-        fields.append("code=?"); values.append(data.get("code", ""))
-    if "language" in data:
-        fields.append("language=?"); values.append(data.get("language", "python"))
-    if "files" in data:
-        fields.append("files=?"); values.append(json.dumps(data["files"]))
-    if "hosted_url" in data:
-        fields.append("hosted_url=?"); values.append(data.get("hosted_url"))
-
-    fields.append("updated_at=?"); values.append(datetime.utcnow())
+    fields, values = [], []
+    if "name"       in data: fields.append("name=%s");        values.append(data["name"])
+    if "code"       in data: fields.append("code=%s");        values.append(data.get("code",""))
+    if "language"   in data: fields.append("language=%s");    values.append(data.get("language","python"))
+    if "files"      in data: fields.append("files=%s");       values.append(json.dumps(data["files"]))
+    if "hosted_url" in data: fields.append("hosted_url=%s");  values.append(data.get("hosted_url"))
+    fields.append("updated_at=%s"); values.append(datetime.utcnow())
     values.extend([proj_id, user_id])
 
-    con.execute(
-        f"UPDATE projects SET {', '.join(fields)} WHERE id=? AND user_id=?",
-        values
-    )
-    con.commit()
-    con.close()
+    cur.execute(f"UPDATE projects SET {', '.join(fields)} WHERE id=%s AND user_id=%s", values)
+    con.commit(); con.close()
     return jsonify({"message": "Saved"})
 
 # ── Projects: Delete ──────────────────────────────────────────────────────────
@@ -343,13 +307,12 @@ def update_project(proj_id):
 @jwt_required()
 def delete_project(proj_id):
     user_id = get_jwt_identity()
-    con = get_db()
-    con.execute("DELETE FROM projects WHERE id=? AND user_id=?", (proj_id, user_id))
-    con.commit()
-    con.close()
+    con = get_db(); cur = con.cursor()
+    cur.execute("DELETE FROM projects WHERE id=%s AND user_id=%s", (proj_id, user_id))
+    con.commit(); con.close()
     return jsonify({"message": "Deleted"})
 
-# ── Website Hosting ───────────────────────────────────────────────────────────
+# ── Host website ──────────────────────────────────────────────────────────────
 @app.route("/projects/<proj_id>/host", methods=["POST"])
 @jwt_required()
 def host_project(proj_id):
@@ -357,67 +320,44 @@ def host_project(proj_id):
     data    = request.json
     files   = data.get("files", [])
 
-    # Verify ownership
-    con = get_db()
-    row = con.execute("SELECT id FROM projects WHERE id=? AND user_id=?", (proj_id, user_id)).fetchone()
-    if not row:
-        con.close()
-        return jsonify({"error": "Project not found"}), 404
+    con = get_db(); cur = con.cursor()
+    cur.execute("SELECT id FROM projects WHERE id=%s AND user_id=%s", (proj_id, user_id))
+    if not cur.fetchone():
+        con.close(); return jsonify({"error": "Not found"}), 404
 
-    # Write files to sites directory
     site_dir = os.path.join(SITES_DIR, proj_id)
     os.makedirs(site_dir, exist_ok=True)
-
     for f in files:
-        fname   = f.get("name", "index.html")
-        content = f.get("content", "")
-        # Security: prevent path traversal
-        safe_name = os.path.basename(fname)
-        with open(os.path.join(site_dir, safe_name), "w", encoding="utf-8") as fp:
-            fp.write(content)
+        safe = os.path.basename(f.get("name","index.html"))
+        with open(os.path.join(site_dir, safe), "w", encoding="utf-8") as fp:
+            fp.write(f.get("content",""))
 
-    # Build public URL
-    base_url = os.environ.get("RENDER_EXTERNAL_URL", "https://codesponge-backend.onrender.com")
-    url      = f"{base_url}/sites/{proj_id}/index.html"
+    base = os.environ.get("RENDER_EXTERNAL_URL","https://codesponge-backend.onrender.com")
+    url  = f"{base}/sites/{proj_id}/index.html"
 
-    # Save hosted_url to project
-    con.execute(
-        "UPDATE projects SET hosted_url=?, updated_at=? WHERE id=?",
-        (url, datetime.utcnow(), proj_id)
-    )
-    con.commit()
-    con.close()
-
+    cur.execute("UPDATE projects SET hosted_url=%s, updated_at=%s WHERE id=%s", (url, datetime.utcnow(), proj_id))
+    con.commit(); con.close()
     return jsonify({"url": url})
 
-# Serve hosted sites
 @app.route("/sites/<proj_id>/<path:filename>")
 def serve_site(proj_id, filename):
-    safe_name = os.path.basename(filename)
-    site_dir  = os.path.join(SITES_DIR, proj_id)
-    return send_from_directory(site_dir, safe_name)
+    return send_from_directory(os.path.join(SITES_DIR, proj_id), os.path.basename(filename))
 
-# ── Run Code ──────────────────────────────────────────────────────────────────
+# ── Run code ──────────────────────────────────────────────────────────────────
 @app.route("/run", methods=["POST"])
 @jwt_required()
 def run_code():
-    data     = request.json
-    language = data.get("language")
-    code     = data.get("code", "")
+    data = request.json
+    lang = data.get("language")
+    code = data.get("code","")
     try:
-        if language == "python":
-            result = run_python(code)
-        elif language == "javascript":
-            result = run_javascript(code)
-        elif language == "cpp":
-            result = run_cpp(code)
-        elif language == "html":
-            return jsonify({"output": "", "error": ""})
-        else:
-            return jsonify({"error": "Unsupported language"}), 400
-        return jsonify(result)
+        if lang == "python":     return jsonify(run_python(code))
+        if lang == "javascript": return jsonify(run_javascript(code))
+        if lang == "cpp":        return jsonify(run_cpp(code))
+        if lang == "html":       return jsonify({"output":"","error":""})
+        return jsonify({"error": "Unsupported language"}), 400
     except Exception as e:
-        return jsonify({"output": "", "error": str(e)})
+        return jsonify({"output":"","error":str(e)})
 
 def run_python(code):
     with tempfile.NamedTemporaryFile(suffix=".py", delete=False, mode="w") as f:
@@ -440,11 +380,10 @@ def run_javascript(code):
 def run_cpp(code):
     with tempfile.NamedTemporaryFile(suffix=".cpp", delete=False, mode="w") as f:
         f.write(code); src = f.name
-    out = src.replace(".cpp", "")
+    out = src.replace(".cpp","")
     try:
         cp = subprocess.run(["g++", src, "-o", out], capture_output=True, text=True, timeout=15)
-        if cp.returncode != 0:
-            return {"output": "", "error": cp.stderr}
+        if cp.returncode != 0: return {"output":"","error":cp.stderr}
         rp = subprocess.run([out], capture_output=True, text=True, timeout=10)
         return {"output": rp.stdout, "error": rp.stderr}
     finally:
@@ -456,51 +395,42 @@ def run_cpp(code):
 def save_snippet():
     data = request.json
     sid  = str(uuid.uuid4())[:8]
-    con  = get_db()
-    con.execute("INSERT INTO snippets (id, language, code) VALUES (?,?,?)",
+    con  = get_db(); cur = con.cursor()
+    cur.execute("INSERT INTO snippets (id, language, code) VALUES (%s,%s,%s)",
                 (sid, data.get("language"), data.get("code")))
     con.commit(); con.close()
     return jsonify({"id": sid})
 
 @app.route("/snippets/<sid>", methods=["GET"])
 def get_snippet(sid):
-    con = get_db()
-    row = con.execute("SELECT language, code FROM snippets WHERE id=?", (sid,)).fetchone()
+    con = get_db(); cur = con.cursor()
+    cur.execute("SELECT language, code FROM snippets WHERE id=%s", (sid,))
+    row = row_to_dict(cur, cur.fetchone())
     con.close()
-    if row: return jsonify(dict(row))
+    if row: return jsonify(row)
     return jsonify({"error": "Not found"}), 404
 
-# ── Community: List posts ─────────────────────────────────────────────────────
+# ── Community: List ───────────────────────────────────────────────────────────
 @app.route("/community", methods=["GET"])
 def list_community():
-    sort   = request.args.get("sort", "recent")   # recent | trending | top
-    lang   = request.args.get("language", "")
-    search = request.args.get("q", "").strip()
-    limit  = min(int(request.args.get("limit", 20)), 50)
-    offset = int(request.args.get("offset", 0))
-
+    sort   = request.args.get("sort","recent")
+    lang   = request.args.get("language","")
+    search = request.args.get("q","").strip()
+    limit  = min(int(request.args.get("limit",20)),50)
+    offset = int(request.args.get("offset",0))
     viewer_id = optional_jwt_identity()
 
-    order = {
-        "trending": "cp.views DESC, cp.likes DESC",
-        "top":      "cp.likes DESC",
-        "recent":   "cp.published_at DESC",
-    }.get(sort, "cp.published_at DESC")
+    order = {"trending":"cp.views DESC, cp.likes DESC","top":"cp.likes DESC","recent":"cp.published_at DESC"}.get(sort,"cp.published_at DESC")
 
-    where_clauses = []
-    params        = []
-
-    if lang:
-        where_clauses.append("cp.language=?")
-        params.append(lang)
+    where, params = [], []
+    if lang:   where.append("cp.language=%s");   params.append(lang)
     if search:
-        where_clauses.append("(cp.title LIKE ? OR cp.description LIKE ? OR u.username LIKE ?)")
-        params.extend([f"%{search}%", f"%{search}%", f"%{search}%"])
+        where.append("(cp.title ILIKE %s OR cp.description ILIKE %s OR u.username ILIKE %s)")
+        params.extend([f"%{search}%",f"%{search}%",f"%{search}%"])
+    where_sql = ("WHERE " + " AND ".join(where)) if where else ""
 
-    where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
-
-    con  = get_db()
-    rows = con.execute(f"""
+    con = get_db(); cur = con.cursor()
+    cur.execute(f"""
         SELECT cp.id, cp.title, cp.description, cp.language, cp.project_type,
                cp.code, cp.files, cp.hosted_url,
                cp.likes, cp.forks, cp.views, cp.published_at,
@@ -508,140 +438,98 @@ def list_community():
                CASE WHEN pl.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_me
         FROM community_posts cp
         JOIN users u ON cp.user_id = u.id
-        LEFT JOIN post_likes pl ON pl.post_id = cp.id AND pl.user_id = ?
+        LEFT JOIN post_likes pl ON pl.post_id = cp.id AND pl.user_id = %s
         {where_sql}
         ORDER BY {order}
-        LIMIT ? OFFSET ?
-    """, [viewer_id or "", *params, limit, offset]).fetchall()
+        LIMIT %s OFFSET %s
+    """, [viewer_id or "", *params, limit, offset])
+    rows = rows_to_dicts(cur, cur.fetchall())
 
-    total = con.execute(f"""
-        SELECT COUNT(*) FROM community_posts cp
-        JOIN users u ON cp.user_id = u.id
-        {where_sql}
-    """, params).fetchone()[0]
-
+    cur.execute(f"SELECT COUNT(*) FROM community_posts cp JOIN users u ON cp.user_id=u.id {where_sql}", params)
+    total = cur.fetchone()[0]
     con.close()
 
-    result = []
     for r in rows:
-        d = dict(r)
-        # Truncate code preview
-        code = d.get("code") or ""
+        code = r.get("code") or ""
         try:
-            files = json.loads(d.get("files") or "[]")
-            if files and not code:
-                code = files[0].get("content", "")
-        except:
-            files = []
-        d["code_preview"] = code[:400]
-        d["files"]        = files
-        del d["code"]
-        result.append(d)
+            files = json.loads(r.get("files") or "[]")
+            if files and not code: code = files[0].get("content","")
+        except: files = []
+        r["code_preview"] = code[:400]
+        r["files"] = files
+        del r["code"]
 
-    return jsonify({"posts": result, "total": total})
+    return jsonify({"posts": rows, "total": total})
 
-# ── Community: Publish project ────────────────────────────────────────────────
+# ── Community: Publish ────────────────────────────────────────────────────────
 @app.route("/community/publish", methods=["POST"])
 @jwt_required()
 def publish_project():
     user_id = get_jwt_identity()
     data    = request.json
+    proj_id = data.get("project_id")
+    title   = (data.get("title") or "").strip()
+    desc    = (data.get("description") or "").strip()
+    if not title: return jsonify({"error": "Title required"}), 400
 
-    proj_id     = data.get("project_id")
-    title       = (data.get("title") or "").strip()
-    description = (data.get("description") or "").strip()
-
-    if not title:
-        return jsonify({"error": "Title is required"}), 400
-
-    # Load project if project_id given
-    code  = data.get("code", "")
-    files = data.get("files", [])
-    lang  = data.get("language", "")
-    ptype = data.get("project_type", "single")
-    hosted_url = data.get("hosted_url")
-
+    code=""; files=[]; lang=""; ptype="single"; hosted_url=None
     if proj_id:
-        con = get_db()
-        row = con.execute("SELECT * FROM projects WHERE id=? AND user_id=?", (proj_id, user_id)).fetchone()
-        con.close()
-        if row:
-            p     = dict(row)
-            code  = p.get("code", "")
-            lang  = p.get("language", "")
-            ptype = p.get("project_type", "single")
-            hosted_url = p.get("hosted_url")
-            try:
-                files = json.loads(p.get("files") or "[]")
-            except:
-                files = []
+        con = get_db(); cur = con.cursor()
+        cur.execute("SELECT * FROM projects WHERE id=%s AND user_id=%s", (proj_id, user_id))
+        p = row_to_dict(cur, cur.fetchone()); con.close()
+        if p:
+            code=p.get("code",""); lang=p.get("language",""); ptype=p.get("project_type","single"); hosted_url=p.get("hosted_url")
+            try: files=json.loads(p.get("files") or "[]")
+            except: files=[]
 
     post_id = str(uuid.uuid4())[:8]
-    con     = get_db()
-    con.execute("""
-        INSERT INTO community_posts
-        (id, user_id, project_id, title, description, language, project_type, code, files, hosted_url)
-        VALUES (?,?,?,?,?,?,?,?,?,?)
-    """, (post_id, user_id, proj_id, title, description, lang, ptype,
-          code, json.dumps(files), hosted_url))
-    con.commit()
-    con.close()
-
+    con = get_db(); cur = con.cursor()
+    cur.execute("""
+        INSERT INTO community_posts (id,user_id,project_id,title,description,language,project_type,code,files,hosted_url)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+    """, (post_id, user_id, proj_id, title, desc, lang, ptype, code, json.dumps(files), hosted_url))
+    con.commit(); con.close()
     return jsonify({"id": post_id, "message": "Published!"})
 
-# ── Community: Get single post ────────────────────────────────────────────────
+# ── Community: Get post ───────────────────────────────────────────────────────
 @app.route("/community/<post_id>", methods=["GET"])
 def get_post(post_id):
     viewer_id = optional_jwt_identity()
-    con  = get_db()
-
-    # Increment view count
-    con.execute("UPDATE community_posts SET views = views + 1 WHERE id=?", (post_id,))
-    con.commit()
-
-    row = con.execute("""
+    con = get_db(); cur = con.cursor()
+    cur.execute("UPDATE community_posts SET views=views+1 WHERE id=%s", (post_id,))
+    cur.execute("""
         SELECT cp.*, u.username, u.email, u.bio,
                CASE WHEN pl.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_me
         FROM community_posts cp
-        JOIN users u ON cp.user_id = u.id
-        LEFT JOIN post_likes pl ON pl.post_id = cp.id AND pl.user_id = ?
-        WHERE cp.id=?
-    """, (viewer_id or "", post_id)).fetchone()
-    con.close()
+        JOIN users u ON cp.user_id=u.id
+        LEFT JOIN post_likes pl ON pl.post_id=cp.id AND pl.user_id=%s
+        WHERE cp.id=%s
+    """, (viewer_id or "", post_id))
+    row = row_to_dict(cur, cur.fetchone())
+    con.commit(); con.close()
+    if not row: return jsonify({"error": "Not found"}), 404
+    try: row["files"] = json.loads(row.get("files") or "[]")
+    except: row["files"] = []
+    return jsonify(row)
 
-    if not row:
-        return jsonify({"error": "Post not found"}), 404
-
-    d = dict(row)
-    try:
-        d["files"] = json.loads(d.get("files") or "[]")
-    except:
-        d["files"] = []
-    return jsonify(d)
-
-# ── Community: Like / Unlike ──────────────────────────────────────────────────
+# ── Community: Like ───────────────────────────────────────────────────────────
 @app.route("/community/<post_id>/like", methods=["POST"])
 @jwt_required()
 def like_post(post_id):
     user_id = get_jwt_identity()
-    con     = get_db()
-
-    existing = con.execute(
-        "SELECT 1 FROM post_likes WHERE user_id=? AND post_id=?", (user_id, post_id)
-    ).fetchone()
-
-    if existing:
-        con.execute("DELETE FROM post_likes WHERE user_id=? AND post_id=?", (user_id, post_id))
-        con.execute("UPDATE community_posts SET likes = MAX(0, likes-1) WHERE id=?", (post_id,))
+    con = get_db(); cur = con.cursor()
+    cur.execute("SELECT 1 FROM post_likes WHERE user_id=%s AND post_id=%s", (user_id, post_id))
+    if cur.fetchone():
+        cur.execute("DELETE FROM post_likes WHERE user_id=%s AND post_id=%s", (user_id, post_id))
+        cur.execute("UPDATE community_posts SET likes=GREATEST(0,likes-1) WHERE id=%s", (post_id,))
         liked = False
     else:
-        con.execute("INSERT INTO post_likes (user_id, post_id) VALUES (?,?)", (user_id, post_id))
-        con.execute("UPDATE community_posts SET likes = likes+1 WHERE id=?", (post_id,))
+        cur.execute("INSERT INTO post_likes (user_id,post_id) VALUES (%s,%s)", (user_id, post_id))
+        cur.execute("UPDATE community_posts SET likes=likes+1 WHERE id=%s", (post_id,))
         liked = True
-
-    likes = con.execute("SELECT likes FROM community_posts WHERE id=?", (post_id,)).fetchone()["likes"]
-    con.commit()
-    con.close()
+    cur.execute("SELECT likes FROM community_posts WHERE id=%s", (post_id,))
+    likes = cur.fetchone()[0]
+    con.commit(); con.close()
     return jsonify({"liked": liked, "likes": likes})
 
 # ── Community: Fork ───────────────────────────────────────────────────────────
@@ -649,96 +537,49 @@ def like_post(post_id):
 @jwt_required()
 def fork_post(post_id):
     user_id = get_jwt_identity()
-    con     = get_db()
+    con = get_db(); cur = con.cursor()
+    cur.execute("SELECT * FROM community_posts WHERE id=%s", (post_id,))
+    p = row_to_dict(cur, cur.fetchone())
+    if not p: con.close(); return jsonify({"error": "Not found"}), 404
 
-    post = con.execute("SELECT * FROM community_posts WHERE id=?", (post_id,)).fetchone()
-    if not post:
-        con.close()
-        return jsonify({"error": "Post not found"}), 404
-
-    p       = dict(post)
     proj_id = str(uuid.uuid4())[:8]
-    name    = "Fork of " + p["title"]
-
-    con.execute(
-        "INSERT INTO projects (id, user_id, name, language, code, project_type, files) VALUES (?,?,?,?,?,?,?)",
-        (proj_id, user_id, name, p.get("language","python"),
-         p.get("code",""), p.get("project_type","single"), p.get("files","[]"))
+    cur.execute(
+        "INSERT INTO projects (id,user_id,name,language,code,project_type,files) VALUES (%s,%s,%s,%s,%s,%s,%s)",
+        (proj_id, user_id, "Fork of "+p["title"], p.get("language","python"), p.get("code",""), p.get("project_type","single"), p.get("files","[]"))
     )
-    con.execute("UPDATE community_posts SET forks = forks+1 WHERE id=?", (post_id,))
-    con.commit()
-    con.close()
+    cur.execute("UPDATE community_posts SET forks=forks+1 WHERE id=%s", (post_id,))
+    con.commit(); con.close()
+    return jsonify({"project_id": proj_id, "project_type": p.get("project_type","single"), "message": "Forked!"})
 
-    return jsonify({
-        "project_id":   proj_id,
-        "project_type": p.get("project_type", "single"),
-        "message":      "Forked!"
-    })
-
-# ── Community: Delete post ────────────────────────────────────────────────────
+# ── Community: Delete ─────────────────────────────────────────────────────────
 @app.route("/community/<post_id>", methods=["DELETE"])
 @jwt_required()
 def delete_post(post_id):
     user_id = get_jwt_identity()
-    con     = get_db()
-    con.execute("DELETE FROM community_posts WHERE id=? AND user_id=?", (post_id, user_id))
-    con.execute("DELETE FROM post_likes WHERE post_id=?", (post_id,))
-    con.commit()
-    con.close()
+    con = get_db(); cur = con.cursor()
+    cur.execute("DELETE FROM community_posts WHERE id=%s AND user_id=%s", (post_id, user_id))
+    cur.execute("DELETE FROM post_likes WHERE post_id=%s", (post_id,))
+    con.commit(); con.close()
     return jsonify({"message": "Deleted"})
 
 # ── User profile ──────────────────────────────────────────────────────────────
 @app.route("/users/<username>", methods=["GET"])
 def get_profile(username):
-    con  = get_db()
-    user = con.execute(
-        "SELECT id, username, email, bio, created_at FROM users WHERE username=?", (username,)
-    ).fetchone()
-    if not user:
-        con.close()
-        return jsonify({"error": "User not found"}), 404
-
-    posts = con.execute("""
-        SELECT id, title, description, language, project_type, hosted_url,
-               likes, forks, views, published_at
-        FROM community_posts WHERE user_id=? ORDER BY published_at DESC
-    """, (user["id"],)).fetchall()
+    con = get_db(); cur = con.cursor()
+    cur.execute("SELECT id, username, email, bio, created_at FROM users WHERE username=%s", (username,))
+    user = row_to_dict(cur, cur.fetchone())
+    if not user: con.close(); return jsonify({"error": "Not found"}), 404
+    cur.execute("SELECT id,title,description,language,project_type,hosted_url,likes,forks,views,published_at FROM community_posts WHERE user_id=%s ORDER BY published_at DESC", (user["id"],))
+    posts = rows_to_dicts(cur, cur.fetchall())
     con.close()
+    return jsonify({"username":user["username"],"email":user["email"],"bio":user["bio"],"created_at":str(user["created_at"]),"posts":posts})
 
-    return jsonify({
-        "username":   user["username"],
-        "email":      user["email"],
-        "bio":        user["bio"],
-        "created_at": user["created_at"],
-        "posts":      [dict(p) for p in posts],
-    })
-
-# ── Default content helpers ───────────────────────────────────────────────────
+# ── Default content ───────────────────────────────────────────────────────────
 def get_default_html():
-    return '''<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>My Website</title>
-  <link rel="stylesheet" href="style.css"/>
-</head>
-<body>
-  <h1>Hello, World!</h1>
-  <p>Edit index.html, style.css and script.js to build your site.</p>
-  <script src="script.js"></script>
-</body>
-</html>'''
+    return '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8"/>\n  <title>My Website</title>\n  <link rel="stylesheet" href="style.css"/>\n</head>\n<body>\n  <h1>Hello, World!</h1>\n  <script src="script.js"></script>\n</body>\n</html>'
 
 def get_default_css():
-    return '''*, *::before, *::after { box-sizing: border-box; }
-body {
-  font-family: sans-serif;
-  margin: 0; padding: 40px;
-  background: #0d1117;
-  color: #e6edf3;
-}
-h1 { font-size: 2rem; margin-bottom: 12px; }'''
+    return '*, *::before, *::after { box-sizing: border-box; }\nbody {\n  font-family: sans-serif;\n  margin: 0; padding: 40px;\n  background: #0d1117;\n  color: #e6edf3;\n}\nh1 { font-size: 2rem; }'
 
 if __name__ == "__main__":
     app.run(debug=True)
