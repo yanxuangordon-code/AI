@@ -9,333 +9,164 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; }
 html, body { height: 100%; overflow: hidden; margin: 0; font-family: 'Inter', sans-serif; }
-
 :root {
-  --accent:  #4f8ef7;
-  --success: #3fb950;
-  --danger:  #f85149;
-  --warning: #e3b341;
-  --purple:  #a371f7;
-  --surface: #0d1117;
-  --surface2:#161b22;
-  --surface3:#1c2128;
-  --surface4:#22272e;
-  --border:  rgba(255,255,255,.08);
-  --text:    #e6edf3;
-  --muted:   #7d8590;
-  --mono:    'JetBrains Mono', monospace;
+  --accent:#4f8ef7; --success:#3fb950; --danger:#f85149; --warning:#e3b341; --purple:#a371f7;
+  --surface:#0d1117; --surface2:#161b22; --surface3:#1c2128; --surface4:#22272e;
+  --border:rgba(255,255,255,.08); --text:#e6edf3; --muted:#7d8590; --mono:'JetBrains Mono',monospace;
 }
-
-/* ── Layout ── */
-.layout { display: flex; flex-direction: column; height: 100vh; }
-
-/* ── Topbar ── */
-.topbar {
-  height: 50px; flex-shrink: 0;
-  background: var(--surface2); border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 7px; padding: 0 12px;
-  user-select: none; z-index: 20;
-}
-.brand { display: flex; align-items: center; gap: 7px; text-decoration: none; color: var(--text); font-weight: 800; font-size: 14px; flex-shrink: 0; }
-.brand-icon { width: 24px; height: 24px; border-radius: 6px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff; flex-shrink: 0; }
-.brand-text span { color: var(--accent); }
-.tb-sep { width: 1px; height: 18px; background: var(--border); flex-shrink: 0; margin: 0 2px; }
-
-.proj-name-input {
-  background: none; border: none; color: var(--text);
-  font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif;
-  outline: none; padding: 3px 7px; border-radius: 6px;
-  transition: background .15s; max-width: 200px;
-  border-bottom: 1px solid transparent;
-}
-.proj-name-input:hover { background: var(--surface3); }
-.proj-name-input:focus { background: var(--surface3); box-shadow: 0 0 0 1px var(--accent); }
-
-/* Language badge — read-only, shown instead of dropdown */
-.lang-badge-pill {
-  display: flex; align-items: center; gap: 5px;
-  background: var(--surface3); border: 1px solid var(--border);
-  border-radius: 6px; padding: 3px 9px;
-  font-size: 11px; font-weight: 700; color: var(--muted);
-  flex-shrink: 0; cursor: default;
-}
-.lang-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-
-.tb-spacer { flex: 1; }
-
-.save-pill { display: flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 20px; background: var(--surface3); border: 1px solid var(--border); font-size: 11px; font-weight: 500; color: var(--muted); }
-.save-dot  { width: 6px; height: 6px; border-radius: 50%; background: var(--success); flex-shrink: 0; transition: background .2s; }
-.save-pill.saving .save-dot { background: var(--warning); animation: pulse 1s infinite; }
-.save-pill.error  .save-dot { background: var(--danger); }
-.save-pill.saving { color: var(--warning); }
-.save-pill.error  { color: var(--danger); }
-@keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
-@keyframes spin  { to{transform:rotate(360deg)} }
-
-.tb-btn {
-  background: var(--surface3); border: 1px solid var(--border); color: var(--text);
-  border-radius: 7px; padding: 5px 11px; font-size: 11px; font-weight: 600;
-  font-family: 'Inter', sans-serif; cursor: pointer; transition: all .15s;
-  display: flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0;
-}
-.tb-btn:hover { border-color: rgba(255,255,255,.2); background: var(--surface4); }
-.tb-btn:disabled { opacity:.5; cursor:not-allowed; }
-.tb-btn.purple { background: rgba(163,113,247,.15); border-color: rgba(163,113,247,.3); color: var(--purple); }
-.tb-btn.purple:hover { background: rgba(163,113,247,.25); }
-.tb-btn.community { background: rgba(79,142,247,.12); border-color: rgba(79,142,247,.3); color: var(--accent); }
-.tb-btn.community:hover { background: rgba(79,142,247,.2); }
-.run-btn {
-  background: var(--success); border: 1px solid transparent; color: #0a1628;
-  font-weight: 700; font-size: 11px; font-family: 'Inter', sans-serif;
-  padding: 5px 14px; border-radius: 7px; cursor: pointer; transition: all .15s;
-  display: flex; align-items: center; gap: 5px; flex-shrink: 0;
-}
-.run-btn:hover { background: #46c55a; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(63,185,80,.3); }
-.run-btn:active { transform: none; }
-.run-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; box-shadow:none; }
-
-/* ── Body row ── */
-.body-row { display: flex; flex: 1; overflow: hidden; min-height: 0; position: relative; }
-
-/* ── Loading overlay ── */
-#load-overlay {
-  position: absolute; inset: 0; background: var(--surface);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 14px; z-index: 50; transition: opacity .3s;
-}
-.load-spin { width: 30px; height: 30px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
-#load-msg  { font-size: 13px; color: var(--text); font-weight: 500; margin: 0; }
-#load-hint { font-size: 11px; color: var(--muted); opacity: 0; transition: opacity .5s; margin: 0; max-width: 260px; text-align: center; line-height: 1.6; }
-#load-hint.show { opacity: 1; }
-
-/* ── Sidebar ── */
-.sidebar {
-  width: 220px; flex-shrink: 0;
-  background: var(--surface2); border-right: 1px solid var(--border);
-  display: flex; flex-direction: column; overflow: hidden;
-}
-.sb-header {
-  padding: 9px 11px 7px;
-  display: flex; align-items: center; justify-content: space-between;
-  border-bottom: 1px solid var(--border); flex-shrink: 0;
-}
-.sb-title { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
-.icon-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 3px 4px; border-radius: 4px; display: flex; align-items: center; transition: all .15s; }
-.icon-btn:hover { background: var(--surface3); color: var(--text); }
-
-.file-tree { flex: 1; overflow-y: auto; padding: 4px 0; }
-.file-tree::-webkit-scrollbar { width: 4px; }
-.file-tree::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-.file-item {
-  display: flex; align-items: center; gap: 7px;
-  padding: 5px 11px; cursor: pointer;
-  font-size: 12px; color: var(--muted);
-  border-left: 2px solid transparent;
-  transition: all .1s; user-select: none;
-}
-.file-item:hover { background: var(--surface3); color: var(--text); }
-.file-item.active { background: var(--surface3); color: var(--text); border-left-color: var(--accent); }
-.fi-icon { font-size: 13px; flex-shrink: 0; }
-.fi-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.fi-unsaved { color: var(--warning); font-size: 9px; flex-shrink: 0; }
-.fi-actions { display: none; gap: 2px; flex-shrink: 0; }
-.file-item:hover .fi-actions { display: flex; }
-.fi-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 2px 4px; border-radius: 3px; font-size: 11px; line-height: 1; transition: all .1s; }
-.fi-btn:hover { background: var(--surface4); color: var(--text); }
-.fi-btn.del:hover { color: var(--danger); }
-
-/* ── Center: editor + output ── */
-.center-row { display: flex; flex: 1; overflow: hidden; min-width: 0; }
-
-/* ── Editor area ── */
-.editor-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
-.tabs-bar {
-  height: 35px; flex-shrink: 0;
-  background: var(--surface); border-bottom: 1px solid var(--border);
-  display: flex; align-items: stretch; overflow-x: auto; overflow-y: hidden;
-}
-.tabs-bar::-webkit-scrollbar { height: 0; }
-.tab {
-  display: flex; align-items: center; gap: 6px;
-  padding: 0 13px; border-right: 1px solid var(--border);
-  font-size: 12px; color: var(--muted); cursor: pointer; white-space: nowrap; flex-shrink: 0;
-  border-bottom: 2px solid transparent; transition: color .1s;
-}
-.tab:hover { color: var(--text); background: var(--surface2); }
-.tab.active { color: var(--text); border-bottom-color: var(--accent); background: var(--surface2); }
-.tab-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--warning); display: none; }
-.tab.unsaved .tab-dot { display: block; }
-.tab-x { opacity: 0; background: none; border: none; color: var(--muted); cursor: pointer; padding: 1px 3px; border-radius: 3px; font-size: 13px; line-height: 1; }
-.tab:hover .tab-x { opacity: 1; }
-.tab-x:hover { background: var(--surface4); color: var(--text); }
-
-.monaco-wrap { flex: 1; position: relative; overflow: hidden; }
-#monaco-editor { position: absolute; inset: 0; }
-
-/* ── Resizer ── */
-.resizer {
-  width: 5px; flex-shrink: 0; background: var(--border);
-  cursor: col-resize; position: relative; z-index: 5; transition: background .15s;
-}
-.resizer::before { content:''; position:absolute; top:0;bottom:0;left:-5px;right:-5px; }
-.resizer:hover, .resizer.drag { background: var(--accent); }
-
-/* ── Output panel ── */
-.out-panel {
-  flex-shrink: 0; display: flex; flex-direction: column;
-  background: var(--surface2); min-width: 160px; overflow: hidden;
-}
-.out-header {
-  height: 35px; flex-shrink: 0;
-  display: flex; align-items: stretch;
-  border-bottom: 1px solid var(--border);
-}
-.out-tab {
-  display: flex; align-items: center; padding: 0 13px;
-  font-size: 11px; font-weight: 600; color: var(--muted); cursor: pointer;
-  border-bottom: 2px solid transparent; white-space: nowrap; transition: color .1s;
-}
-.out-tab:hover { color: var(--text); }
-.out-tab.active { color: var(--text); border-bottom-color: var(--accent); }
-.out-spacer { flex: 1; }
-.clear-btn { background: none; border: none; color: var(--muted); font-size: 11px; cursor: pointer; padding: 0 10px; font-family: 'Inter', sans-serif; transition: color .15s; }
-.clear-btn:hover { color: var(--text); }
-
-.out-body { flex: 1; overflow-y: auto; padding: 12px 14px; min-height: 0; }
-.out-body::-webkit-scrollbar { width: 4px; }
-.out-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-#out-pre { font-family: var(--mono); font-size: 12px; white-space: pre-wrap; line-height: 1.75; margin: 0; color: var(--success); }
-#out-pre.idle    { color: var(--muted); }
-#out-pre.error   { color: var(--danger); }
-#out-pre.running { color: var(--warning); }
-#html-frame { flex: 1; border: none; background: #fff; display: none; min-height: 0; }
-
-/* ── Status bar ── */
-.statusbar {
-  height: 22px; flex-shrink: 0; background: var(--accent);
-  display: flex; align-items: center; padding: 0 12px; gap: 12px;
-}
-.sb-item { font-size: 10px; color: rgba(255,255,255,.8); white-space: nowrap; }
-.sb-item b { color: #fff; font-weight: 700; }
-.sb-right { margin-left: auto; display: flex; gap: 12px; }
-.sb-dot { opacity: .35; }
-
-/* ── Modals ── */
-.modal-back { position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;z-index:200; }
-.modal-back.open { display:flex; }
-.modal-box { background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:24px;width:420px;max-width:94vw;box-shadow:0 24px 64px rgba(0,0,0,.7);animation:modal-in .18s ease; }
+.layout { display:flex;flex-direction:column;height:100vh; }
+.topbar { height:50px;flex-shrink:0;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;padding:0 12px;user-select:none;z-index:20; }
+.brand { display:flex;align-items:center;gap:7px;text-decoration:none;color:var(--text);font-weight:800;font-size:14px;flex-shrink:0; }
+.brand-icon { width:24px;height:24px;border-radius:6px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;flex-shrink:0; }
+.brand-text span { color:var(--accent); }
+.tb-sep { width:1px;height:18px;background:var(--border);flex-shrink:0;margin:0 2px; }
+.proj-name { background:none;border:none;color:var(--text);font-size:13px;font-weight:600;font-family:'Inter',sans-serif;outline:none;padding:3px 7px;border-radius:6px;transition:background .15s;max-width:200px;border-bottom:1px solid transparent; }
+.proj-name:hover { background:var(--surface3); }
+.proj-name:focus { background:var(--surface3);box-shadow:0 0 0 1px var(--accent); }
+.lang-badge { display:flex;align-items:center;gap:5px;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;cursor:default; }
+.lang-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+.tb-spacer { flex:1; }
+.save-pill { display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;background:var(--surface3);border:1px solid var(--border);font-size:11px;font-weight:500;color:var(--muted); }
+.save-dot { width:6px;height:6px;border-radius:50%;background:var(--success);flex-shrink:0;transition:background .2s; }
+.save-pill.saving .save-dot{background:var(--warning);animation:pulse 1s infinite;} .save-pill.error .save-dot{background:var(--danger);}
+.save-pill.saving{color:var(--warning);} .save-pill.error{color:var(--danger);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}} @keyframes spin{to{transform:rotate(360deg)}}
+.tb-btn { background:var(--surface3);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:5px 11px;font-size:11px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0; }
+.tb-btn:hover{border-color:rgba(255,255,255,.2);background:var(--surface4);}
+.tb-btn:disabled{opacity:.5;cursor:not-allowed;}
+.tb-btn.purple{background:rgba(163,113,247,.15);border-color:rgba(163,113,247,.3);color:var(--purple);}
+.tb-btn.purple:hover{background:rgba(163,113,247,.25);}
+.tb-btn.community{background:rgba(79,142,247,.12);border-color:rgba(79,142,247,.3);color:var(--accent);}
+.tb-btn.community:hover{background:rgba(79,142,247,.2);}
+.run-btn { background:var(--success);border:none;color:#0a1628;font-weight:700;font-size:11px;font-family:'Inter',sans-serif;padding:5px 14px;border-radius:7px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;flex-shrink:0; }
+.run-btn:hover{background:#46c55a;transform:translateY(-1px);box-shadow:0 4px 10px rgba(63,185,80,.3);}
+.run-btn:active{transform:none;} .run-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;}
+.body-row { display:flex;flex:1;overflow:hidden;min-height:0;position:relative; }
+#load-overlay { position:absolute;inset:0;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:50;transition:opacity .3s; }
+.load-spin { width:30px;height:30px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite; }
+#load-msg{font-size:13px;color:var(--text);font-weight:500;margin:0;}
+#load-hint{font-size:11px;color:var(--muted);opacity:0;transition:opacity .5s;margin:0;max-width:260px;text-align:center;line-height:1.6;}
+#load-hint.show{opacity:1;}
+.sidebar { width:220px;flex-shrink:0;background:var(--surface2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden; }
+.sb-header { padding:9px 11px 7px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0; }
+.sb-title { font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase; }
+.icon-btn { background:none;border:none;color:var(--muted);cursor:pointer;padding:3px 4px;border-radius:4px;display:flex;align-items:center;transition:all .15s; }
+.icon-btn:hover{background:var(--surface3);color:var(--text);}
+.file-tree{flex:1;overflow-y:auto;padding:4px 0;}
+.file-tree::-webkit-scrollbar{width:4px;} .file-tree::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.file-item { display:flex;align-items:center;gap:7px;padding:5px 11px;cursor:pointer;font-size:12px;color:var(--muted);border-left:2px solid transparent;transition:all .1s;user-select:none; }
+.file-item:hover{background:var(--surface3);color:var(--text);}
+.file-item.active{background:var(--surface3);color:var(--text);border-left-color:var(--accent);}
+.fi-icon{font-size:13px;flex-shrink:0;} .fi-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fi-unsaved{color:var(--warning);font-size:9px;flex-shrink:0;}
+.fi-actions{display:none;gap:2px;flex-shrink:0;} .file-item:hover .fi-actions{display:flex;}
+.fi-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:2px 4px;border-radius:3px;font-size:11px;line-height:1;transition:all .1s;}
+.fi-btn:hover{background:var(--surface4);color:var(--text);} .fi-btn.del:hover{color:var(--danger);}
+.center-row{display:flex;flex:1;overflow:hidden;min-width:0;}
+.editor-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.tabs-bar{height:35px;flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:stretch;overflow-x:auto;overflow-y:hidden;}
+.tabs-bar::-webkit-scrollbar{height:0;}
+.tab{display:flex;align-items:center;gap:6px;padding:0 13px;border-right:1px solid var(--border);font-size:12px;color:var(--muted);cursor:pointer;white-space:nowrap;flex-shrink:0;border-bottom:2px solid transparent;transition:color .1s;}
+.tab:hover{color:var(--text);background:var(--surface2);} .tab.active{color:var(--text);border-bottom-color:var(--accent);background:var(--surface2);}
+.tab-dot{width:6px;height:6px;border-radius:50%;background:var(--warning);display:none;} .tab.unsaved .tab-dot{display:block;}
+.tab-x{opacity:0;background:none;border:none;color:var(--muted);cursor:pointer;padding:1px 3px;border-radius:3px;font-size:13px;line-height:1;}
+.tab:hover .tab-x{opacity:1;} .tab-x:hover{background:var(--surface4);color:var(--text);}
+/* Critical: overflow hidden on monaco wrap */
+.monaco-wrap{flex:1;position:relative;overflow:hidden;}
+#monaco-editor{position:absolute;inset:0;}
+.resizer{width:5px;flex-shrink:0;background:var(--border);cursor:col-resize;position:relative;z-index:5;transition:background .15s;}
+.resizer::before{content:'';position:absolute;top:0;bottom:0;left:-5px;right:-5px;}
+.resizer:hover,.resizer.drag{background:var(--accent);}
+.out-panel{flex-shrink:0;display:flex;flex-direction:column;background:var(--surface2);min-width:160px;overflow:hidden;}
+.out-header{height:35px;flex-shrink:0;display:flex;align-items:stretch;border-bottom:1px solid var(--border);}
+.out-tab{display:flex;align-items:center;padding:0 13px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .1s;}
+.out-tab:hover{color:var(--text);} .out-tab.active{color:var(--text);border-bottom-color:var(--accent);}
+.out-spacer{flex:1;}
+.clear-btn{background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:0 10px;font-family:'Inter',sans-serif;transition:color .15s;}
+.clear-btn:hover{color:var(--text);}
+.out-body{flex:1;overflow-y:auto;padding:12px 14px;min-height:0;}
+.out-body::-webkit-scrollbar{width:4px;} .out-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+#out-pre{font-family:var(--mono);font-size:12px;white-space:pre-wrap;line-height:1.75;margin:0;color:var(--success);}
+#out-pre.idle{color:var(--muted);} #out-pre.error{color:var(--danger);} #out-pre.running{color:var(--warning);}
+#html-frame{flex:1;border:none;background:#fff;display:none;min-height:0;}
+.statusbar{height:22px;flex-shrink:0;background:var(--accent);display:flex;align-items:center;padding:0 12px;gap:12px;}
+.sb-item{font-size:10px;color:rgba(255,255,255,.8);white-space:nowrap;display:flex;align-items:center;gap:4px;}
+.sb-right{margin-left:auto;display:flex;gap:12px;} .sb-dot{opacity:.35;}
+.sb-errors{color:#f85149;font-weight:700;} .sb-warnings{color:#e3b341;font-weight:700;}
+.modal-back{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;z-index:200;}
+.modal-back.open{display:flex;}
+.modal-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:24px;width:420px;max-width:94vw;box-shadow:0 24px 64px rgba(0,0,0,.7);animation:modal-in .18s ease;}
 @keyframes modal-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.modal-title { font-size:15px;font-weight:800;margin:0 0 4px; }
-.modal-sub   { font-size:12px;color:var(--muted);margin:0 0 16px;line-height:1.5; }
-.modal-input { width:100%;background:var(--surface3);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:9px 11px;font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s; }
-.modal-input:focus { border-color:var(--accent); }
-textarea.modal-input { resize:vertical;min-height:80px; }
-.modal-label { font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:7px; }
-.form-group  { margin-bottom:14px; }
-.modal-actions { display:flex;gap:8px;margin-top:18px;justify-content:flex-end; }
-.btn-prim  { background:var(--accent);border:none;color:#fff;border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s; }
-.btn-prim:hover { background:#6aa3f9; }
-.btn-prim:disabled { opacity:.5;cursor:not-allowed; }
-.btn-ghost { background:none;border:1px solid var(--border);color:var(--text);border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s; }
-.btn-ghost:hover { border-color:rgba(255,255,255,.2); }
-.btn-danger{ background:var(--danger);border:none;color:#fff;border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer; }
-.btn-danger:hover { background:#ff6b68; }
-
-/* Host URL */
-.host-url-row { display:flex;gap:8px;margin-top:12px; }
-.host-url-input { flex:1;background:var(--surface3);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:8px 11px;font-size:12px;font-family:var(--mono);outline:none; }
-.host-status { font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5; }
-.live-badge { display:inline-flex;align-items:center;gap:5px;background:rgba(63,185,80,.12);border:1px solid rgba(63,185,80,.25);color:var(--success);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600; }
-
-/* Publish form */
-.pub-hint { font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5; }
-
-/* Scrollbars */
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.18)}
+.modal-title{font-size:15px;font-weight:800;margin:0 0 4px;} .modal-sub{font-size:12px;color:var(--muted);margin:0 0 16px;line-height:1.5;}
+.modal-input{width:100%;background:var(--surface3);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:9px 11px;font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s;}
+.modal-input:focus{border-color:var(--accent);} textarea.modal-input{resize:vertical;min-height:80px;}
+.modal-label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:7px;}
+.form-group{margin-bottom:14px;}
+.modal-actions{display:flex;gap:8px;margin-top:18px;justify-content:flex-end;}
+.btn-prim{background:var(--accent);border:none;color:#fff;border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;}
+.btn-prim:hover{background:#6aa3f9;} .btn-prim:disabled{opacity:.5;cursor:not-allowed;}
+.btn-ghost{background:none;border:1px solid var(--border);color:var(--text);border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;}
+.btn-ghost:hover{border-color:rgba(255,255,255,.2);}
+.btn-danger{background:var(--danger);border:none;color:#fff;border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;}
+.btn-danger:hover{background:#ff6b68;}
+/* Duplicate file name error */
+.input-error{border-color:var(--danger)!important;box-shadow:0 0 0 2px rgba(248,81,73,.2);}
+.input-err-msg{font-size:11px;color:var(--danger);margin-top:5px;display:none;}
+.host-url-row{display:flex;gap:8px;margin-top:12px;}
+.host-url-input{flex:1;background:var(--surface3);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:8px 11px;font-size:12px;font-family:var(--mono);outline:none;}
+.host-status{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5;}
+.live-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(63,185,80,.12);border:1px solid rgba(63,185,80,.25);color:var(--success);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;}
+#cs-toast{position:fixed;bottom:36px;right:20px;z-index:9999;border-radius:9px;padding:10px 16px;font-size:12px;font-family:'Inter',sans-serif;max-width:340px;line-height:1.5;white-space:pre-wrap;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;animation:toast-in .2s ease;}
+@keyframes toast-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+::-webkit-scrollbar{width:5px;height:5px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
 </style>
 </head>
 <body>
 <div class="layout">
-
-  <!-- ── Topbar ── -->
   <div class="topbar">
     <a href="dashboard.html" class="tb-btn" style="padding:5px 9px">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
     </a>
-    <a href="dashboard.html" class="brand">
-      <div class="brand-icon">CS</div>
-      <span class="brand-text">Code<span>Sponge</span></span>
-    </a>
+    <a href="dashboard.html" class="brand"><div class="brand-icon">CS</div><span class="brand-text">Code<span>Sponge</span></span></a>
     <div class="tb-sep"></div>
-    <input class="proj-name-input" id="proj-title" value="Loading..." onblur="renameProject()" onkeydown="if(event.key==='Enter')this.blur()" spellcheck="false"/>
-
-    <!-- Language badge — read only, set after project loads -->
-    <div class="lang-badge-pill" id="lang-badge" style="display:none">
-      <div class="lang-dot" id="lang-dot"></div>
-      <span id="lang-badge-text"></span>
-    </div>
-
+    <input class="proj-name" id="proj-title" value="Loading..." onblur="renameProject()" onkeydown="if(event.key==='Enter')this.blur()" spellcheck="false"/>
+    <div class="lang-badge" id="lang-badge" style="display:none"><div class="lang-dot" id="lang-dot"></div><span id="lang-badge-text"></span></div>
     <div class="tb-spacer"></div>
-
     <div class="save-pill" id="save-pill"><div class="save-dot"></div><span id="save-txt">Saved</span></div>
-
-    <button class="tb-btn" onclick="openAddFile()" title="New file">
+    <button class="tb-btn" onclick="openAddFile()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
       New file
     </button>
-
-    <button class="tb-btn purple" id="host-btn" onclick="openHostModal()" title="Host as website" style="display:none">
+    <button class="tb-btn purple" id="host-btn" onclick="openHostModal()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
       Host
     </button>
-
-    <button class="tb-btn community" onclick="openPublishModal()" title="Share to Community">
+    <button class="tb-btn community" onclick="openPublishModal()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
       Publish
     </button>
-
     <button class="run-btn" id="run-btn" onclick="runCode()">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
       Run
     </button>
   </div>
 
-  <!-- ── Body ── -->
   <div class="body-row">
-    <div id="load-overlay">
-      <div class="load-spin"></div>
-      <p id="load-msg">Loading project...</p>
-      <p id="load-hint">Server is starting up — this can take up to 30 seconds.</p>
-    </div>
-
-    <!-- Sidebar -->
+    <div id="load-overlay"><div class="load-spin"></div><p id="load-msg">Loading project...</p><p id="load-hint">Server is starting up — this can take up to 30 seconds.</p></div>
     <div class="sidebar">
       <div class="sb-header">
         <span class="sb-title">Files</span>
-        <div style="display:flex;gap:3px">
-          <button class="icon-btn" onclick="openAddFile()" title="New file">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          </button>
-        </div>
+        <button class="icon-btn" onclick="openAddFile()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
       </div>
       <div class="file-tree" id="file-tree"></div>
     </div>
 
-    <!-- Editor + resizer + output -->
     <div class="center-row" id="center-row">
       <div class="editor-area" id="editor-area">
         <div class="tabs-bar" id="tabs-bar"></div>
-        <div class="monaco-wrap">
-          <div id="monaco-editor"></div>
-        </div>
+        <div class="monaco-wrap"><div id="monaco-editor"></div></div>
       </div>
-
       <div class="resizer" id="resizer"></div>
-
       <div class="out-panel" id="out-panel">
         <div class="out-header">
           <div class="out-tab active" id="ot-console" onclick="switchOut('console')">Console</div>
@@ -343,57 +174,58 @@ textarea.modal-input { resize:vertical;min-height:80px; }
           <div class="out-spacer"></div>
           <button class="clear-btn" onclick="clearOut()">Clear</button>
         </div>
-        <div class="out-body" id="out-body">
-          <pre id="out-pre" class="idle">Press Run or Ctrl+Enter to execute...</pre>
-        </div>
+        <div class="out-body" id="out-body"><pre id="out-pre" class="idle">Press Run or Ctrl+Enter to execute...</pre></div>
         <iframe id="html-frame" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
       </div>
     </div>
   </div>
 
-  <!-- ── Status bar ── -->
   <div class="statusbar">
-    <div class="sb-item">CodeSponge</div>
-    <span class="sb-dot">·</span>
-    <div class="sb-item">Repo</div>
-    <span class="sb-dot">·</span>
+    <div class="sb-item">CodeSponge</div><span class="sb-dot">·</span>
+    <div class="sb-item">Repo</div><span class="sb-dot">·</span>
     <div class="sb-item" id="sb-file"></div>
+    <div class="sb-item" id="sb-diag" style="display:none">
+      <span id="sb-errors" class="sb-errors"></span>
+      <span id="sb-warnings" class="sb-warnings"></span>
+    </div>
     <div class="sb-right">
-      <div class="sb-item" id="sb-cursor">Ln 1, Col 1</div>
-      <span class="sb-dot">·</span>
-      <div class="sb-item">Ctrl+Enter <span style="opacity:.5">run</span></div>
-      <span class="sb-dot">·</span>
+      <div class="sb-item" id="sb-cursor">Ln 1, Col 1</div><span class="sb-dot">·</span>
+      <div class="sb-item">Ctrl+Enter <span style="opacity:.5">run</span></div><span class="sb-dot">·</span>
       <div class="sb-item">Ctrl+S <span style="opacity:.5">save</span></div>
     </div>
   </div>
 </div>
 
-<!-- ── Add file modal ── -->
+<div id="cs-toast"></div>
+
+<!-- Add file modal -->
 <div class="modal-back" id="add-modal">
   <div class="modal-box">
     <p class="modal-title">New file</p>
-    <p class="modal-sub">Enter a filename with extension — e.g. <b>main.py</b>, <b>index.html</b>, <b>style.css</b>, <b>utils.js</b></p>
-    <input class="modal-input" id="new-file-input" placeholder="filename.py" autocomplete="off" spellcheck="false"/>
+    <p class="modal-sub">Enter a filename with extension — e.g. <b>main.py</b>, <b>index.html</b>, <b>style.css</b></p>
+    <input class="modal-input" id="new-file-input" placeholder="filename.py" autocomplete="off" spellcheck="false" oninput="validateNewFilename()"/>
+    <div class="input-err-msg" id="new-file-err">A file with this name already exists.</div>
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeModal('add-modal')">Cancel</button>
-      <button class="btn-prim" onclick="confirmAddFile()">Create</button>
+      <button class="btn-prim" id="add-file-btn" onclick="confirmAddFile()">Create</button>
     </div>
   </div>
 </div>
 
-<!-- ── Rename modal ── -->
+<!-- Rename modal -->
 <div class="modal-back" id="rename-modal">
   <div class="modal-box">
     <p class="modal-title">Rename file</p>
-    <input class="modal-input" id="rename-input" autocomplete="off" spellcheck="false"/>
+    <input class="modal-input" id="rename-input" autocomplete="off" spellcheck="false" oninput="validateRenameFilename()"/>
+    <div class="input-err-msg" id="rename-err">A file with this name already exists.</div>
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeModal('rename-modal')">Cancel</button>
-      <button class="btn-prim" onclick="confirmRename()">Rename</button>
+      <button class="btn-prim" id="rename-btn" onclick="confirmRename()">Rename</button>
     </div>
   </div>
 </div>
 
-<!-- ── Delete file modal ── -->
+<!-- Delete file modal -->
 <div class="modal-back" id="del-file-modal">
   <div class="modal-box">
     <p class="modal-title">Delete file?</p>
@@ -405,7 +237,7 @@ textarea.modal-input { resize:vertical;min-height:80px; }
   </div>
 </div>
 
-<!-- ── Host modal ── -->
+<!-- Host modal -->
 <div class="modal-back" id="host-modal">
   <div class="modal-box" style="width:460px">
     <p class="modal-title">&#127760; Host website</p>
@@ -426,19 +258,13 @@ textarea.modal-input { resize:vertical;min-height:80px; }
   </div>
 </div>
 
-<!-- ── Publish modal ── -->
+<!-- Publish modal -->
 <div class="modal-back" id="pub-modal">
   <div class="modal-box">
     <p class="modal-title">&#128640; Publish to Community</p>
     <p class="modal-sub">Share this project publicly. Others can view, like, and fork it.</p>
-    <div class="form-group">
-      <label class="modal-label">Title</label>
-      <input class="modal-input" id="pub-title" placeholder="Give your project a title" autocomplete="off"/>
-    </div>
-    <div class="form-group">
-      <label class="modal-label">Description <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
-      <textarea class="modal-input" id="pub-desc" placeholder="What does this project do?"></textarea>
-    </div>
+    <div class="form-group"><label class="modal-label">Title</label><input class="modal-input" id="pub-title" placeholder="Give your project a title" autocomplete="off"/></div>
+    <div class="form-group"><label class="modal-label">Description <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label><textarea class="modal-input" id="pub-desc" placeholder="What does this project do?"></textarea></div>
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeModal('pub-modal')">Cancel</button>
       <button class="btn-prim" id="pub-btn" onclick="doPublish()">Publish</button>
@@ -451,537 +277,464 @@ textarea.modal-input { resize:vertical;min-height:80px; }
 var API   = "https://codesponge-backend.onrender.com";
 var token = localStorage.getItem("token");
 if (!token) window.location.href = "index.html";
-
 var params    = new URLSearchParams(window.location.search);
 var projectId = params.get("project");
 if (!projectId) window.location.href = "dashboard.html";
-
 function authH() { return { "Content-Type": "application/json", "Authorization": "Bearer " + token }; }
 
-// ── State ─────────────────────────────────────────────────
-var editor       = null;
-var files        = [];
-var activeId     = null;
-var models       = {};      // fileId -> monaco model
-var unsaved      = {};      // fileId -> bool
-var renamingId   = null;
-var delFileId    = null;
-var projectLang  = null;    // primary language (from DB, locked)
-var hostedUrl    = null;
-var openTabs     = [];
+var editor=null, files=[], activeId=null, models={}, unsaved={}, renamingId=null, delFileId=null;
+var projectLang=null, hostedUrl=null, openTabs=[];
+var LANG_COLORS={python:"#3572A5",javascript:"#f1e05a",cpp:"#f34b7d",html:"#e34c26",css:"#563d7c",typescript:"#2b7489"};
 
-var LANG_COLORS = {
-  python: "#3572A5", javascript: "#f1e05a", cpp: "#f34b7d", html: "#e34c26",
-  css: "#563d7c", typescript: "#2b7489", json: "#555", markdown: "#083fa1"
-};
-
-// ── Monaco ────────────────────────────────────────────────
 require.config({ paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs" } });
 require(["vs/editor/editor.main"], function() {
+
+  // Configure built-in diagnostics BEFORE creating editor
+  monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({ noSemanticValidation:false, noSyntaxValidation:false });
+  monaco.languages.typescript.javascriptDefaults.setCompilerOptions({ target:monaco.languages.typescript.ScriptTarget.ES2020, allowJs:true, checkJs:true, noUnusedLocals:true });
+  monaco.languages.html.htmlDefaults.setOptions({ validate:true, suggest:{ html5:true } });
+  monaco.languages.css.cssDefaults.setOptions({ validate:true });
+  monaco.languages.json.jsonDefaults.setDiagnosticsOptions({ validate:true });
+
   editor = monaco.editor.create(document.getElementById("monaco-editor"), {
-    value: "", language: "plaintext", theme: "vs-dark",
-    fontSize: 14, fontFamily: "'JetBrains Mono', monospace", fontLigatures: true,
-    minimap: { enabled: false }, automaticLayout: true,
-    scrollBeyondLastLine: false, padding: { top: 14, bottom: 14 },
-    cursorBlinking: "smooth", cursorSmoothCaretAnimation: "on",
-    smoothScrolling: true, renderLineHighlight: "gutter", tabSize: 2,
-    scrollbar: { verticalScrollbarSize: 5, horizontalScrollbarSize: 5 },
+    value:"", language:"plaintext", theme:"vs-dark",
+    fontSize:14, fontFamily:"'JetBrains Mono',monospace", fontLigatures:true,
+    minimap:{enabled:false},
+    automaticLayout:false, // FIXED: prevents double cursor bug
+    scrollBeyondLastLine:false, padding:{top:14,bottom:14},
+    cursorBlinking:"smooth", cursorSmoothCaretAnimation:"on",
+    smoothScrolling:true, renderLineHighlight:"gutter", tabSize:2,
+    scrollbar:{verticalScrollbarSize:5,horizontalScrollbarSize:5},
+    lightbulb:{enabled:true},
+    quickSuggestions:{other:true,comments:false,strings:false},
   });
+
+  // Manual layout — fixes double cursor
+  function relayout() {
+    var wrap = document.querySelector(".monaco-wrap");
+    if (wrap && editor) editor.layout({ width:wrap.clientWidth, height:wrap.clientHeight });
+  }
+  window.addEventListener("resize", relayout);
+  window.csRelayout = relayout;
 
   editor.onDidChangeCursorPosition(function(e) {
-    document.getElementById("sb-cursor").textContent =
-      "Ln " + e.position.lineNumber + ", Col " + e.position.column;
+    document.getElementById("sb-cursor").textContent = "Ln "+e.position.lineNumber+", Col "+e.position.column;
   });
 
-  var saveTimer;
+  var saveTimer, lintTimer;
   editor.onDidChangeModelContent(function() {
     if (!activeId) return;
-    if (!unsaved[activeId]) { unsaved[activeId] = true; renderTabs(); }
+    if (!unsaved[activeId]) { unsaved[activeId]=true; renderTabs(); }
     setSave("saving");
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(saveAll, 1500);
+    clearTimeout(saveTimer); saveTimer = setTimeout(saveAll, 1500);
+    clearTimeout(lintTimer); lintTimer = setTimeout(function(){ runLinter(editor.getModel()); }, 600);
+  });
+
+  // ── Linter ───────────────────────────────────────────────────────────────
+  var PYTHON_RULES=[
+    {re:/\bpirnt\s*\(/g,   msg:'Typo: did you mean "print"?',              sev:monaco.MarkerSeverity.Error},
+    {re:/\bprnit\s*\(/g,   msg:'Typo: did you mean "print"?',              sev:monaco.MarkerSeverity.Error},
+    {re:/\bimoprt\b/g,     msg:'Typo: did you mean "import"?',             sev:monaco.MarkerSeverity.Error},
+    {re:/\bimprot\b/g,     msg:'Typo: did you mean "import"?',             sev:monaco.MarkerSeverity.Error},
+    {re:/\bdeef\s+/g,      msg:'Typo: did you mean "def"?',                sev:monaco.MarkerSeverity.Error},
+    {re:/\bclsas\s+/g,     msg:'Typo: did you mean "class"?',              sev:monaco.MarkerSeverity.Error},
+    {re:/\bretunr\b/g,     msg:'Typo: did you mean "return"?',             sev:monaco.MarkerSeverity.Error},
+    {re:/\bTure\b/g,       msg:'Typo: did you mean "True"?',               sev:monaco.MarkerSeverity.Error},
+    {re:/\bFlase\b/g,      msg:'Typo: did you mean "False"?',              sev:monaco.MarkerSeverity.Error},
+    {re:/\bNoen\b/g,       msg:'Typo: did you mean "None"?',               sev:monaco.MarkerSeverity.Error},
+    {re:/\bexcpet\b/g,     msg:'Typo: did you mean "except"?',             sev:monaco.MarkerSeverity.Error},
+    {re:/\beval\s*\(/g,    msg:'Warning: eval() can be unsafe',            sev:monaco.MarkerSeverity.Warning},
+    {re:/\bexec\s*\(/g,    msg:'Warning: exec() can be unsafe',            sev:monaco.MarkerSeverity.Warning},
+    {re:/except\s*:/g,     msg:'Bare except catches everything — use "except Exception as e:"',sev:monaco.MarkerSeverity.Warning},
+    {re:/import\s+\*/g,    msg:'Wildcard import — prefer explicit imports', sev:monaco.MarkerSeverity.Warning},
+    {re:/#\s*TODO\b/g,     msg:'TODO: remember to implement this',         sev:monaco.MarkerSeverity.Warning},
+    {re:/#\s*FIXME\b/g,    msg:'FIXME: this needs attention',              sev:monaco.MarkerSeverity.Warning},
+  ];
+  var CPP_RULES=[
+    {re:/\bcuot\s*<</g,         msg:'Typo: did you mean "cout"?',          sev:monaco.MarkerSeverity.Error},
+    {re:/\bmian\s*\(/g,         msg:'Typo: did you mean "main"?',          sev:monaco.MarkerSeverity.Error},
+    {re:/\bvoid\s+mian/g,       msg:'Typo: did you mean "main"?',          sev:monaco.MarkerSeverity.Error},
+    {re:/\bnamepsace\b/g,       msg:'Typo: did you mean "namespace"?',     sev:monaco.MarkerSeverity.Error},
+    {re:/\bgoto\b/g,            msg:'Warning: avoid "goto" — use loops',   sev:monaco.MarkerSeverity.Warning},
+    {re:/\/\/\s*TODO\b/g,       msg:'TODO: remember to implement this',    sev:monaco.MarkerSeverity.Warning},
+    {re:/\/\/\s*FIXME\b/g,      msg:'FIXME: this needs attention',         sev:monaco.MarkerSeverity.Warning},
+    {re:/\bsystem\s*\(\s*["']/g,msg:'Warning: system() calls are a security risk',sev:monaco.MarkerSeverity.Warning},
+  ];
+
+  function runLinter(model) {
+    if (!model) return;
+    var lang=model.getLanguageId();
+    var rules=lang==="python"?PYTHON_RULES:lang==="cpp"?CPP_RULES:null;
+    if (!rules) return;
+    var text=model.getValue(), lines=text.split("\n"), markers=[];
+    rules.forEach(function(rule){
+      rule.re.lastIndex=0; var m;
+      while((m=rule.re.exec(text))!==null){
+        var offset=m.index, lineNo=0, col=offset;
+        for(var i=0;i<lines.length;i++){if(col<=lines[i].length){lineNo=i;break;}col-=lines[i].length+1;}
+        markers.push({severity:rule.sev,message:rule.msg,startLineNumber:lineNo+1,startColumn:col+1,endLineNumber:lineNo+1,endColumn:col+m[0].length+1,source:"CodeSponge"});
+        if(m[0].length===0)rule.re.lastIndex++;
+      }
+      rule.re.lastIndex=0;
+    });
+    monaco.editor.setModelMarkers(model,"codesponge",markers);
+    updateDiagBar(markers);
+  }
+
+  function updateDiagBar(markers) {
+    var errors=markers.filter(function(m){return m.severity===monaco.MarkerSeverity.Error;}).length;
+    var warnings=markers.filter(function(m){return m.severity===monaco.MarkerSeverity.Warning;}).length;
+    var bar=document.getElementById("sb-diag");
+    if(errors===0&&warnings===0){bar.style.display="none";return;}
+    bar.style.display="flex"; bar.style.gap="8px";
+    document.getElementById("sb-errors").textContent=errors>0?"✕ "+errors+" error"+(errors>1?"s":""):"";
+    document.getElementById("sb-warnings").textContent=warnings>0?"⚠ "+warnings+" warning"+(warnings>1?"s":""):"";
+  }
+
+  monaco.editor.onDidChangeMarkers(function(){
+    var model=editor.getModel(); if(!model)return;
+    updateDiagBar(monaco.editor.getModelMarkers({resource:model.uri}));
+  });
+
+  // ── Context menu actions ─────────────────────────────────────────────────
+  editor.addAction({
+    id:"cs.quickFix", label:"Quick fix",
+    contextMenuGroupId:"1_modification", contextMenuOrder:0.5,
+    run:function(ed){
+      var pos=ed.getPosition(), model=ed.getModel();
+      var mks=monaco.editor.getModelMarkers({resource:model.uri}).filter(function(mk){return mk.startLineNumber<=pos.lineNumber&&mk.endLineNumber>=pos.lineNumber&&mk.severity===monaco.MarkerSeverity.Error;});
+      if(!mks.length){showToast("No quick fix available on this line.","info");return;}
+      var fix=extractFix(mks[0].message);
+      if(!fix){showToast("No automatic fix — "+mks[0].message,"warning");return;}
+      ed.executeEdits("cs-fix",[{range:new monaco.Range(mks[0].startLineNumber,mks[0].startColumn,mks[0].endLineNumber,mks[0].endColumn),text:fix}]);
+      showToast('Fixed: replaced with "'+fix+'"',"success");
+    }
+  });
+  editor.addAction({
+    id:"cs.explainError", label:"Explain this error / warning",
+    contextMenuGroupId:"1_modification", contextMenuOrder:0.6,
+    run:function(ed){
+      var pos=ed.getPosition(), model=ed.getModel();
+      var mks=monaco.editor.getModelMarkers({resource:model.uri}).filter(function(mk){return mk.startLineNumber<=pos.lineNumber&&mk.endLineNumber>=pos.lineNumber;});
+      if(!mks.length){showToast("No errors or warnings on this line.","info");return;}
+      showToast(mks.map(function(mk){return(mk.severity===monaco.MarkerSeverity.Error?"Error":"Warning")+": "+mk.message;}).join("\n"),mks[0].severity===monaco.MarkerSeverity.Error?"error":"warning");
+    }
+  });
+  editor.addAction({
+    id:"cs.ignoreWarning", label:"Ignore this warning",
+    contextMenuGroupId:"1_modification", contextMenuOrder:0.7,
+    run:function(ed){
+      var pos=ed.getPosition(), model=ed.getModel();
+      var all=monaco.editor.getModelMarkers({resource:model.uri});
+      var kept=all.filter(function(mk){return!(mk.startLineNumber===pos.lineNumber&&mk.severity===monaco.MarkerSeverity.Warning);});
+      monaco.editor.setModelMarkers(model,"codesponge",kept);
+      updateDiagBar(kept);
+      showToast("Warning suppressed for this session.","info");
+    }
   });
 
   loadProject();
+  setTimeout(relayout, 100);
 });
 
-// ── Load ──────────────────────────────────────────────────
-async function loadProject() {
-  var hintTimer = setTimeout(function() {
-    document.getElementById("load-hint").classList.add("show");
-  }, 5000);
+// ── Toast ─────────────────────────────────────────────────────────────────
+var toastTimer;
+function showToast(msg,type){
+  var el=document.getElementById("cs-toast");
+  var c={error:{bg:"rgba(248,81,73,.18)",border:"rgba(248,81,73,.5)",color:"#f85149"},warning:{bg:"rgba(227,179,65,.18)",border:"rgba(227,179,65,.5)",color:"#e3b341"},success:{bg:"rgba(63,185,80,.18)",border:"rgba(63,185,80,.5)",color:"#3fb950"},info:{bg:"rgba(79,142,247,.18)",border:"rgba(79,142,247,.5)",color:"#4f8ef7"}}[type]||{bg:"rgba(79,142,247,.18)",border:"rgba(79,142,247,.5)",color:"#4f8ef7"};
+  el.style.cssText="position:fixed;bottom:36px;right:20px;z-index:9999;border-radius:9px;padding:10px 16px;font-size:12px;font-family:'Inter',sans-serif;max-width:360px;line-height:1.5;white-space:pre-wrap;box-shadow:0 8px 24px rgba(0,0,0,.4);animation:toast-in .2s ease;background:"+c.bg+";border:1px solid "+c.border+";color:"+c.color+";display:block";
+  el.textContent=msg;
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){el.style.display="none";},5000);
+}
+function extractFix(msg){var m=msg.match(/did you mean "([^"]+)"\?/i);return m?m[1]:null;}
 
-  for (var attempt = 0; attempt < 3; attempt++) {
-    try {
-      if (attempt > 0) {
-        document.getElementById("load-msg").textContent = "Retrying... (" + (attempt+1) + "/3)";
-        await new Promise(function(r) { setTimeout(r, 2000); });
-      }
-      var res = await fetch(API + "/projects/" + projectId, { headers: authH() });
+// ── Overlay ───────────────────────────────────────────────────────────────
+function hideOverlay(){var el=document.getElementById("load-overlay");el.style.opacity="0";setTimeout(function(){el.style.display="none";},300);}
+function setSave(s){var p=document.getElementById("save-pill"),t=document.getElementById("save-txt");p.className="save-pill"+(s==="saving"?" saving":s==="error"?" error":"");t.textContent=s==="saving"?"Saving...":s==="error"?"Save failed":"Saved";}
+
+function showLangBadge(lang){
+  if(!lang)return;
+  var LABELS={python:"Python",javascript:"JavaScript",cpp:"C++",html:"HTML"};
+  document.getElementById("lang-dot").style.background=LANG_COLORS[lang]||"#7d8590";
+  document.getElementById("lang-badge-text").textContent=LABELS[lang]||lang;
+  document.getElementById("lang-badge").style.display="flex";
+}
+
+// ── Load project ──────────────────────────────────────────────────────────
+async function loadProject(){
+  var hintTimer=setTimeout(function(){document.getElementById("load-hint").classList.add("show");},5000);
+  for(var attempt=0;attempt<3;attempt++){
+    try{
+      if(attempt>0){document.getElementById("load-msg").textContent="Retrying... ("+(attempt+1)+"/3)";await new Promise(function(r){setTimeout(r,2000);});}
+      var res=await fetch(API+"/projects/"+projectId,{headers:authH()});
       clearTimeout(hintTimer);
-      if (res.status === 401) { window.location.href = "index.html"; return; }
-      if (!res.ok) throw new Error("HTTP " + res.status);
-
-      var data = await res.json();
-      document.title = data.name + " - CodeSponge";
-      document.getElementById("proj-title").value = data.name;
-
-      projectLang = data.language || null;
-      hostedUrl   = data.hosted_url || null;
-
-      // Show language badge (read-only)
+      if(res.status===401){window.location.href="index.html";return;}
+      if(!res.ok)throw new Error("HTTP "+res.status);
+      var data=await res.json();
+      document.title=data.name+" - CodeSponge";
+      document.getElementById("proj-title").value=data.name;
+      projectLang=data.language||null; hostedUrl=data.hosted_url||null;
       showLangBadge(projectLang);
-
-      // Show host button only if there's an index.html potential
-      document.getElementById("host-btn").style.display = "";
-
-      files = data.files || [];
-
-      // Seed defaults if empty
-      if (files.length === 0) {
-        var ext = langToExt(projectLang);
-        files = [{ id: "f1", name: "main" + ext, content: defaultForLang(projectLang), language: projectLang || "python" }];
-        // If primary lang is html, add css and js too
-        if (projectLang === "html") {
-          files = [
-            { id: "f1", name: "index.html",  content: defaultHTML(),  language: "html" },
-            { id: "f2", name: "style.css",   content: defaultCSS(),   language: "css" },
-            { id: "f3", name: "script.js",   content: "// script.js\nconsole.log('Hello!');", language: "javascript" },
-          ];
-        }
+      files=data.files||[];
+      if(files.length===0){
+        var ext=langToExt(projectLang);
+        files=projectLang==="html"?[
+          {id:"f1",name:"index.html",content:defaultHTML(),language:"html"},
+          {id:"f2",name:"style.css",content:defaultCSS(),language:"css"},
+          {id:"f3",name:"script.js",content:"// script.js\nconsole.log('Hello!');",language:"javascript"},
+        ]:[{id:"f1",name:"main"+ext,content:defaultForLang(projectLang),language:projectLang||"python"}];
         await saveAll();
       }
-
-      // Build Monaco models
-      files.forEach(function(f) {
-        models[f.id] = monaco.editor.createModel(f.content || "", monacoLang(f.name));
-      });
-
+      files.forEach(function(f){models[f.id]=monaco.editor.createModel(f.content||"",monacoLang(f.name));});
       renderFileTree();
-      if (files.length > 0) openFile(files[0].id);
+      if(files.length>0)openFile(files[0].id);
       hideOverlay();
+      if(window.csRelayout)window.csRelayout();
       return;
-    } catch(err) {
-      console.error("Attempt " + (attempt+1) + " failed:", err);
-    }
+    }catch(err){console.error("Attempt "+(attempt+1)+" failed:",err);}
   }
-
   clearTimeout(hintTimer);
-  document.getElementById("load-msg").textContent = "Could not load project.";
-  document.getElementById("load-hint").textContent = "Check your connection and refresh.";
+  document.getElementById("load-msg").textContent="Could not load project.";
+  document.getElementById("load-hint").textContent="Check your connection and refresh.";
   document.getElementById("load-hint").classList.add("show");
-  setTimeout(hideOverlay, 2000);
+  setTimeout(hideOverlay,2000);
 }
 
-function hideOverlay() {
-  var el = document.getElementById("load-overlay");
-  el.style.opacity = "0";
-  setTimeout(function() { el.style.display = "none"; }, 300);
-}
-
-function showLangBadge(lang) {
-  if (!lang) return;
-  var badge = document.getElementById("lang-badge");
-  var dot   = document.getElementById("lang-dot");
-  var txt   = document.getElementById("lang-badge-text");
-  var labels = { python:"Python", javascript:"JavaScript", cpp:"C++", html:"HTML" };
-  dot.style.background = LANG_COLORS[lang] || "#7d8590";
-  txt.textContent = labels[lang] || lang;
-  badge.style.display = "flex";
-}
-
-// ── File tree ─────────────────────────────────────────────
-function renderFileTree() {
-  var tree = document.getElementById("file-tree");
-  tree.innerHTML = "";
-  files.forEach(function(f) {
-    var item = document.createElement("div");
-    item.className = "file-item" + (f.id === activeId ? " active" : "");
-    item.innerHTML =
-      '<span class="fi-icon">' + fileIcon(f.name) + '</span>' +
-      '<span class="fi-name">' + esc(f.name) + '</span>' +
-      (unsaved[f.id] ? '<span class="fi-unsaved">●</span>' : '') +
-      '<div class="fi-actions">' +
-        '<button class="fi-btn" onclick="event.stopPropagation();openRename(\'' + f.id + '\')" title="Rename">✎</button>' +
-        (files.length > 1 ? '<button class="fi-btn del" onclick="event.stopPropagation();openDelFile(\'' + f.id + '\')" title="Delete">✕</button>' : '') +
-      '</div>';
-    item.onclick = function() { openFile(f.id); };
+// ── File tree ─────────────────────────────────────────────────────────────
+function renderFileTree(){
+  var tree=document.getElementById("file-tree");tree.innerHTML="";
+  files.forEach(function(f){
+    var item=document.createElement("div");item.className="file-item"+(f.id===activeId?" active":"");
+    item.innerHTML='<span class="fi-icon">'+fileIcon(f.name)+'</span><span class="fi-name">'+esc(f.name)+'</span>'+(unsaved[f.id]?'<span class="fi-unsaved">●</span>':'')+'<div class="fi-actions"><button class="fi-btn" onclick="event.stopPropagation();openRename(\''+f.id+'\')" title="Rename">✎</button>'+(files.length>1?'<button class="fi-btn del" onclick="event.stopPropagation();openDelFile(\''+f.id+'\')" title="Delete">✕</button>':'')+'</div>';
+    item.onclick=function(){openFile(f.id);};
     tree.appendChild(item);
   });
 }
 
-// ── Tabs ──────────────────────────────────────────────────
-function openFile(id) {
-  // Save current content
-  if (activeId && models[activeId] && editor) {
-    var idx = files.findIndex(function(f) { return f.id === activeId; });
-    if (idx !== -1) files[idx].content = editor.getValue();
-  }
-  activeId = id;
-  if (!openTabs.includes(id)) openTabs.push(id);
-  var f = files.find(function(x) { return x.id === id; });
-  if (!models[id]) models[id] = monaco.editor.createModel(f ? (f.content||"") : "", monacoLang(f ? f.name : ""));
+// ── Tabs ──────────────────────────────────────────────────────────────────
+function openFile(id){
+  if(activeId&&models[activeId]&&editor){var idx=files.findIndex(function(f){return f.id===activeId;});if(idx!==-1)files[idx].content=editor.getValue();}
+  activeId=id;
+  if(!openTabs.includes(id))openTabs.push(id);
+  var f=files.find(function(x){return x.id===id;});
+  if(!models[id])models[id]=monaco.editor.createModel(f?(f.content||""):"",monacoLang(f?f.name:""));
   editor.setModel(models[id]);
-  document.getElementById("sb-file").textContent = f ? f.name : "";
-  renderFileTree();
-  renderTabs();
+  document.getElementById("sb-file").textContent=f?f.name:"";
+  renderFileTree();renderTabs();
   editor.focus();
+  if(window.csRelayout)setTimeout(window.csRelayout,50);
+  // Run linter on the newly active file
+  setTimeout(function(){if(window.runLinterFn)window.runLinterFn(editor.getModel());},300);
 }
 
-function renderTabs() {
-  var bar = document.getElementById("tabs-bar");
-  bar.innerHTML = "";
-  openTabs.forEach(function(id) {
-    var f = files.find(function(x) { return x.id === id; });
-    if (!f) return;
-    var tab = document.createElement("div");
-    tab.className = "tab" + (id === activeId ? " active" : "") + (unsaved[id] ? " unsaved" : "");
-    tab.innerHTML =
-      '<span style="font-size:11px">' + fileIcon(f.name) + '</span>' +
-      '<span>' + esc(f.name) + '</span>' +
-      '<div class="tab-dot"></div>' +
-      '<button class="tab-x" onclick="event.stopPropagation();closeTab(\'' + id + '\')">×</button>';
-    tab.onclick = function() { openFile(id); };
+function renderTabs(){
+  var bar=document.getElementById("tabs-bar");bar.innerHTML="";
+  openTabs.forEach(function(id){
+    var f=files.find(function(x){return x.id===id;});if(!f)return;
+    var tab=document.createElement("div");tab.className="tab"+(id===activeId?" active":"")+(unsaved[id]?" unsaved":"");
+    tab.innerHTML='<span style="font-size:11px">'+fileIcon(f.name)+'</span><span>'+esc(f.name)+'</span><div class="tab-dot"></div><button class="tab-x" onclick="event.stopPropagation();closeTab(\''+id+'\')">×</button>';
+    tab.onclick=function(){openFile(id);};
     bar.appendChild(tab);
   });
 }
+function closeTab(id){openTabs=openTabs.filter(function(x){return x!==id;});if(activeId===id){if(openTabs.length>0)openFile(openTabs[openTabs.length-1]);else{activeId=null;if(editor)editor.setModel(monaco.editor.createModel("","plaintext"));}}renderTabs();renderFileTree();}
 
-function closeTab(id) {
-  openTabs = openTabs.filter(function(x) { return x !== id; });
-  if (activeId === id) {
-    if (openTabs.length > 0) openFile(openTabs[openTabs.length-1]);
-    else { activeId = null; editor.setModel(monaco.editor.createModel("","plaintext")); }
-  }
-  renderTabs(); renderFileTree();
+// ── Save ──────────────────────────────────────────────────────────────────
+async function saveAll(){
+  if(activeId&&models[activeId]&&editor){var idx=files.findIndex(function(f){return f.id===activeId;});if(idx!==-1)files[idx].content=editor.getValue();}
+  try{var r=await fetch(API+"/projects/"+projectId,{method:"PUT",headers:authH(),body:JSON.stringify({files:files})});if(r.ok){unsaved={};setSave("saved");renderTabs();renderFileTree();}else setSave("error");}
+  catch(e){setSave("error");}
+}
+async function renameProject(){
+  var name=document.getElementById("proj-title").value.trim();if(!name)return;
+  document.title=name+" - CodeSponge";
+  try{await fetch(API+"/projects/"+projectId,{method:"PUT",headers:authH(),body:JSON.stringify({name:name,files:files})});}catch(e){}
 }
 
-// ── Save ──────────────────────────────────────────────────
-function setSave(state) {
-  var pill = document.getElementById("save-pill");
-  var txt  = document.getElementById("save-txt");
-  pill.className = "save-pill" + (state==="saving"?" saving":state==="error"?" error":"");
-  txt.textContent = state==="saving"?"Saving...":state==="error"?"Save failed":"Saved";
-}
-
-async function saveAll() {
-  if (activeId && models[activeId] && editor) {
-    var idx = files.findIndex(function(f) { return f.id === activeId; });
-    if (idx !== -1) files[idx].content = editor.getValue();
-  }
-  try {
-    var r = await fetch(API + "/projects/" + projectId, {
-      method:"PUT", headers: authH(),
-      body: JSON.stringify({ files: files })
-    });
-    if (r.ok) { unsaved = {}; setSave("saved"); renderTabs(); renderFileTree(); }
-    else setSave("error");
-  } catch(e) { setSave("error"); }
-}
-
-async function renameProject() {
-  var name = document.getElementById("proj-title").value.trim();
-  if (!name) return;
-  document.title = name + " - CodeSponge";
-  try { await fetch(API + "/projects/" + projectId, { method:"PUT", headers: authH(), body: JSON.stringify({ name: name, files: files }) }); }
-  catch(e) {}
-}
-
-// ── Add file ──────────────────────────────────────────────
-function openAddFile() {
-  document.getElementById("new-file-input").value = "";
+// ── Add file — with duplicate check ──────────────────────────────────────
+function openAddFile(){
+  document.getElementById("new-file-input").value="";
+  document.getElementById("new-file-input").className="modal-input";
+  document.getElementById("new-file-err").style.display="none";
+  document.getElementById("add-file-btn").disabled=false;
   openModal("add-modal");
-  setTimeout(function() { document.getElementById("new-file-input").focus(); }, 100);
+  setTimeout(function(){document.getElementById("new-file-input").focus();},100);
 }
 
-async function confirmAddFile() {
-  var name = document.getElementById("new-file-input").value.trim();
-  if (!name) return;
-  if (files.find(function(f) { return f.name === name; })) { alert("A file named \"" + name + "\" already exists."); return; }
-  var nf = { id: "f" + Date.now(), name: name, content: "", language: monacoLang(name) };
-  files.push(nf);
-  models[nf.id] = monaco.editor.createModel("", monacoLang(name));
-  renderFileTree(); openFile(nf.id); closeModal("add-modal");
+function validateNewFilename(){
+  var name=document.getElementById("new-file-input").value.trim();
+  var isDup=!!files.find(function(f){return f.name===name;});
+  document.getElementById("new-file-input").className="modal-input"+(isDup?" input-error":"");
+  document.getElementById("new-file-err").style.display=isDup?"block":"none";
+  document.getElementById("add-file-btn").disabled=isDup||!name;
+}
+
+async function confirmAddFile(){
+  var name=document.getElementById("new-file-input").value.trim();
+  if(!name)return;
+  if(files.find(function(f){return f.name===name;})){showToast('A file named "'+name+'" already exists.','error');return;}
+  var nf={id:"f"+Date.now(),name:name,content:"",language:monacoLang(name)};
+  files.push(nf);models[nf.id]=monaco.editor.createModel("",monacoLang(name));
+  renderFileTree();openFile(nf.id);closeModal("add-modal");
   await saveAll();
 }
 
-// ── Rename file ───────────────────────────────────────────
-function openRename(id) {
-  renamingId = id;
-  var f = files.find(function(x) { return x.id === id; });
-  if (!f) return;
-  document.getElementById("rename-input").value = f.name;
+// ── Rename — with duplicate check ─────────────────────────────────────────
+function openRename(id){
+  renamingId=id;
+  var f=files.find(function(x){return x.id===id;});if(!f)return;
+  document.getElementById("rename-input").value=f.name;
+  document.getElementById("rename-input").className="modal-input";
+  document.getElementById("rename-err").style.display="none";
+  document.getElementById("rename-btn").disabled=false;
   openModal("rename-modal");
-  setTimeout(function() { var i = document.getElementById("rename-input"); i.focus(); i.select(); }, 100);
+  setTimeout(function(){var i=document.getElementById("rename-input");i.focus();i.select();},100);
 }
 
-async function confirmRename() {
-  var name = document.getElementById("rename-input").value.trim();
-  if (!name || !renamingId) return;
-  var idx = files.findIndex(function(f) { return f.id === renamingId; });
-  if (idx === -1) return;
-  if (models[renamingId]) monaco.editor.setModelLanguage(models[renamingId], monacoLang(name));
-  files[idx].name = name;
-  renderFileTree(); renderTabs(); closeModal("rename-modal");
+function validateRenameFilename(){
+  var name=document.getElementById("rename-input").value.trim();
+  var isDup=!!files.find(function(f){return f.name===name&&f.id!==renamingId;});
+  document.getElementById("rename-input").className="modal-input"+(isDup?" input-error":"");
+  document.getElementById("rename-err").style.display=isDup?"block":"none";
+  document.getElementById("rename-btn").disabled=isDup||!name;
+}
+
+async function confirmRename(){
+  var name=document.getElementById("rename-input").value.trim();
+  if(!name||!renamingId)return;
+  if(files.find(function(f){return f.name===name&&f.id!==renamingId;})){showToast('A file named "'+name+'" already exists.','error');return;}
+  var idx=files.findIndex(function(f){return f.id===renamingId;});if(idx===-1)return;
+  if(models[renamingId])monaco.editor.setModelLanguage(models[renamingId],monacoLang(name));
+  files[idx].name=name;
+  renderFileTree();renderTabs();closeModal("rename-modal");
   await saveAll();
 }
 
-// ── Delete file ───────────────────────────────────────────
-function openDelFile(id) {
-  delFileId = id;
-  var f = files.find(function(x) { return x.id === id; });
-  document.getElementById("del-file-msg").textContent = 'Delete "' + (f ? f.name : "this file") + '"? This cannot be undone.';
+// ── Delete file ───────────────────────────────────────────────────────────
+function openDelFile(id){
+  delFileId=id;
+  var f=files.find(function(x){return x.id===id;});
+  document.getElementById("del-file-msg").textContent='Delete "'+(f?f.name:"this file")+'"? This cannot be undone.';
   openModal("del-file-modal");
 }
-
-async function confirmDelFile() {
-  if (!delFileId) return;
+async function confirmDelFile(){
+  if(!delFileId)return;
   closeTab(delFileId);
-  if (models[delFileId]) models[delFileId].dispose();
-  delete models[delFileId]; delete unsaved[delFileId];
-  files = files.filter(function(f) { return f.id !== delFileId; });
-  delFileId = null; renderFileTree(); closeModal("del-file-modal");
+  if(models[delFileId])models[delFileId].dispose();
+  delete models[delFileId];delete unsaved[delFileId];
+  files=files.filter(function(f){return f.id!==delFileId;});
+  delFileId=null;renderFileTree();closeModal("del-file-modal");
   await saveAll();
 }
 
-// ── Run ───────────────────────────────────────────────────
-async function runCode() {
-  if (activeId && editor) {
-    var idx = files.findIndex(function(f) { return f.id === activeId; });
-    if (idx !== -1) files[idx].content = editor.getValue();
+// ── Run ───────────────────────────────────────────────────────────────────
+async function runCode(){
+  if(activeId&&editor){var idx=files.findIndex(function(f){return f.id===activeId;});if(idx!==-1)files[idx].content=editor.getValue();}
+  var btn=document.getElementById("run-btn");
+  var htmlFile=files.find(function(f){return f.name.endsWith(".html");});
+  if(htmlFile){
+    var html=htmlFile.content||"";
+    var cssF=files.find(function(f){return f.name.endsWith(".css");});
+    var jsF=files.find(function(f){return f.name.endsWith(".js");});
+    if(cssF&&cssF.content){var st="<style>"+cssF.content+"<\/style>";html=html.includes("</head>")?html.replace("</head>",st+"</head>"):st+html;}
+    if(jsF&&jsF.content){var sc="<script>"+jsF.content+"<\/scr"+"ipt>";html=html.includes("</body>")?html.replace("</body>",sc+"</body>"):html+sc;}
+    document.getElementById("html-frame").srcdoc=html;switchOut("preview");return;
   }
-
-  var btn = document.getElementById("run-btn");
-
-  // HTML preview — inject CSS and JS inline
-  var htmlFile = files.find(function(f) { return f.name.endsWith(".html"); });
-  if (htmlFile) {
-    var html = htmlFile.content || "";
-    var cssFile = files.find(function(f) { return f.name.endsWith(".css"); });
-    var jsFile  = files.find(function(f) { return f.name.endsWith(".js"); });
-    if (cssFile && cssFile.content) {
-      var st = "<style>" + cssFile.content + "<\/style>";
-      html = html.includes("</head>") ? html.replace("</head>", st + "</head>") : st + html;
-    }
-    if (jsFile && jsFile.content) {
-      var sc = "<script>" + jsFile.content + "<\/scr" + "ipt>";
-      html = html.includes("</body>") ? html.replace("</body>", sc + "</body>") : html + sc;
-    }
-    document.getElementById("html-frame").srcdoc = html;
-    switchOut("preview");
-    return;
-  }
-
-  // Code execution — run active file
-  var activeFile = files.find(function(f) { return f.id === activeId; });
-  if (!activeFile) { showOut("No file selected.", "error"); return; }
-
-  var ext = activeFile.name.split(".").pop().toLowerCase();
-  var langMap = { py: "python", js: "javascript", cpp: "cpp", c: "cpp" };
-  var lang = langMap[ext];
-  if (!lang) { showOut("Cannot run ." + ext + " files directly.", "error"); return; }
-
-  btn.disabled = true;
-  btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .7s linear infinite"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Running...';
-  showOut("Running...", "running");
-  switchOut("console");
-
-  try {
-    var res  = await fetch(API + "/run", {
-      method:"POST", headers: authH(),
-      body: JSON.stringify({ language: lang, code: activeFile.content || "" })
-    });
-    var data = await res.json();
-    if (data.error && data.error.trim()) showOut(data.error, "error");
-    else showOut(data.output || "(no output)", "");
-  } catch(e) {
-    showOut("Could not connect to server.", "error");
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Run';
-  }
+  var activeFile=files.find(function(f){return f.id===activeId;});
+  if(!activeFile){showOut("No file selected.","error");return;}
+  var ext=activeFile.name.split(".").pop().toLowerCase();
+  var langMap={py:"python",js:"javascript",cpp:"cpp",c:"cpp"};
+  var lang=langMap[ext];
+  if(!lang){showOut("Cannot run ."+ext+" files directly.","error");return;}
+  btn.disabled=true;
+  btn.innerHTML='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .7s linear infinite"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Running...';
+  showOut("Running...","running");switchOut("console");
+  try{
+    var res=await fetch(API+"/run",{method:"POST",headers:authH(),body:JSON.stringify({language:lang,code:activeFile.content||""})});
+    var data=await res.json();
+    if(data.error&&data.error.trim())showOut(data.error,"error");else showOut(data.output||"(no output)","");
+  }catch(e){showOut("Could not connect to server.","error");}
+  finally{btn.disabled=false;btn.innerHTML='<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Run';}
 }
+function showOut(text,cls){var p=document.getElementById("out-pre");p.textContent=text;p.className=cls||"";}
+function clearOut(){showOut("Press Run or Ctrl+Enter to execute...","idle");}
+function switchOut(tab){var isCon=(tab==="console");document.getElementById("ot-console").className="out-tab"+(isCon?" active":"");document.getElementById("ot-preview").className="out-tab"+(!isCon?" active":"");document.getElementById("out-body").style.display=isCon?"":"none";document.getElementById("html-frame").style.display=isCon?"none":"block";document.getElementById("html-frame").style.flex=isCon?"":"1";}
 
-function showOut(text, cls) {
-  var pre = document.getElementById("out-pre");
-  pre.textContent = text; pre.className = cls || "";
-}
-function clearOut() { showOut("Press Run or Ctrl+Enter to execute...", "idle"); }
-
-function switchOut(tab) {
-  var isCon = (tab === "console");
-  document.getElementById("ot-console").className = "out-tab" + (isCon  ? " active" : "");
-  document.getElementById("ot-preview").className = "out-tab" + (!isCon ? " active" : "");
-  document.getElementById("out-body").style.display    = isCon ? ""     : "none";
-  document.getElementById("html-frame").style.display  = isCon ? "none" : "block";
-  document.getElementById("html-frame").style.flex     = isCon ? ""     : "1";
-}
-
-// ── Host ──────────────────────────────────────────────────
-async function openHostModal() {
-  if (hostedUrl) {
-    document.getElementById("hosted-url-section").style.display = "";
-    document.getElementById("host-url-val").value = hostedUrl;
-    document.getElementById("host-open-link").href = hostedUrl;
-    document.getElementById("host-status").textContent = "";
-  } else {
-    document.getElementById("hosted-url-section").style.display = "none";
-    document.getElementById("host-status").textContent = "";
-  }
+// ── Host ──────────────────────────────────────────────────────────────────
+async function openHostModal(){
+  if(hostedUrl){document.getElementById("hosted-url-section").style.display="";document.getElementById("host-url-val").value=hostedUrl;document.getElementById("host-open-link").href=hostedUrl;}
+  else document.getElementById("hosted-url-section").style.display="none";
+  document.getElementById("host-status").textContent="";
   openModal("host-modal");
 }
-
-async function deployNow() {
+async function deployNow(){
   await saveAll();
-  var btn = document.getElementById("deploy-btn");
-  btn.disabled = true; btn.textContent = "Deploying...";
-  document.getElementById("host-status").textContent = "Uploading files...";
-  try {
-    var res  = await fetch(API + "/projects/" + projectId + "/host", {
-      method:"POST", headers: authH(),
-      body: JSON.stringify({ files: files })
-    });
-    var data = await res.json();
-    if (data.url) {
-      hostedUrl = data.url;
-      document.getElementById("hosted-url-section").style.display = "";
-      document.getElementById("host-url-val").value = data.url;
-      document.getElementById("host-open-link").href = data.url;
-      document.getElementById("host-status").innerHTML = '<span class="live-badge" style="margin-top:8px;display:inline-flex">&#127760; Deployed successfully!</span>';
-    } else {
-      document.getElementById("host-status").textContent = "Error: " + (data.error || "Unknown error");
-    }
-  } catch(e) {
-    document.getElementById("host-status").textContent = "Could not connect to server.";
-  } finally {
-    btn.disabled = false; btn.textContent = "&#128640; Redeploy";
-  }
+  var btn=document.getElementById("deploy-btn");btn.disabled=true;btn.textContent="Deploying...";
+  document.getElementById("host-status").textContent="Uploading files...";
+  try{
+    var res=await fetch(API+"/projects/"+projectId+"/host",{method:"POST",headers:authH(),body:JSON.stringify({files:files})});
+    var data=await res.json();
+    if(data.url){hostedUrl=data.url;document.getElementById("hosted-url-section").style.display="";document.getElementById("host-url-val").value=data.url;document.getElementById("host-open-link").href=data.url;document.getElementById("host-status").innerHTML='<span class="live-badge">&#127760; Deployed!</span>';}
+    else document.getElementById("host-status").textContent="Error: "+(data.error||"Unknown");
+  }catch(e){document.getElementById("host-status").textContent="Could not connect.";}
+  finally{btn.disabled=false;btn.textContent="&#128640; Redeploy";}
 }
+function copyHostUrl(){navigator.clipboard.writeText(document.getElementById("host-url-val").value).catch(function(){document.getElementById("host-url-val").select();document.execCommand("copy");});}
 
-function copyHostUrl() {
-  navigator.clipboard.writeText(document.getElementById("host-url-val").value).catch(function() {
-    document.getElementById("host-url-val").select(); document.execCommand("copy");
-  });
-}
-
-// ── Publish to community ──────────────────────────────────
-function openPublishModal() {
-  if (!token) { window.location.href = "index.html"; return; }
-  document.getElementById("pub-title").value = document.getElementById("proj-title").value || "";
-  document.getElementById("pub-desc").value  = "";
-  openModal("pub-modal");
-  setTimeout(function() { document.getElementById("pub-title").focus(); }, 100);
-}
-
-async function doPublish() {
-  var title = document.getElementById("pub-title").value.trim();
-  var desc  = document.getElementById("pub-desc").value.trim();
-  if (!title) { alert("Please enter a title."); return; }
+// ── Publish ───────────────────────────────────────────────────────────────
+function openPublishModal(){if(!token){window.location.href="index.html";return;}document.getElementById("pub-title").value=document.getElementById("proj-title").value||"";document.getElementById("pub-desc").value="";openModal("pub-modal");setTimeout(function(){document.getElementById("pub-title").focus();},100);}
+async function doPublish(){
+  var title=document.getElementById("pub-title").value.trim(),desc=document.getElementById("pub-desc").value.trim();
+  if(!title){alert("Please enter a title.");return;}
   await saveAll();
-  var btn = document.getElementById("pub-btn");
-  btn.disabled = true; btn.textContent = "Publishing...";
-  try {
-    var res  = await fetch(API + "/community/publish", {
-      method:"POST", headers: authH(),
-      body: JSON.stringify({ project_id: projectId, title: title, description: desc })
-    });
-    var data = await res.json();
-    if (data.id) {
-      closeModal("pub-modal");
-      var go = confirm("Published! View it in the Community Hub?");
-      if (go) window.location.href = "community.html";
-    } else {
-      alert(data.error || "Could not publish.");
-    }
-  } catch(e) { alert("Could not publish."); }
-  finally { btn.disabled = false; btn.textContent = "Publish"; }
+  var btn=document.getElementById("pub-btn");btn.disabled=true;btn.textContent="Publishing...";
+  try{var res=await fetch(API+"/community/publish",{method:"POST",headers:authH(),body:JSON.stringify({project_id:projectId,title:title,description:desc})});var data=await res.json();if(data.id){closeModal("pub-modal");if(confirm("Published! View in Community Hub?"))window.location.href="community.html";}else alert(data.error||"Could not publish.");}
+  catch(e){alert("Could not publish.");}
+  finally{btn.disabled=false;btn.textContent="Publish";}
 }
 
-// ── Resizer ───────────────────────────────────────────────
-(function() {
-  var rs = document.getElementById("resizer");
-  var ea = document.getElementById("editor-area");
-  var op = document.getElementById("out-panel");
-  var row= document.getElementById("center-row");
-  var d  = false, sx, sew;
-
-  var saved = parseFloat(localStorage.getItem("cs_repo_pct"));
-  if (saved > 15 && saved < 92) {
-    ea.style.flex="none"; op.style.flex="none";
-    ea.style.width=saved+"%"; op.style.width=(100-saved)+"%";
-  } else { ea.style.flex="1"; op.style.width="360px"; op.style.flex="none"; }
-
-  rs.addEventListener("mousedown", function(e) {
-    d=true; sx=e.clientX; sew=ea.getBoundingClientRect().width;
-    rs.classList.add("drag"); document.body.style.cursor="col-resize"; document.body.style.userSelect="none"; e.preventDefault();
-  });
-  document.addEventListener("mousemove", function(e) {
-    if (!d) return;
+// ── Resizer (calls relayout during drag — fixes double cursor) ────────────
+(function(){
+  var rs=document.getElementById("resizer"),ea=document.getElementById("editor-area"),op=document.getElementById("out-panel"),row=document.getElementById("center-row");
+  var d=false,sx,sew;
+  var saved=parseFloat(localStorage.getItem("cs_repo_pct"));
+  if(saved>15&&saved<92){ea.style.flex="none";op.style.flex="none";ea.style.width=saved+"%";op.style.width=(100-saved)+"%";}
+  else{ea.style.flex="1";op.style.width="360px";op.style.flex="none";}
+  rs.addEventListener("mousedown",function(e){d=true;sx=e.clientX;sew=ea.getBoundingClientRect().width;rs.classList.add("drag");document.body.style.cursor="col-resize";document.body.style.userSelect="none";e.preventDefault();});
+  document.addEventListener("mousemove",function(e){
+    if(!d)return;
     var tw=row.getBoundingClientRect().width-rs.getBoundingClientRect().width;
     var nw=Math.max(180,Math.min(sew+(e.clientX-sx),tw-160));
-    ea.style.flex="none"; op.style.flex="none"; ea.style.width=nw+"px"; op.style.width=(tw-nw)+"px";
+    ea.style.flex="none";op.style.flex="none";ea.style.width=nw+"px";op.style.width=(tw-nw)+"px";
+    if(window.csRelayout)window.csRelayout();
   });
-  document.addEventListener("mouseup", function() {
-    if (!d) return; d=false; rs.classList.remove("drag");
-    document.body.style.cursor=""; document.body.style.userSelect="";
+  document.addEventListener("mouseup",function(){
+    if(!d)return;d=false;rs.classList.remove("drag");
+    document.body.style.cursor="";document.body.style.userSelect="";
     var tw=row.getBoundingClientRect().width;
     localStorage.setItem("cs_repo_pct",((ea.getBoundingClientRect().width/tw)*100).toFixed(2));
+    if(window.csRelayout)window.csRelayout();
   });
 })();
 
-// ── Modals ────────────────────────────────────────────────
-function openModal(id)  { document.getElementById(id).classList.add("open"); }
-function closeModal(id) { document.getElementById(id).classList.remove("open"); }
-
-["add-modal","rename-modal","del-file-modal","host-modal","pub-modal"].forEach(function(id) {
-  document.getElementById(id).addEventListener("click", function(e) { if (e.target===this) closeModal(id); });
+function openModal(id){document.getElementById(id).classList.add("open");}
+function closeModal(id){document.getElementById(id).classList.remove("open");}
+["add-modal","rename-modal","del-file-modal","host-modal","pub-modal"].forEach(function(id){document.getElementById(id).addEventListener("click",function(e){if(e.target===this)closeModal(id);});});
+document.addEventListener("keydown",function(e){
+  if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){e.preventDefault();runCode();}
+  if((e.metaKey||e.ctrlKey)&&e.key==="s"){e.preventDefault();saveAll();}
+  if(e.key==="Escape"){["add-modal","rename-modal","del-file-modal","host-modal","pub-modal"].forEach(closeModal);}
+  if(e.key==="Enter"){if(document.getElementById("add-modal").classList.contains("open")){e.preventDefault();confirmAddFile();}if(document.getElementById("rename-modal").classList.contains("open")){e.preventDefault();confirmRename();}}
 });
 
-document.addEventListener("keydown", function(e) {
-  if ((e.metaKey||e.ctrlKey) && e.key==="Enter") { e.preventDefault(); runCode(); }
-  if ((e.metaKey||e.ctrlKey) && e.key==="s")     { e.preventDefault(); saveAll(); }
-  if (e.key==="Escape") { ["add-modal","rename-modal","del-file-modal","host-modal","pub-modal"].forEach(closeModal); }
-  if (e.key==="Enter") {
-    if (document.getElementById("add-modal").classList.contains("open"))    { e.preventDefault(); confirmAddFile(); }
-    if (document.getElementById("rename-modal").classList.contains("open")) { e.preventDefault(); confirmRename(); }
-  }
-});
-
-// ── Helpers ───────────────────────────────────────────────
-function fileIcon(name) {
-  var e = name.split(".").pop().toLowerCase();
-  var m = { html:"🌐",css:"🎨",js:"⚡",ts:"📘",py:"🐍",cpp:"⚙️",c:"⚙️",json:"📋",md:"📝",txt:"📄",sh:"💻" };
-  return m[e] || "📄";
-}
-
-function monacoLang(name) {
-  var e = (name||"").split(".").pop().toLowerCase();
-  var m = { js:"javascript",ts:"typescript",py:"python",cpp:"cpp",c:"cpp",html:"html",css:"css",json:"json",md:"markdown",sh:"shell" };
-  return m[e] || "plaintext";
-}
-
-function langToExt(lang) {
-  return { python:".py", javascript:".js", cpp:".cpp", html:".html" }[lang] || ".txt";
-}
-
-function defaultForLang(lang) {
-  var d = {
-    python: '# Python\nprint("Hello, World!")',
-    javascript: '// JavaScript\nconsole.log("Hello, World!");',
-    cpp: '#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello, World!" << endl;\n    return 0;\n}',
-    html: defaultHTML()
-  };
-  return d[lang] || "";
-}
-
-function defaultHTML() {
-  return '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8"/>\n  <title>My Site</title>\n  <link rel="stylesheet" href="style.css"/>\n</head>\n<body>\n  <h1>Hello, World!</h1>\n  <p>Edit index.html, style.css and script.js.</p>\n  <script src="script.js"><\/scr' + 'ipt>\n</body>\n</html>';
-}
-
-function defaultCSS() {
-  return '*, *::before, *::after { box-sizing: border-box; }\nbody {\n  font-family: sans-serif;\n  margin: 0; padding: 40px;\n  background: #0d1117;\n  color: #e6edf3;\n}\nh1 { font-size: 2rem; margin-bottom: 12px; }';
-}
-
-function esc(s) { return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function fileIcon(n){var e=n.split(".").pop().toLowerCase();return{html:"🌐",css:"🎨",js:"⚡",ts:"📘",py:"🐍",cpp:"⚙️",c:"⚙️",json:"📋",md:"📝",txt:"📄",sh:"💻"}[e]||"📄";}
+function monacoLang(n){var e=(n||"").split(".").pop().toLowerCase();return{js:"javascript",ts:"typescript",py:"python",cpp:"cpp",c:"cpp",html:"html",css:"css",json:"json",md:"markdown",sh:"shell"}[e]||"plaintext";}
+function langToExt(l){return{python:".py",javascript:".js",cpp:".cpp",html:".html"}[l]||".txt";}
+function defaultForLang(l){return{python:'# Python\nprint("Hello, World!")',javascript:'// JavaScript\nconsole.log("Hello, World!");',cpp:'#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello, World!" << endl;\n    return 0;\n}',html:defaultHTML()}[l]||"";}
+function defaultHTML(){return '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8"/>\n  <title>My Site</title>\n  <link rel="stylesheet" href="style.css"/>\n</head>\n<body>\n  <h1>Hello, World!</h1>\n  <script src="script.js"><\/scr'+'ipt>\n</body>\n</html>';}
+function defaultCSS(){return '*, *::before, *::after { box-sizing: border-box; }\nbody {\n  font-family: sans-serif;\n  margin: 0; padding: 40px;\n  background: #0d1117; color: #e6edf3;\n}\nh1 { font-size: 2rem; }';}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
 </script>
 </body>
 </html>
