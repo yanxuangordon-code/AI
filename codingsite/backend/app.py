@@ -171,38 +171,47 @@ def signup():
     email    = (data.get("email") or "").strip().lower()
     password = data.get("password", "")
     code     = data.get("code", "").strip()
-
+    username = (data.get("username") or "").strip().lower()
+ 
     if not email or not password or not code:
         return jsonify({"error": "All fields are required"}), 400
+    if not username or len(username) < 3:
+        return jsonify({"error": "Username must be at least 3 characters"}), 400
     if len(password) < 6:
         return jsonify({"error": "Password must be at least 6 characters"}), 400
-
-    con = get_db()
-    cur = con.cursor()
-
+ 
+    con = get_db(); cur = con.cursor()
+ 
+    # Check verification code
     cur.execute("SELECT code, expires_at FROM verification_codes WHERE email=%s", (email,))
     row = cur.fetchone()
     if not row:
-        con.close(); return jsonify({"error": "No verification code found."}), 400
-    if row[1] < datetime.utcnow() or row[0] != code:
-        con.close(); return jsonify({"error": "Invalid or expired code"}), 400
-
+        con.close(); return jsonify({"error": "No verification code found. Request a new one."}), 400
+    if row[0] != code:
+        con.close(); return jsonify({"error": "Incorrect verification code."}), 400
+    if row[1] < datetime.utcnow():
+        con.close(); return jsonify({"error": "Verification code has expired."}), 400
+ 
+    # Check email already exists
     cur.execute("SELECT id FROM users WHERE email=%s", (email,))
     if cur.fetchone():
-        con.close(); return jsonify({"error": "Email already registered"}), 400
-
-    user_id  = str(uuid.uuid4())
-    username = email.split("@")[0]
+        con.close(); return jsonify({"error": "An account with this email already exists."}), 400
+ 
+    # Check username already taken
+    cur.execute("SELECT id FROM users WHERE username=%s", (username,))
+    if cur.fetchone():
+        con.close(); return jsonify({"error": "That username is already taken."}), 400
+ 
+    user_id = str(uuid.uuid4())
     cur.execute(
         "INSERT INTO users (id, email, password, username, verified) VALUES (%s,%s,%s,%s,1)",
         (user_id, email, generate_password_hash(password), username)
     )
     cur.execute("DELETE FROM verification_codes WHERE email=%s", (email,))
-    con.commit()
-    con.close()
-
+    con.commit(); con.close()
+ 
     token = create_access_token(identity=user_id)
-    return jsonify({"token": token, "email": email})
+    return jsonify({"token": token, "email": email, "username": username})
 
 # ── Auth: Login ───────────────────────────────────────────────────────────────
 @app.route("/auth/login", methods=["POST"])
@@ -210,18 +219,17 @@ def login():
     data     = request.json
     email    = (data.get("email") or "").strip().lower()
     password = data.get("password", "")
-
-    con = get_db()
-    cur = con.cursor()
-    cur.execute("SELECT id, password FROM users WHERE email=%s", (email,))
+ 
+    con = get_db(); cur = con.cursor()
+    cur.execute("SELECT id, password, username FROM users WHERE email=%s", (email,))
     row = cur.fetchone()
     con.close()
-
+ 
     if not row or not check_password_hash(row[1], password):
-        return jsonify({"error": "Invalid email or password"}), 401
-
+        return jsonify({"error": "Invalid email or password."}), 401
+ 
     token = create_access_token(identity=row[0])
-    return jsonify({"token": token, "email": email})
+    return jsonify({"token": token, "email": email, "username": row[2] or ""})
 
 # ── Projects: List ────────────────────────────────────────────────────────────
 @app.route("/projects", methods=["GET"])
