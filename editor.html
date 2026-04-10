@@ -26,10 +26,8 @@ html, body { height: 100%; overflow: hidden; margin: 0; font-family: 'Inter', sa
   --mono:    'JetBrains Mono', monospace;
 }
 
-html, body { height: 100%; overflow: hidden; margin: 0; }
 .layout { display: flex; flex-direction: column; height: 100vh; }
 
-/* ── Topbar ── */
 .topbar {
   height: 50px; flex-shrink: 0;
   background: var(--surface2); border-bottom: 1px solid var(--border);
@@ -40,79 +38,44 @@ html, body { height: 100%; overflow: hidden; margin: 0; }
 .brand-icon { width: 24px; height: 24px; border-radius: 6px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff; flex-shrink: 0; }
 .brand-text span { color: var(--accent); }
 .tb-sep { width: 1px; height: 18px; background: var(--border); flex-shrink: 0; margin: 0 2px; }
-
-.proj-title {
-  background: none; border: none; color: var(--text);
-  font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif;
-  outline: none; padding: 3px 7px; border-radius: 6px;
-  transition: background .15s; max-width: 200px;
-  border-bottom: 1px solid transparent;
-}
+.proj-title { background: none; border: none; color: var(--text); font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif; outline: none; padding: 3px 7px; border-radius: 6px; transition: background .15s; max-width: 200px; border-bottom: 1px solid transparent; }
 .proj-title:hover { background: var(--surface3); }
 .proj-title:focus { background: var(--surface3); box-shadow: 0 0 0 1px var(--accent); }
-
-/* Language badge — read only */
-.lang-badge {
-  display: flex; align-items: center; gap: 5px;
-  background: var(--surface3); border: 1px solid var(--border);
-  border-radius: 6px; padding: 3px 9px;
-  font-size: 11px; font-weight: 700; color: var(--muted);
-  flex-shrink: 0; cursor: default;
-}
+.lang-badge { display: flex; align-items: center; gap: 5px; background: var(--surface3); border: 1px solid var(--border); border-radius: 6px; padding: 3px 9px; font-size: 11px; font-weight: 700; color: var(--muted); flex-shrink: 0; cursor: default; }
 .lang-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-
 .tb-spacer { flex: 1; }
 .save-pill { display: flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 20px; background: var(--surface3); border: 1px solid var(--border); font-size: 11px; font-weight: 500; color: var(--muted); }
-.save-dot  { width: 6px; height: 6px; border-radius: 50%; background: var(--success); flex-shrink: 0; transition: background .2s; }
+.save-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); flex-shrink: 0; transition: background .2s; }
 .save-pill.saving .save-dot { background: var(--warning); animation: pulse 1s infinite; }
-.save-pill.error  .save-dot { background: var(--danger); }
+.save-pill.error .save-dot { background: var(--danger); }
 .save-pill.saving { color: var(--warning); }
-.save-pill.error  { color: var(--danger); }
+.save-pill.error { color: var(--danger); }
 @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
-@keyframes spin  { to{transform:rotate(360deg)} }
-
-.tb-btn {
-  background: var(--surface3); border: 1px solid var(--border); color: var(--text);
-  border-radius: 7px; padding: 5px 11px; font-size: 11px; font-weight: 600;
-  font-family: 'Inter', sans-serif; cursor: pointer; transition: all .15s;
-  display: flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0;
-}
+@keyframes spin { to{transform:rotate(360deg)} }
+.tb-btn { background: var(--surface3); border: 1px solid var(--border); color: var(--text); border-radius: 7px; padding: 5px 11px; font-size: 11px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0; }
 .tb-btn:hover { border-color: rgba(255,255,255,.2); background: var(--surface4); }
 .tb-btn.community { background: rgba(79,142,247,.12); border-color: rgba(79,142,247,.3); color: var(--accent); }
 .tb-btn.community:hover { background: rgba(79,142,247,.2); }
-
-.run-btn {
-  background: var(--success); border: none; color: #0a1628;
-  font-weight: 700; font-size: 11px; font-family: 'Inter', sans-serif;
-  padding: 5px 14px; border-radius: 7px; cursor: pointer; transition: all .15s;
-  display: flex; align-items: center; gap: 5px; flex-shrink: 0;
-}
+.run-btn { background: var(--success); border: none; color: #0a1628; font-weight: 700; font-size: 11px; font-family: 'Inter', sans-serif; padding: 5px 14px; border-radius: 7px; cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
 .run-btn:hover { background: #46c55a; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(63,185,80,.3); }
 .run-btn:active { transform: none; }
 .run-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; box-shadow:none; }
 
-/* ── Body ── */
 .body-row { display: flex; flex: 1; overflow: hidden; min-height: 0; position: relative; }
 .editor-pane { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
-#monaco-editor { flex: 1; min-height: 0; }
+/* Critical: editor must fill remaining space without overflow */
+#monaco-editor { flex: 1; min-height: 0; overflow: hidden; }
 
-/* ── Loading overlay ── */
-#load-overlay {
-  position: absolute; inset: 0; background: var(--surface);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 14px; z-index: 20; transition: opacity .3s;
-}
+#load-overlay { position: absolute; inset: 0; background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; z-index: 20; transition: opacity .3s; }
 .load-spin { width: 30px; height: 30px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
-#load-msg  { font-size: 13px; color: var(--text); font-weight: 500; margin: 0; }
+#load-msg { font-size: 13px; color: var(--text); font-weight: 500; margin: 0; }
 #load-hint { font-size: 11px; color: var(--muted); opacity: 0; transition: opacity .5s; margin: 0; max-width: 260px; text-align: center; line-height: 1.6; }
 #load-hint.show { opacity: 1; }
 
-/* ── Resizer ── */
 .resizer { width: 5px; flex-shrink: 0; background: var(--border); cursor: col-resize; position: relative; z-index: 5; transition: background .15s; }
 .resizer::before { content:''; position:absolute; top:0;bottom:0;left:-5px;right:-5px; }
 .resizer:hover, .resizer.drag { background: var(--accent); }
 
-/* ── Output panel ── */
 .out-panel { flex-shrink: 0; display: flex; flex-direction: column; background: var(--surface2); min-width: 160px; overflow: hidden; }
 .out-header { height: 35px; flex-shrink: 0; display: flex; align-items: stretch; border-bottom: 1px solid var(--border); }
 .out-tab { display: flex; align-items: center; padding: 0 13px; font-size: 11px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: color .1s; }
@@ -121,21 +84,21 @@ html, body { height: 100%; overflow: hidden; margin: 0; }
 .out-spacer { flex: 1; }
 .clear-btn { background: none; border: none; color: var(--muted); font-size: 11px; cursor: pointer; padding: 0 10px; font-family: 'Inter', sans-serif; transition: color .15s; }
 .clear-btn:hover { color: var(--text); }
-
 .out-body { flex: 1; overflow-y: auto; padding: 12px 14px; min-height: 0; }
 #out-pre { font-family: var(--mono); font-size: 12px; white-space: pre-wrap; line-height: 1.75; margin: 0; color: var(--success); }
-#out-pre.idle    { color: var(--muted); }
-#out-pre.error   { color: var(--danger); }
+#out-pre.idle { color: var(--muted); }
+#out-pre.error { color: var(--danger); }
 #out-pre.running { color: var(--warning); }
 #html-frame { flex: 1; border: none; background: #fff; display: none; min-height: 0; }
 
-/* ── Status bar ── */
 .statusbar { height: 22px; flex-shrink: 0; background: var(--accent); display: flex; align-items: center; padding: 0 12px; gap: 12px; }
-.sb-item { font-size: 10px; color: rgba(255,255,255,.8); white-space: nowrap; }
+.sb-item { font-size: 10px; color: rgba(255,255,255,.8); white-space: nowrap; display: flex; align-items: center; gap: 4px; }
 .sb-right { margin-left: auto; display: flex; gap: 12px; }
 .sb-dot { opacity: .35; }
+/* Diagnostics count in status bar */
+.sb-errors   { color: #f85149; font-weight: 700; }
+.sb-warnings { color: #e3b341; font-weight: 700; }
 
-/* ── Modals ── */
 .modal-back { position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;z-index:100; }
 .modal-back.open { display:flex; }
 .modal-box { background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:24px;width:420px;max-width:94vw;box-shadow:0 24px 64px rgba(0,0,0,.7);animation:modal-in .18s ease; }
@@ -146,16 +109,25 @@ html, body { height: 100%; overflow: hidden; margin: 0; }
 .modal-input:focus { border-color:var(--accent); }
 textarea.modal-input { resize:vertical;min-height:80px; }
 .modal-label { font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:7px; }
-.form-group  { margin-bottom:14px; }
+.form-group { margin-bottom:14px; }
 .modal-actions { display:flex;gap:8px;margin-top:18px;justify-content:flex-end; }
-.btn-prim  { background:var(--accent);border:none;color:#fff;border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s; }
+.btn-prim { background:var(--accent);border:none;color:#fff;border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s; }
 .btn-prim:hover { background:#6aa3f9; }
 .btn-prim:disabled { opacity:.5;cursor:not-allowed; }
 .btn-ghost { background:none;border:1px solid var(--border);color:var(--text);border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s; }
 .btn-ghost:hover { border-color:rgba(255,255,255,.2); }
-
 .share-url-row { display:flex;gap:8px;margin-top:10px; }
 .share-url-input { flex:1;background:var(--surface3);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:8px 11px;font-size:12px;font-family:var(--mono);outline:none; }
+
+/* Toast notification */
+#cs-toast {
+  position: fixed; bottom: 36px; right: 20px; z-index: 9999;
+  border-radius: 9px; padding: 10px 16px; font-size: 12px;
+  font-family: 'Inter', sans-serif; max-width: 340px; line-height: 1.5;
+  white-space: pre-wrap; box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  display: none; animation: toast-in .2s ease;
+}
+@keyframes toast-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -164,7 +136,6 @@ textarea.modal-input { resize:vertical;min-height:80px; }
 </head>
 <body>
 <div class="layout">
-
   <div class="topbar">
     <a href="dashboard.html" class="tb-btn" style="padding:5px 9px">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -175,26 +146,20 @@ textarea.modal-input { resize:vertical;min-height:80px; }
     </a>
     <div class="tb-sep"></div>
     <input class="proj-title" id="proj-title" value="Loading..." onblur="renameProject()" onkeydown="if(event.key==='Enter')this.blur()" spellcheck="false"/>
-
-    <!-- Language badge: read-only, set on load -->
     <div class="lang-badge" id="lang-badge" style="display:none">
       <div class="lang-dot" id="lang-dot"></div>
       <span id="lang-txt"></span>
     </div>
-
     <div class="tb-spacer"></div>
     <div class="save-pill" id="save-pill"><div class="save-dot"></div><span id="save-txt">Saved</span></div>
-
     <button class="tb-btn community" onclick="openPublishModal()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
       Publish
     </button>
-
     <button class="tb-btn" onclick="openShareModal()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
       Share
     </button>
-
     <button class="run-btn" id="run-btn" onclick="runCode()">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
       Run
@@ -207,13 +172,10 @@ textarea.modal-input { resize:vertical;min-height:80px; }
       <p id="load-msg">Loading project...</p>
       <p id="load-hint">Server is starting up — this may take up to 30 seconds.</p>
     </div>
-
-    <div class="editor-pane">
+    <div class="editor-pane" id="editor-pane">
       <div id="monaco-editor"></div>
     </div>
-
     <div class="resizer" id="resizer"></div>
-
     <div class="out-panel" id="out-panel">
       <div class="out-header">
         <div class="out-tab active" id="ot-out" onclick="switchOut('output')">Output</div>
@@ -232,6 +194,10 @@ textarea.modal-input { resize:vertical;min-height:80px; }
     <div class="sb-item">CodeSponge</div>
     <span class="sb-dot">·</span>
     <div class="sb-item" id="sb-lang">—</div>
+    <div class="sb-item" id="sb-diag" style="display:none">
+      <span id="sb-errors" class="sb-errors"></span>
+      <span id="sb-warnings" class="sb-warnings"></span>
+    </div>
     <div class="sb-right">
       <div class="sb-item" id="sb-cursor">Ln 1, Col 1</div>
       <span class="sb-dot">·</span>
@@ -242,6 +208,9 @@ textarea.modal-input { resize:vertical;min-height:80px; }
   </div>
 </div>
 
+<!-- Toast -->
+<div id="cs-toast"></div>
+
 <!-- Share modal -->
 <div class="modal-back" id="share-modal">
   <div class="modal-box">
@@ -251,17 +220,15 @@ textarea.modal-input { resize:vertical;min-height:80px; }
       <input class="share-url-input" id="share-url" readonly onclick="this.select()"/>
       <button class="btn-prim" id="copy-btn" onclick="copyShareUrl()">Copy</button>
     </div>
-    <div class="modal-actions">
-      <button class="btn-ghost" onclick="closeModal('share-modal')">Close</button>
-    </div>
+    <div class="modal-actions"><button class="btn-ghost" onclick="closeModal('share-modal')">Close</button></div>
   </div>
 </div>
 
 <!-- Publish modal -->
 <div class="modal-back" id="pub-modal">
   <div class="modal-box">
-    <p class="modal-title">&#128640; Publish to Community</p>
-    <p class="modal-sub">Share this project with the community. Others can view, like, and fork it.</p>
+    <p class="modal-title">Publish to Community</p>
+    <p class="modal-sub">Share this project publicly. Others can view, like, and fork it.</p>
     <div class="form-group">
       <label class="modal-label">Title</label>
       <input class="modal-input" id="pub-title" placeholder="Give your project a title" autocomplete="off"/>
@@ -282,46 +249,265 @@ textarea.modal-input { resize:vertical;min-height:80px; }
 var API   = "https://codesponge-backend.onrender.com";
 var token = localStorage.getItem("token");
 if (!token) window.location.href = "index.html";
-
 var params    = new URLSearchParams(window.location.search);
 var projectId = params.get("project");
 if (!projectId && !params.get("snippet")) window.location.href = "dashboard.html";
-
 function authH() { return { "Content-Type": "application/json", "Authorization": "Bearer " + token }; }
 
 var editor, currentLang = "python";
-
-var LANG_COLORS  = { python:"#3572A5", javascript:"#f1e05a", cpp:"#f34b7d", html:"#e34c26" };
-var LANG_LABELS  = { python:"Python", javascript:"JavaScript", cpp:"C++", html:"HTML" };
-var LANG_MONACO  = { python:"python", javascript:"javascript", cpp:"cpp", html:"html" };
+var LANG_COLORS = { python:"#3572A5", javascript:"#f1e05a", cpp:"#f34b7d", html:"#e34c26" };
+var LANG_LABELS = { python:"Python", javascript:"JavaScript", cpp:"C++", html:"HTML" };
 
 require.config({ paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs" } });
 require(["vs/editor/editor.main"], function() {
+
+  // ── Configure built-in language diagnostics BEFORE creating editor ────────
+  monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+    noSemanticValidation: false,
+    noSyntaxValidation: false,
+    noSuggestionDiagnostics: false,
+  });
+  monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+    target: monaco.languages.typescript.ScriptTarget.ES2020,
+    allowJs: true, checkJs: true, strict: false,
+    noUnusedLocals: true,
+  });
+  monaco.languages.html.htmlDefaults.setOptions({ validate: true, suggest: { html5: true } });
+  monaco.languages.css.cssDefaults.setOptions({ validate: true });
+  monaco.languages.json.jsonDefaults.setDiagnosticsOptions({ validate: true });
+
+  // ── Create editor ─────────────────────────────────────────────────────────
   editor = monaco.editor.create(document.getElementById("monaco-editor"), {
     value: "", language: "python", theme: "vs-dark",
     fontSize: 14, fontFamily: "'JetBrains Mono', monospace", fontLigatures: true,
-    minimap: { enabled: false }, automaticLayout: true,
+    minimap: { enabled: false },
+    // Fix double cursor: use layoutInfo-based resizing instead of automaticLayout
+    automaticLayout: false,
     scrollBeyondLastLine: false, padding: { top: 14, bottom: 14 },
     cursorBlinking: "smooth", cursorSmoothCaretAnimation: "on",
     smoothScrolling: true, renderLineHighlight: "gutter", tabSize: 4,
     scrollbar: { verticalScrollbarSize: 5, horizontalScrollbarSize: 5 },
+    // Enable all code action providers
+    lightbulb: { enabled: true },
+    quickSuggestions: { other: true, comments: false, strings: false },
   });
 
+  // ── Manual layout (fixes double cursor bug) ───────────────────────────────
+  function relayout() {
+    var pane = document.getElementById("editor-pane");
+    editor.layout({ width: pane.clientWidth, height: pane.clientHeight });
+  }
+  window.addEventListener("resize", relayout);
+  // Also call after resizer drag ends (see resizer section)
+  window.csRelayout = relayout;
+
+  // ── Cursor position ───────────────────────────────────────────────────────
   editor.onDidChangeCursorPosition(function(e) {
     document.getElementById("sb-cursor").textContent =
       "Ln " + e.position.lineNumber + ", Col " + e.position.column;
   });
 
+  // ── Auto-save ─────────────────────────────────────────────────────────────
   var saveTimer;
   editor.onDidChangeModelContent(function() {
     setSave("saving");
     clearTimeout(saveTimer);
     saveTimer = setTimeout(saveProject, 1500);
+    // Re-run linter on change
+    clearTimeout(lintTimer);
+    lintTimer = setTimeout(function() { runLinter(editor.getModel()); }, 600);
   });
 
+  // ── Custom linter (Python / C++) ──────────────────────────────────────────
+  var lintTimer;
+
+  var PYTHON_RULES = [
+    { re: /\bpirnt\s*\(/g,   msg: 'Typo: did you mean "print"?',             sev: monaco.MarkerSeverity.Error   },
+    { re: /\bprnit\s*\(/g,   msg: 'Typo: did you mean "print"?',             sev: monaco.MarkerSeverity.Error   },
+    { re: /\bimoprt\b/g,     msg: 'Typo: did you mean "import"?',            sev: monaco.MarkerSeverity.Error   },
+    { re: /\bimprot\b/g,     msg: 'Typo: did you mean "import"?',            sev: monaco.MarkerSeverity.Error   },
+    { re: /\bdeef\s+/g,      msg: 'Typo: did you mean "def"?',               sev: monaco.MarkerSeverity.Error   },
+    { re: /\bclsas\s+/g,     msg: 'Typo: did you mean "class"?',             sev: monaco.MarkerSeverity.Error   },
+    { re: /\bretunr\b/g,     msg: 'Typo: did you mean "return"?',            sev: monaco.MarkerSeverity.Error   },
+    { re: /\bTure\b/g,       msg: 'Typo: did you mean "True"?',              sev: monaco.MarkerSeverity.Error   },
+    { re: /\bFlase\b/g,      msg: 'Typo: did you mean "False"?',             sev: monaco.MarkerSeverity.Error   },
+    { re: /\bNoen\b/g,       msg: 'Typo: did you mean "None"?',              sev: monaco.MarkerSeverity.Error   },
+    { re: /\bexcpet\b/g,     msg: 'Typo: did you mean "except"?',            sev: monaco.MarkerSeverity.Error   },
+    { re: /\beval\s*\(/g,    msg: 'Warning: eval() can be unsafe',           sev: monaco.MarkerSeverity.Warning },
+    { re: /\bexec\s*\(/g,    msg: 'Warning: exec() can be unsafe',           sev: monaco.MarkerSeverity.Warning },
+    { re: /except\s*:/g,     msg: 'Warning: bare except catches everything — use "except Exception as e:"', sev: monaco.MarkerSeverity.Warning },
+    { re: /import\s+\*/g,    msg: 'Warning: wildcard import — prefer explicit imports', sev: monaco.MarkerSeverity.Warning },
+    { re: /#\s*TODO\b/g,     msg: 'TODO: remember to implement this',        sev: monaco.MarkerSeverity.Warning },
+    { re: /#\s*FIXME\b/g,    msg: 'FIXME: this needs attention',             sev: monaco.MarkerSeverity.Warning },
+  ];
+
+  var CPP_RULES = [
+    { re: /\bcuot\s*<</g,         msg: 'Typo: did you mean "cout"?',         sev: monaco.MarkerSeverity.Error   },
+    { re: /\bmian\s*\(/g,         msg: 'Typo: did you mean "main"?',         sev: monaco.MarkerSeverity.Error   },
+    { re: /\bvoid\s+mian/g,       msg: 'Typo: did you mean "main"?',         sev: monaco.MarkerSeverity.Error   },
+    { re: /\bnamepsace\b/g,       msg: 'Typo: did you mean "namespace"?',    sev: monaco.MarkerSeverity.Error   },
+    { re: /\binclude\s*<(?!.*#)/g,msg: 'Missing # before include',           sev: monaco.MarkerSeverity.Error   },
+    { re: /\bgoto\b/g,            msg: 'Warning: avoid "goto" — use loops',  sev: monaco.MarkerSeverity.Warning },
+    { re: /\/\/\s*TODO\b/g,       msg: 'TODO: remember to implement this',   sev: monaco.MarkerSeverity.Warning },
+    { re: /\/\/\s*FIXME\b/g,      msg: 'FIXME: this needs attention',        sev: monaco.MarkerSeverity.Warning },
+    { re: /\bsystem\s*\(\s*["']/g,msg: 'Warning: system() calls are a security risk', sev: monaco.MarkerSeverity.Warning },
+  ];
+
+  function runLinter(model) {
+    if (!model) return;
+    var lang = model.getLanguageId();
+    var rules = lang === "python" ? PYTHON_RULES : lang === "cpp" ? CPP_RULES : null;
+    if (!rules) return; // JS/HTML/CSS handled natively
+
+    var text  = model.getValue();
+    var lines = text.split("\n");
+    var markers = [];
+
+    rules.forEach(function(rule) {
+      rule.re.lastIndex = 0;
+      var m;
+      while ((m = rule.re.exec(text)) !== null) {
+        var offset = m.index;
+        var lineNo = 0, col = offset;
+        for (var i = 0; i < lines.length; i++) {
+          if (col <= lines[i].length) { lineNo = i; break; }
+          col -= lines[i].length + 1;
+        }
+        markers.push({
+          severity:        rule.sev,
+          message:         rule.msg,
+          startLineNumber: lineNo + 1,
+          startColumn:     col + 1,
+          endLineNumber:   lineNo + 1,
+          endColumn:       col + m[0].length + 1,
+          source:          "CodeSponge",
+        });
+        if (m[0].length === 0) rule.re.lastIndex++;
+      }
+      rule.re.lastIndex = 0;
+    });
+
+    monaco.editor.setModelMarkers(model, "codesponge", markers);
+    updateDiagBar(markers);
+  }
+
+  function updateDiagBar(markers) {
+    var errors   = markers.filter(function(m) { return m.severity === monaco.MarkerSeverity.Error; }).length;
+    var warnings = markers.filter(function(m) { return m.severity === monaco.MarkerSeverity.Warning; }).length;
+    var bar = document.getElementById("sb-diag");
+    if (errors === 0 && warnings === 0) { bar.style.display = "none"; return; }
+    bar.style.display = "flex";
+    bar.style.gap = "8px";
+    var eEl = document.getElementById("sb-errors");
+    var wEl = document.getElementById("sb-warnings");
+    eEl.textContent = errors   > 0 ? "✕ " + errors   + " error"   + (errors   > 1 ? "s" : "") : "";
+    wEl.textContent = warnings > 0 ? "⚠ " + warnings + " warning" + (warnings > 1 ? "s" : "") : "";
+  }
+
+  // Also update diag bar for JS/HTML (Monaco fires this event)
+  monaco.editor.onDidChangeMarkers(function(uris) {
+    var model = editor.getModel();
+    if (!model) return;
+    var markers = monaco.editor.getModelMarkers({ resource: model.uri });
+    updateDiagBar(markers);
+  });
+
+  // ── Context menu actions ──────────────────────────────────────────────────
+
+  // Quick Fix
+  editor.addAction({
+    id: "cs.quickFix",
+    label: "Quick fix",
+    contextMenuGroupId: "1_modification",
+    contextMenuOrder: 0.5,
+    run: function(ed) {
+      var pos     = ed.getPosition();
+      var model   = ed.getModel();
+      var markers = monaco.editor.getModelMarkers({ resource: model.uri })
+        .filter(function(mk) {
+          return mk.startLineNumber <= pos.lineNumber && mk.endLineNumber >= pos.lineNumber
+              && mk.severity === monaco.MarkerSeverity.Error;
+        });
+      if (!markers.length) { showToast("No quick fix available on this line.", "info"); return; }
+      var mk  = markers[0];
+      var fix = extractFix(mk.message);
+      if (!fix) { showToast("No automatic fix — " + mk.message, "warning"); return; }
+      ed.executeEdits("cs-fix", [{
+        range: new monaco.Range(mk.startLineNumber, mk.startColumn, mk.endLineNumber, mk.endColumn),
+        text:  fix,
+      }]);
+      showToast('Fixed: replaced with "' + fix + '"', "success");
+    }
+  });
+
+  // Explain error
+  editor.addAction({
+    id: "cs.explainError",
+    label: "Explain this error / warning",
+    contextMenuGroupId: "1_modification",
+    contextMenuOrder: 0.6,
+    run: function(ed) {
+      var pos     = ed.getPosition();
+      var model   = ed.getModel();
+      var markers = monaco.editor.getModelMarkers({ resource: model.uri })
+        .filter(function(mk) {
+          return mk.startLineNumber <= pos.lineNumber && mk.endLineNumber >= pos.lineNumber;
+        });
+      if (!markers.length) { showToast("No errors or warnings on this line.", "info"); return; }
+      var msgs = markers.map(function(mk) {
+        return (mk.severity === monaco.MarkerSeverity.Error ? "Error" : "Warning") + ": " + mk.message;
+      }).join("\n");
+      showToast(msgs, markers[0].severity === monaco.MarkerSeverity.Error ? "error" : "warning");
+    }
+  });
+
+  // Ignore warning
+  editor.addAction({
+    id: "cs.ignoreWarning",
+    label: "Ignore this warning",
+    contextMenuGroupId: "1_modification",
+    contextMenuOrder: 0.7,
+    run: function(ed) {
+      var pos     = ed.getPosition();
+      var model   = ed.getModel();
+      var all     = monaco.editor.getModelMarkers({ resource: model.uri });
+      var kept    = all.filter(function(mk) {
+        return !(mk.startLineNumber === pos.lineNumber && mk.severity === monaco.MarkerSeverity.Warning);
+      });
+      monaco.editor.setModelMarkers(model, "codesponge", kept);
+      updateDiagBar(kept);
+      showToast("Warning suppressed for this session.", "info");
+    }
+  });
+
+  // ── Toast helper ──────────────────────────────────────────────────────────
+  var toastTimer;
+  function showToast(msg, type) {
+    var el = document.getElementById("cs-toast");
+    var colors = {
+      error:   { bg:"rgba(248,81,73,.18)",  border:"rgba(248,81,73,.5)",  color:"#f85149" },
+      warning: { bg:"rgba(227,179,65,.18)", border:"rgba(227,179,65,.5)", color:"#e3b341" },
+      success: { bg:"rgba(63,185,80,.18)",  border:"rgba(63,185,80,.5)",  color:"#3fb950" },
+      info:    { bg:"rgba(79,142,247,.18)", border:"rgba(79,142,247,.5)", color:"#4f8ef7" },
+    };
+    var c = colors[type] || colors.info;
+    el.style.cssText = "position:fixed;bottom:36px;right:20px;z-index:9999;border-radius:9px;padding:10px 16px;font-size:12px;font-family:'Inter',sans-serif;max-width:360px;line-height:1.5;white-space:pre-wrap;box-shadow:0 8px 24px rgba(0,0,0,.4);animation:toast-in .2s ease;background:" + c.bg + ";border:1px solid " + c.border + ";color:" + c.color + ";display:block";
+    el.textContent = msg;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function() { el.style.display = "none"; }, 5000);
+  }
+
+  function extractFix(msg) {
+    var m = msg.match(/did you mean "([^"]+)"\?/i);
+    return m ? m[1] : null;
+  }
+
+  // ── Load project ──────────────────────────────────────────────────────────
   loadProject();
+  setTimeout(relayout, 100);
 });
 
+// ── Helpers ───────────────────────────────────────────────────────────────
 function hideOverlay() {
   var el = document.getElementById("load-overlay");
   el.style.opacity = "0";
@@ -337,33 +523,22 @@ function setSave(s) {
 
 function setLangUI(lang) {
   currentLang = lang;
-  // Badge
   document.getElementById("lang-dot").style.background = LANG_COLORS[lang] || "#7d8590";
   document.getElementById("lang-txt").textContent = LANG_LABELS[lang] || lang;
   document.getElementById("lang-badge").style.display = "flex";
-  // Status bar
   document.getElementById("sb-lang").textContent = LANG_LABELS[lang] || lang;
-  // Monaco language
-  if (editor) monaco.editor.setModelLanguage(editor.getModel(), LANG_MONACO[lang] || "plaintext");
-  // Preview tab only for HTML
+  if (editor) monaco.editor.setModelLanguage(editor.getModel(), lang === "cpp" ? "cpp" : lang);
   document.getElementById("ot-prev").style.display = (lang === "html") ? "" : "none";
-  if (lang === "html") switchOut("preview"); else switchOut("output");
+  switchOut(lang === "html" ? "preview" : "output");
 }
 
 async function loadProject() {
   var snippet = params.get("snippet");
   if (snippet) { loadSnippet(snippet); return; }
-
-  var hintTimer = setTimeout(function() {
-    document.getElementById("load-hint").classList.add("show");
-  }, 5000);
-
+  var hintTimer = setTimeout(function() { document.getElementById("load-hint").classList.add("show"); }, 5000);
   for (var attempt = 0; attempt < 3; attempt++) {
     try {
-      if (attempt > 0) {
-        document.getElementById("load-msg").textContent = "Retrying... (" + (attempt+1) + "/3)";
-        await new Promise(function(r) { setTimeout(r, 2000); });
-      }
+      if (attempt > 0) { document.getElementById("load-msg").textContent = "Retrying... (" + (attempt+1) + "/3)"; await new Promise(function(r){setTimeout(r,2000);}); }
       var res = await fetch(API + "/projects/" + projectId, { headers: authH() });
       clearTimeout(hintTimer);
       if (res.status === 401) { window.location.href = "index.html"; return; }
@@ -375,12 +550,10 @@ async function loadProject() {
       editor.setValue(data.code || getDefault(data.language));
       setSave("saved");
       hideOverlay();
+      if (window.csRelayout) window.csRelayout();
       return;
-    } catch(err) {
-      console.error("Attempt " + (attempt+1) + " failed:", err);
-    }
+    } catch(err) { console.error("Attempt " + (attempt+1) + " failed:", err); }
   }
-
   clearTimeout(hintTimer);
   document.getElementById("proj-title").value = "Error loading";
   document.getElementById("load-msg").textContent = "Could not load project.";
@@ -395,7 +568,7 @@ async function loadSnippet(id) {
     var d   = await res.json();
     setLangUI(d.language || "python");
     editor.setValue(d.code || "");
-    document.getElementById("save-txt").textContent = "Read-only snippet";
+    document.getElementById("save-txt").textContent = "Read-only";
     document.getElementById("save-pill").style.opacity = ".6";
     hideOverlay();
   } catch(e) { alert("Could not load snippet."); hideOverlay(); }
@@ -417,45 +590,37 @@ async function renameProject() {
   var name = document.getElementById("proj-title").value.trim();
   if (!name) return;
   document.title = name + " - CodeSponge";
-  try {
-    await fetch(API + "/projects/" + projectId, {
-      method:"PUT", headers: authH(),
-      body: JSON.stringify({ code: editor.getValue(), language: currentLang, name: name })
-    });
-  } catch(e) {}
+  try { await fetch(API + "/projects/" + projectId, { method:"PUT", headers: authH(), body: JSON.stringify({ code: editor.getValue(), language: currentLang, name: name }) }); }
+  catch(e) {}
 }
 
 function switchOut(tab) {
   var isOut = (tab === "output");
   document.getElementById("ot-out").className  = "out-tab" + (isOut  ? " active" : "");
   document.getElementById("ot-prev").className = "out-tab" + (!isOut ? " active" : "");
-  document.getElementById("out-body").style.display   = isOut ? ""     : "none";
+  document.getElementById("out-body").style.display   = isOut ? "" : "none";
   document.getElementById("html-frame").style.display = isOut ? "none" : "block";
-  document.getElementById("html-frame").style.flex    = isOut ? ""     : "1";
+  document.getElementById("html-frame").style.flex    = isOut ? "" : "1";
 }
 
 async function runCode() {
   var code = editor.getValue();
   var btn  = document.getElementById("run-btn");
-  if (currentLang === "html") {
-    document.getElementById("html-frame").srcdoc = code;
-    switchOut("preview"); return;
-  }
+  if (currentLang === "html") { document.getElementById("html-frame").srcdoc = code; switchOut("preview"); return; }
   btn.disabled = true;
   btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .7s linear infinite"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Running...';
   var pre = document.getElementById("out-pre");
-  pre.className = "running"; pre.textContent = "Running...";
-  switchOut("output");
+  pre.className = "running"; pre.textContent = "Running..."; switchOut("output");
   try {
     var res  = await fetch(API + "/run", { method:"POST", headers: authH(), body: JSON.stringify({ language: currentLang, code: code }) });
     var data = await res.json();
     if (data.error && data.error.trim()) { pre.textContent = data.error; pre.className = "error"; }
     else { pre.textContent = data.output || "(no output)"; pre.className = ""; }
-  } catch(e) { pre.textContent = "Could not connect to server."; pre.className = "error"; }
+  } catch(e) { pre.textContent = "Could not connect."; pre.className = "error"; }
   finally { btn.disabled=false; btn.innerHTML='<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Run'; }
 }
 
-function clearOut() { var p = document.getElementById("out-pre"); p.textContent = "Press Run or Ctrl+Enter to execute..."; p.className = "idle"; }
+function clearOut() { var p=document.getElementById("out-pre"); p.textContent="Press Run or Ctrl+Enter to execute..."; p.className="idle"; }
 
 async function openShareModal() {
   try {
@@ -465,52 +630,60 @@ async function openShareModal() {
     openModal("share-modal");
   } catch(e) { alert("Could not create share link."); }
 }
-
 function copyShareUrl() {
-  navigator.clipboard.writeText(document.getElementById("share-url").value).catch(function() { document.getElementById("share-url").select(); document.execCommand("copy"); });
-  var btn = document.getElementById("copy-btn"); btn.textContent = "Copied!";
-  setTimeout(function() { btn.textContent = "Copy"; }, 2000);
+  navigator.clipboard.writeText(document.getElementById("share-url").value).catch(function(){document.getElementById("share-url").select();document.execCommand("copy");});
+  var btn=document.getElementById("copy-btn"); btn.textContent="Copied!"; setTimeout(function(){btn.textContent="Copy";},2000);
 }
-
 function openPublishModal() {
-  if (!token) { window.location.href = "index.html"; return; }
+  if (!token) { window.location.href="index.html"; return; }
   document.getElementById("pub-title").value = document.getElementById("proj-title").value || "";
   document.getElementById("pub-desc").value  = "";
   openModal("pub-modal");
-  setTimeout(function() { document.getElementById("pub-title").focus(); }, 100);
+  setTimeout(function(){document.getElementById("pub-title").focus();},100);
 }
-
 async function doPublish() {
-  var title = document.getElementById("pub-title").value.trim();
-  var desc  = document.getElementById("pub-desc").value.trim();
+  var title=document.getElementById("pub-title").value.trim();
+  var desc =document.getElementById("pub-desc").value.trim();
   if (!title) { alert("Please enter a title."); return; }
   await saveProject();
-  var btn = document.getElementById("pub-btn"); btn.disabled=true; btn.textContent="Publishing...";
+  var btn=document.getElementById("pub-btn"); btn.disabled=true; btn.textContent="Publishing...";
   try {
     var res  = await fetch(API + "/community/publish", { method:"POST", headers: authH(), body: JSON.stringify({ project_id: projectId, title: title, description: desc }) });
     var data = await res.json();
-    if (data.id) { closeModal("pub-modal"); var go = confirm("Published! View it in the Community Hub?"); if (go) window.location.href = "community.html"; }
-    else alert(data.error || "Could not publish.");
+    if (data.id) { closeModal("pub-modal"); if (confirm("Published! View in Community Hub?")) window.location.href="community.html"; }
+    else alert(data.error||"Could not publish.");
   } catch(e) { alert("Could not publish."); }
   finally { btn.disabled=false; btn.textContent="Publish"; }
 }
 
-// Resizer
+// ── Resizer (fixed: calls relayout after drag) ────────────────────────────
 (function() {
-  var rs=document.getElementById("resizer"), ep=document.querySelector(".editor-pane"), op=document.getElementById("out-panel"), br=document.getElementById("body-row");
+  var rs=document.getElementById("resizer"), ep=document.getElementById("editor-pane"), op=document.getElementById("out-panel"), br=document.getElementById("body-row");
   var d=false, sx, sew;
   var saved=parseFloat(localStorage.getItem("cs_editor_pct"));
   if(saved>15&&saved<92){ep.style.flex="none";op.style.flex="none";ep.style.width=saved+"%";op.style.width=(100-saved)+"%";}
   else{ep.style.flex="1";op.style.width="360px";op.style.flex="none";}
   rs.addEventListener("mousedown",function(e){d=true;sx=e.clientX;sew=ep.getBoundingClientRect().width;rs.classList.add("drag");document.body.style.cursor="col-resize";document.body.style.userSelect="none";e.preventDefault();});
-  document.addEventListener("mousemove",function(e){if(!d)return;var tw=br.getBoundingClientRect().width-rs.getBoundingClientRect().width;var nw=Math.max(180,Math.min(sew+(e.clientX-sx),tw-160));ep.style.flex="none";op.style.flex="none";ep.style.width=nw+"px";op.style.width=(tw-nw)+"px";});
-  document.addEventListener("mouseup",function(){if(!d)return;d=false;rs.classList.remove("drag");document.body.style.cursor="";document.body.style.userSelect="";var tw=br.getBoundingClientRect().width;localStorage.setItem("cs_editor_pct",((ep.getBoundingClientRect().width/tw)*100).toFixed(2));});
+  document.addEventListener("mousemove",function(e){
+    if(!d)return;
+    var tw=br.getBoundingClientRect().width-rs.getBoundingClientRect().width;
+    var nw=Math.max(180,Math.min(sew+(e.clientX-sx),tw-160));
+    ep.style.flex="none";op.style.flex="none";ep.style.width=nw+"px";op.style.width=(tw-nw)+"px";
+    // Update editor layout live during drag
+    if(window.csRelayout) window.csRelayout();
+  });
+  document.addEventListener("mouseup",function(){
+    if(!d)return;d=false;rs.classList.remove("drag");
+    document.body.style.cursor="";document.body.style.userSelect="";
+    var tw=br.getBoundingClientRect().width;
+    localStorage.setItem("cs_editor_pct",((ep.getBoundingClientRect().width/tw)*100).toFixed(2));
+    if(window.csRelayout) window.csRelayout();
+  });
 })();
 
 function openModal(id)  { document.getElementById(id).classList.add("open"); }
 function closeModal(id) { document.getElementById(id).classList.remove("open"); }
-["share-modal","pub-modal"].forEach(function(id){ document.getElementById(id).addEventListener("click",function(e){if(e.target===this)closeModal(id);}); });
-
+["share-modal","pub-modal"].forEach(function(id){document.getElementById(id).addEventListener("click",function(e){if(e.target===this)closeModal(id);});});
 document.addEventListener("keydown",function(e){
   if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){e.preventDefault();runCode();}
   if((e.metaKey||e.ctrlKey)&&e.key==="s"){e.preventDefault();saveProject();}
