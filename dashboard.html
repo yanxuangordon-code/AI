@@ -4,246 +4,241 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>CodeSponge — Dashboard</title>
-<link rel="stylesheet" href="style.css"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *, *::before, *::after { box-sizing: border-box; }
-body { font-family: 'Inter', sans-serif; background: #0d1117; color: #e6edf3; margin: 0; }
+body { font-family: 'Inter', sans-serif; background: #0d1117; color: #e6edf3; margin: 0; min-height: 100vh; }
 
 :root {
-  --accent: #4f8ef7;
+  --accent:  #4f8ef7;
   --success: #3fb950;
-  --danger: #f85149;
+  --danger:  #f85149;
   --warning: #e3b341;
-  --purple: #a371f7;
+  --purple:  #a371f7;
   --surface: #0d1117;
-  --surface2: #161b22;
-  --surface3: #1c2128;
-  --border: rgba(255,255,255,.08);
-  --text: #e6edf3;
-  --muted: #7d8590;
-  --radius: 10px;
-  --font: 'Inter', sans-serif;
+  --surface2:#161b22;
+  --surface3:#1c2128;
+  --border:  rgba(255,255,255,.08);
+  --text:    #e6edf3;
+  --muted:   #7d8590;
 }
 
 /* ── Nav ── */
 .topnav {
-  height: 56px;
-  background: var(--surface2);
+  height: 56px; background: var(--surface2);
   border-bottom: 1px solid var(--border);
-  display: flex; align-items: center;
-  padding: 0 24px; gap: 12px;
+  display: flex; align-items: center; padding: 0 24px; gap: 8px;
   position: sticky; top: 0; z-index: 50;
 }
-.topnav-brand { font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 9px; text-decoration: none; color: var(--text); }
-.brand-logo { width: 30px; height: 30px; border-radius: 8px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #fff; letter-spacing: -.5px; flex-shrink: 0; }
+.brand { display: flex; align-items: center; gap: 9px; text-decoration: none; color: var(--text); font-weight: 800; font-size: 16px; }
+.brand-icon { width: 30px; height: 30px; border-radius: 8px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #fff; flex-shrink: 0; }
 .brand-text span { color: var(--accent); }
+.nav-links { display: flex; gap: 2px; margin-left: 12px; }
+.nav-link { padding: 5px 11px; border-radius: 7px; font-size: 13px; font-weight: 500; color: var(--muted); text-decoration: none; transition: all .15s; }
+.nav-link:hover { color: var(--text); background: var(--surface3); }
+.nav-link.active { color: var(--text); background: var(--surface3); }
 .nav-spacer { flex: 1; }
-.nav-user { display: flex; align-items: center; gap: 10px; }
+.nav-right { display: flex; align-items: center; gap: 10px; }
 .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
-.nav-email { font-size: 13px; color: var(--muted); }
-.btn-ghost-sm { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 7px; padding: 6px 12px; font-size: 12px; font-family: var(--font); cursor: pointer; transition: all .15s; }
-.btn-ghost-sm:hover { border-color: rgba(255,255,255,.2); color: var(--text); }
+.nav-email { font-size: 13px; color: var(--muted); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn-nav { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 7px; padding: 6px 12px; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; transition: all .15s; }
+.btn-nav:hover { border-color: rgba(255,255,255,.2); color: var(--text); }
 
 /* ── Hero ── */
-.dash-hero { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 36px 0 28px; }
-.container { max-width: 960px; margin: 0 auto; padding: 0 28px; }
-.dash-hero h1 { font-size: 24px; font-weight: 800; margin: 0 0 4px; }
-.dash-hero p { color: var(--muted); font-size: 14px; margin: 0; }
+.hero { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 32px 0 24px; }
+.container { max-width: 980px; margin: 0 auto; padding: 0 28px; }
+.hero h1 { font-size: 22px; font-weight: 800; margin: 0 0 3px; }
+.hero p { color: var(--muted); font-size: 13px; margin: 0; }
 
-.dash-controls { display: flex; gap: 10px; align-items: center; margin-top: 22px; flex-wrap: wrap; }
-.search-wrap { position: relative; flex: 1; min-width: 200px; }
+.controls { display: flex; gap: 10px; align-items: center; margin-top: 20px; flex-wrap: wrap; }
+.search-wrap { position: relative; flex: 1; min-width: 180px; }
 .search-wrap input {
   width: 100%; background: var(--surface3); border: 1px solid var(--border);
-  color: var(--text); border-radius: 8px; padding: 9px 12px 9px 36px;
-  font-size: 13px; font-family: var(--font); outline: none; transition: border-color .15s;
+  color: var(--text); border-radius: 8px; padding: 8px 12px 8px 34px;
+  font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: border-color .15s;
 }
 .search-wrap input:focus { border-color: var(--accent); }
-.search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
-.filter-select {
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.filter-sel {
   background: var(--surface3); border: 1px solid var(--border); color: var(--text);
-  border-radius: 8px; padding: 9px 12px; font-size: 13px; font-family: var(--font);
+  border-radius: 8px; padding: 8px 12px; font-size: 12px; font-family: 'Inter', sans-serif;
   outline: none; cursor: pointer; transition: border-color .15s;
 }
-.filter-select:focus { border-color: var(--accent); }
-.btn-primary { background: var(--accent); border: none; color: #fff; border-radius: 8px; padding: 9px 16px; font-size: 13px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: all .15s; white-space: nowrap; }
-.btn-primary:hover { background: #6aa3f9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79,142,247,.3); }
-.btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+.filter-sel:focus { border-color: var(--accent); }
+.btn-new { background: var(--accent); border: none; color: #fff; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 700; font-family: 'Inter', sans-serif; cursor: pointer; transition: all .15s; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+.btn-new:hover { background: #6aa3f9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79,142,247,.3); }
 
 /* ── Grid ── */
-.dash-body { padding: 28px 0 60px; }
-.section-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 16px; }
-.projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.dash-body { padding: 24px 0 60px; }
+.section-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px; }
+.projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(288px, 1fr)); gap: 12px; }
 
 /* ── Cards ── */
 .project-card {
   background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 18px;
+  border-radius: 12px; padding: 18px;
   cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .1s;
-  display: flex; flex-direction: column; gap: 14px;
+  display: flex; flex-direction: column; gap: 12px;
 }
-.project-card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(79,142,247,.1); transform: translateY(-2px); }
+.project-card:hover { border-color: rgba(255,255,255,.18); box-shadow: 0 4px 20px rgba(0,0,0,.3); transform: translateY(-2px); }
 
 .card-top { display: flex; align-items: flex-start; gap: 12px; }
 .card-icon {
-  width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
+  width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   font-size: 11px; font-weight: 800; letter-spacing: -.3px;
 }
-.card-icon.python     { background: rgba(53,114,165,.2);  color: #79b8ff; border: 1px solid rgba(53,114,165,.3); }
-.card-icon.javascript { background: rgba(241,224,90,.15); color: #f1e05a; border: 1px solid rgba(241,224,90,.25); }
-.card-icon.cpp        { background: rgba(243,75,125,.15); color: #f47fbf; border: 1px solid rgba(243,75,125,.25); }
-.card-icon.html       { background: rgba(227,76,38,.15);  color: #f4956a; border: 1px solid rgba(227,76,38,.25); }
-.card-icon.multifile  { background: rgba(163,113,247,.15); color: var(--purple); border: 1px solid rgba(163,113,247,.25); }
-.card-icon.website    { background: rgba(63,185,80,.15);  color: var(--success); border: 1px solid rgba(63,185,80,.25); }
+/* Single file language icons */
+.ci-python     { background: rgba(53,114,165,.2);   color: #79b8ff; border: 1px solid rgba(53,114,165,.3); }
+.ci-javascript { background: rgba(241,224,90,.12);  color: #f1e05a; border: 1px solid rgba(241,224,90,.2); }
+.ci-cpp        { background: rgba(243,75,125,.12);  color: #f47fbf; border: 1px solid rgba(243,75,125,.2); }
+.ci-html       { background: rgba(227,76,38,.12);   color: #f4956a; border: 1px solid rgba(227,76,38,.2); }
+/* Repo */
+.ci-repo       { background: rgba(163,113,247,.12); color: var(--purple); border: 1px solid rgba(163,113,247,.2); }
 
 .card-info { flex: 1; min-width: 0; }
-.card-name { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px; }
-.card-badges { display: flex; gap: 6px; flex-wrap: wrap; }
-.badge {
-  font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
-  letter-spacing: .02em; white-space: nowrap;
-}
-.badge-lang     { background: var(--surface3); color: var(--muted); border: 1px solid var(--border); }
-.badge-type     { background: rgba(163,113,247,.15); color: var(--purple); border: 1px solid rgba(163,113,247,.25); }
-.badge-website  { background: rgba(63,185,80,.15); color: var(--success); border: 1px solid rgba(63,185,80,.25); }
-.badge-hosted   { background: rgba(63,185,80,.2); color: var(--success); border: 1px solid rgba(63,185,80,.4); }
+.card-name { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 5px; }
+.card-badges { display: flex; gap: 5px; flex-wrap: wrap; }
+.badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; white-space: nowrap; letter-spacing: .02em; }
+.badge-lang   { background: var(--surface3); color: var(--muted); border: 1px solid var(--border); }
+.badge-repo   { background: rgba(163,113,247,.12); color: var(--purple); border: 1px solid rgba(163,113,247,.2); }
+.badge-live   { background: rgba(63,185,80,.15); color: var(--success); border: 1px solid rgba(63,185,80,.3); }
 
 .card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border); }
 .card-date { font-size: 11px; color: var(--muted); }
 .card-actions { display: flex; gap: 6px; }
-.btn-card { background: var(--surface3); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: all .15s; }
+.btn-card { background: var(--surface3); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; transition: all .15s; }
 .btn-card:hover { border-color: rgba(255,255,255,.2); }
-.btn-card.danger:hover { border-color: var(--danger); color: var(--danger); }
-.btn-card.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-.btn-card.primary:hover { background: #6aa3f9; }
+.btn-card.del:hover { border-color: var(--danger); color: var(--danger); }
+.btn-card.open { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-card.open:hover { background: #6aa3f9; }
 
 /* New card */
 .new-card {
-  border-style: dashed !important;
-  align-items: center !important;
-  justify-content: center;
-  min-height: 140px;
-  gap: 10px !important;
-  color: var(--muted);
-  font-size: 13px; font-weight: 600;
+  border-style: dashed !important; align-items: center !important;
+  justify-content: center; min-height: 138px; gap: 9px !important;
+  color: var(--muted); font-size: 13px; font-weight: 600;
   flex-direction: column !important;
 }
-.new-card:hover { color: var(--accent) !important; border-color: var(--accent) !important; }
-.new-card-plus { width: 38px; height: 38px; border-radius: 9px; border: 2px dashed currentColor; display: flex; align-items: center; justify-content: center; font-size: 20px; transition: border-color .15s; }
+.new-card:hover { color: var(--accent) !important; border-color: var(--accent) !important; transform: translateY(-2px) !important; }
+.new-card-plus { width: 36px; height: 36px; border-radius: 9px; border: 2px dashed currentColor; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
-/* Empty state */
 .empty-full { grid-column: 1 / -1; }
-.empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
-.empty-state svg { opacity: .4; margin-bottom: 16px; }
-.empty-state h3 { font-size: 16px; font-weight: 700; color: var(--text); margin: 0 0 6px; }
+.empty-state { text-align: center; padding: 56px 20px; color: var(--muted); }
+.empty-state svg { opacity: .35; margin-bottom: 14px; display: block; margin-left: auto; margin-right: auto; }
+.empty-state h3 { font-size: 15px; font-weight: 700; color: var(--text); margin: 0 0 5px; }
 .empty-state p { font-size: 13px; margin: 0; }
 
 /* ── Modal ── */
-.modal-backdrop {
+.modal-back {
   position: fixed; inset: 0;
-  background: rgba(0,0,0,.65); backdrop-filter: blur(6px);
+  background: rgba(0,0,0,.7); backdrop-filter: blur(6px);
   display: none; align-items: center; justify-content: center; z-index: 100;
 }
-.modal-backdrop.open { display: flex; }
+.modal-back.open { display: flex; }
 .modal-box {
   background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 14px; padding: 28px; width: 480px; max-width: 94vw;
+  border-radius: 14px; padding: 28px; width: 500px; max-width: 94vw;
   box-shadow: 0 28px 80px rgba(0,0,0,.7);
-  animation: modal-in .2s ease;
+  animation: modal-in .18s ease;
 }
-@keyframes modal-in { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes modal-in { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)} }
 .modal-title { font-size: 17px; font-weight: 800; margin: 0 0 4px; }
-.modal-sub { font-size: 13px; color: var(--muted); margin: 0 0 22px; }
-
-.form-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; display: block; margin-bottom: 7px; }
-.form-input {
-  width: 100%; background: var(--surface3); border: 1px solid var(--border);
-  color: var(--text); border-radius: 8px; padding: 10px 12px;
-  font-size: 14px; font-family: var(--font); outline: none; transition: border-color .15s;
-}
+.modal-sub   { font-size: 13px; color: var(--muted); margin: 0 0 22px; line-height: 1.5; }
+.form-label  { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; display: block; margin-bottom: 7px; }
+.form-input  { width: 100%; background: var(--surface3); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 10px 12px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: border-color .15s; }
 .form-input:focus { border-color: var(--accent); }
 .form-group { margin-bottom: 16px; }
+.modal-actions { display: flex; gap: 8px; margin-top: 22px; justify-content: flex-end; }
+.btn-prim  { background: var(--accent); border: none; color: #fff; border-radius: 8px; padding: 9px 18px; font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; transition: all .15s; }
+.btn-prim:hover { background: #6aa3f9; }
+.btn-prim:disabled { opacity:.5; cursor:not-allowed; }
+.btn-ghost { background: none; border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 9px 16px; font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; transition: all .15s; }
+.btn-ghost:hover { border-color: rgba(255,255,255,.2); }
+.btn-danger{ background: var(--danger); border: none; color: #fff; border-radius: 8px; padding: 9px 16px; font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; }
+.btn-danger:hover { background: #ff6b68; }
 
-/* Project type selector */
-.type-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+/* Type cards */
+.type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
 .type-card {
-  border: 2px solid var(--border); border-radius: 10px; padding: 14px 10px;
-  cursor: pointer; text-align: center; transition: all .15s;
-  background: var(--surface3);
+  border: 2px solid var(--border); border-radius: 10px; padding: 16px 14px;
+  cursor: pointer; transition: all .15s; background: var(--surface3);
+  display: flex; align-items: flex-start; gap: 12px;
 }
 .type-card:hover { border-color: rgba(255,255,255,.2); }
-.type-card.selected { border-color: var(--accent); background: rgba(79,142,247,.08); }
-.type-card-icon { font-size: 22px; margin-bottom: 7px; }
-.type-card-label { font-size: 12px; font-weight: 700; color: var(--text); }
-.type-card-desc { font-size: 10px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+.type-card.sel { border-color: var(--accent); background: rgba(79,142,247,.08); }
+.type-card-icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+.type-card-label { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.type-card-desc  { font-size: 11px; color: var(--muted); line-height: 1.4; }
 
 /* Language grid */
 .lang-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .lang-card {
   border: 2px solid var(--border); border-radius: 8px; padding: 10px 6px;
-  cursor: pointer; text-align: center; transition: all .15s;
-  background: var(--surface3);
+  cursor: pointer; text-align: center; transition: all .15s; background: var(--surface3);
 }
 .lang-card:hover { border-color: rgba(255,255,255,.2); }
-.lang-card.selected { border-color: var(--accent); background: rgba(79,142,247,.08); }
-.lang-card-dot { width: 10px; height: 10px; border-radius: 50%; margin: 0 auto 6px; }
-.lang-card-label { font-size: 11px; font-weight: 700; }
-
-.modal-actions { display: flex; gap: 8px; margin-top: 22px; justify-content: flex-end; }
-.btn-danger { background: var(--danger); border: none; color: #fff; border-radius: 8px; padding: 9px 16px; font-size: 13px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: all .15s; }
-.btn-danger:hover { background: #ff6b68; }
-.btn-ghost { background: none; border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 9px 16px; font-size: 13px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: all .15s; }
-.btn-ghost:hover { border-color: rgba(255,255,255,.2); }
+.lang-card.sel { border-color: var(--accent); background: rgba(79,142,247,.08); }
+.lang-dot { width: 10px; height: 10px; border-radius: 50%; margin: 0 auto 6px; }
+.lang-label { font-size: 11px; font-weight: 700; color: var(--text); }
 
 #lang-section { display: none; }
 </style>
 </head>
 <body>
 
+<!-- ── Nav ── -->
 <nav class="topnav">
-  <a href="dashboard.html" class="topnav-brand">
-    <div class="brand-logo">CS</div>
+  <a href="dashboard.html" class="brand">
+    <div class="brand-icon">CS</div>
     <span class="brand-text">Code<span>Sponge</span></span>
   </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link active">Projects</a>
+    <a href="community.html" class="nav-link">Community</a>
+  </div>
   <div class="nav-spacer"></div>
-  <div class="nav-user">
+  <div class="nav-right">
     <div class="avatar" id="nav-avatar">?</div>
     <span class="nav-email" id="nav-email"></span>
-    <button class="btn-ghost-sm" onclick="logout()">Sign out</button>
+    <button class="btn-nav" onclick="logout()">Sign out</button>
   </div>
 </nav>
 
-<div class="dash-hero">
+<!-- ── Hero ── -->
+<div class="hero">
   <div class="container">
     <h1>My Projects</h1>
     <p>Pick up where you left off, or start something new.</p>
-    <div class="dash-controls">
+    <div class="controls">
       <div class="search-wrap">
         <span class="search-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </span>
         <input id="search-input" type="text" placeholder="Search projects..." oninput="filterProjects()"/>
       </div>
-      <select class="filter-select" id="type-filter" onchange="filterProjects()">
+      <select class="filter-sel" id="type-filter" onchange="filterProjects()">
         <option value="">All types</option>
         <option value="single">Single file</option>
-        <option value="multi">Multi-file</option>
-        <option value="website">Website</option>
+        <option value="repo">Repo</option>
       </select>
-      <select class="filter-select" id="lang-filter" onchange="filterProjects()">
+      <select class="filter-sel" id="lang-filter" onchange="filterProjects()">
         <option value="">All languages</option>
         <option value="python">Python</option>
         <option value="javascript">JavaScript</option>
         <option value="cpp">C++</option>
         <option value="html">HTML</option>
       </select>
-      <button class="btn-primary" onclick="openNewModal()">+ New project</button>
+      <button class="btn-new" onclick="openNewModal()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New project
+      </button>
     </div>
   </div>
 </div>
 
+<!-- ── Body ── -->
 <div class="dash-body">
   <div class="container">
     <div class="section-label" id="project-count"></div>
@@ -252,28 +247,27 @@ body { font-family: 'Inter', sans-serif; background: #0d1117; color: #e6edf3; ma
 </div>
 
 <!-- ── New Project Modal ── -->
-<div class="modal-backdrop" id="new-modal">
+<div class="modal-back" id="new-modal">
   <div class="modal-box">
     <p class="modal-title">New project</p>
-    <p class="modal-sub">Choose a type, give it a name, pick your language.</p>
+    <p class="modal-sub">Choose a type and a language. These <strong>cannot be changed</strong> after creation.</p>
 
     <div class="form-group">
       <label class="form-label">Project type</label>
       <div class="type-grid">
-        <div class="type-card selected" id="type-single" onclick="selectType('single')">
+        <div class="type-card sel" id="type-single" onclick="selectType('single')">
           <div class="type-card-icon">📄</div>
-          <div class="type-card-label">Single file</div>
-          <div class="type-card-desc">One file, run instantly</div>
+          <div>
+            <div class="type-card-label">Single file</div>
+            <div class="type-card-desc">One file. Choose Python, JS, C++ or HTML. Run instantly.</div>
+          </div>
         </div>
-        <div class="type-card" id="type-multi" onclick="selectType('multi')">
+        <div class="type-card" id="type-repo" onclick="selectType('repo')">
           <div class="type-card-icon">📁</div>
-          <div class="type-card-label">Multi-file</div>
-          <div class="type-card-desc">Multiple files, like a real project</div>
-        </div>
-        <div class="type-card" id="type-website" onclick="selectType('website')">
-          <div class="type-card-icon">🌐</div>
-          <div class="type-card-label">Website</div>
-          <div class="type-card-desc">HTML + CSS + JS, host publicly</div>
+          <div>
+            <div class="type-card-label">Repo</div>
+            <div class="type-card-desc">Multiple files — HTML, CSS, JS, Python, anything. Host as a website.</div>
+          </div>
         </div>
       </div>
     </div>
@@ -284,42 +278,42 @@ body { font-family: 'Inter', sans-serif; background: #0d1117; color: #e6edf3; ma
     </div>
 
     <div class="form-group" id="lang-section">
-      <label class="form-label">Language</label>
+      <label class="form-label">Language <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">(locked after creation)</span></label>
       <div class="lang-grid">
-        <div class="lang-card selected" id="lang-python" onclick="selectLang('python')">
-          <div class="lang-card-dot" style="background:#3572A5"></div>
-          <div class="lang-card-label">Python</div>
+        <div class="lang-card sel" id="lang-python" onclick="selectLang('python')">
+          <div class="lang-dot" style="background:#3572A5"></div>
+          <div class="lang-label">Python</div>
         </div>
         <div class="lang-card" id="lang-javascript" onclick="selectLang('javascript')">
-          <div class="lang-card-dot" style="background:#f1e05a"></div>
-          <div class="lang-card-label">JavaScript</div>
+          <div class="lang-dot" style="background:#f1e05a"></div>
+          <div class="lang-label">JavaScript</div>
         </div>
         <div class="lang-card" id="lang-cpp" onclick="selectLang('cpp')">
-          <div class="lang-card-dot" style="background:#f34b7d"></div>
-          <div class="lang-card-label">C++</div>
+          <div class="lang-dot" style="background:#f34b7d"></div>
+          <div class="lang-label">C++</div>
         </div>
         <div class="lang-card" id="lang-html" onclick="selectLang('html')">
-          <div class="lang-card-dot" style="background:#e34c26"></div>
-          <div class="lang-card-label">HTML</div>
+          <div class="lang-dot" style="background:#e34c26"></div>
+          <div class="lang-label">HTML</div>
         </div>
       </div>
     </div>
 
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeNewModal()">Cancel</button>
-      <button class="btn-primary" id="create-btn" onclick="createProject()">Create project</button>
+      <button class="btn-prim" id="create-btn" onclick="createProject()">Create project</button>
     </div>
   </div>
 </div>
 
 <!-- ── Delete Modal ── -->
-<div class="modal-backdrop" id="del-modal">
+<div class="modal-back" id="del-modal">
   <div class="modal-box" style="width:400px">
     <p class="modal-title">Delete project?</p>
-    <p class="modal-sub">This cannot be undone. All files and code in this project will be permanently deleted.</p>
+    <p class="modal-sub">This cannot be undone. All files and code will be permanently deleted.</p>
     <div class="modal-actions">
-      <button class="btn-ghost" onclick="document.getElementById('del-modal').classList.remove('open')">Cancel</button>
-      <button class="btn-danger" id="del-btn" onclick="confirmDelete()">Delete project</button>
+      <button class="btn-ghost" onclick="closeModal('del-modal')">Cancel</button>
+      <button class="btn-danger" id="del-btn" onclick="confirmDelete()">Delete</button>
     </div>
   </div>
 </div>
@@ -334,29 +328,28 @@ document.getElementById("nav-email").textContent = email;
 document.getElementById("nav-avatar").textContent = (email[0] || "?").toUpperCase();
 
 function logout() { localStorage.clear(); window.location.href = "index.html"; }
-function authH() { return { "Content-Type": "application/json", "Authorization": "Bearer " + token }; }
+function authH()  { return { "Content-Type": "application/json", "Authorization": "Bearer " + token }; }
 
 var LANG_ICONS = { python: "Py", javascript: "JS", cpp: "C++", html: "HTML" };
-var LANG_COLORS = { python: "#3572A5", javascript: "#f1e05a", cpp: "#f34b7d", html: "#e34c26" };
 var allProjects = [];
 
-// ── Load projects ──────────────────────────────────────────
+// ── Load ──────────────────────────────────────────────────
 async function loadProjects() {
   var grid = document.getElementById("projects-grid");
-  grid.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:20px 0" id="load-msg">Loading projects...</p>';
-  var wakeTimer = setTimeout(function() {
+  grid.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:16px 0" id="load-msg">Loading...</p>';
+  var t = setTimeout(function() {
     var m = document.getElementById("load-msg");
-    if (m) m.textContent = "Server is starting up, please wait (up to 30s)...";
+    if (m) m.textContent = "Server waking up, please wait...";
   }, 6000);
   try {
     var res = await fetch(API + "/projects", { headers: authH() });
-    clearTimeout(wakeTimer);
+    clearTimeout(t);
     if (res.status === 401) { logout(); return; }
     allProjects = await res.json();
     filterProjects();
   } catch(e) {
-    clearTimeout(wakeTimer);
-    grid.innerHTML = '<p style="color:var(--danger);font-size:13px;padding:20px 0">Could not load projects. Check your connection.</p>';
+    clearTimeout(t);
+    grid.innerHTML = '<p style="color:var(--danger);font-size:13px;padding:16px 0">Could not load projects.</p>';
   }
 }
 
@@ -364,12 +357,11 @@ function filterProjects() {
   var q    = document.getElementById("search-input").value.toLowerCase();
   var type = document.getElementById("type-filter").value;
   var lang = document.getElementById("lang-filter").value;
-  var filtered = allProjects.filter(function(p) {
+  renderGrid(allProjects.filter(function(p) {
     return (!q    || p.name.toLowerCase().includes(q)) &&
-           (!type || p.project_type === type) &&
+           (!type || (p.project_type||"single") === type) &&
            (!lang || p.language === lang);
-  });
-  renderGrid(filtered);
+  }));
 }
 
 function renderGrid(list) {
@@ -377,7 +369,6 @@ function renderGrid(list) {
   var count = document.getElementById("project-count");
   grid.innerHTML = "";
 
-  // New project card
   var newCard = document.createElement("div");
   newCard.className = "project-card new-card";
   newCard.innerHTML = '<div class="new-card-plus">+</div><span>New project</span>';
@@ -389,26 +380,34 @@ function renderGrid(list) {
   if (list.length === 0) {
     var empty = document.createElement("div");
     empty.className = "empty-full";
-    empty.innerHTML = '<div class="empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><h3>No projects found</h3><p>' + (allProjects.length === 0 ? "Create your first project to get started." : "Try a different search or filter.") + '</p></div>';
+    empty.innerHTML =
+      '<div class="empty-state">' +
+        '<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>' +
+        '<h3>No projects found</h3>' +
+        '<p>' + (allProjects.length === 0 ? "Create your first project to get started." : "Try a different search or filter.") + '</p>' +
+      '</div>';
     grid.appendChild(empty);
     return;
   }
 
   list.forEach(function(p) {
-    var card = document.createElement("div");
+    var card  = document.createElement("div");
     card.className = "project-card";
-    var date = new Date(p.updated_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+    var ptype = p.project_type || "single";
+    var date  = new Date(p.updated_at).toLocaleDateString(undefined, { month:"short", day:"numeric", year:"numeric" });
 
-    // Icon class
-    var iconClass = p.project_type === "website" ? "website" : p.project_type === "multi" ? "multifile" : (p.language || "html");
-    var iconText  = p.project_type === "website" ? "WEB" : p.project_type === "multi" ? "MF" : (LANG_ICONS[p.language] || "?");
+    var iconClass, iconText;
+    if (ptype === "repo") {
+      iconClass = "ci-repo"; iconText = "Repo";
+    } else {
+      iconClass = "ci-" + (p.language || "python");
+      iconText  = LANG_ICONS[p.language] || "?";
+    }
 
-    // Badges
-    var badges = '';
-    if (p.project_type === "multi")    badges += '<span class="badge badge-type">Multi-file</span>';
-    if (p.project_type === "website")  badges += '<span class="badge badge-website">Website</span>';
-    if (p.language)                    badges += '<span class="badge badge-lang">' + esc(p.language) + '</span>';
-    if (p.hosted_url)                  badges += '<span class="badge badge-hosted">&#127760; Live</span>';
+    var badges = "";
+    if (ptype === "repo")  badges += '<span class="badge badge-repo">Repo</span>';
+    if (p.language)        badges += '<span class="badge badge-lang">' + esc(p.language) + '</span>';
+    if (p.hosted_url)      badges += '<span class="badge badge-live">&#127760; Live</span>';
 
     card.innerHTML =
       '<div class="card-top">' +
@@ -421,113 +420,109 @@ function renderGrid(list) {
       '<div class="card-footer">' +
         '<span class="card-date">Updated ' + date + '</span>' +
         '<div class="card-actions">' +
-          '<button class="btn-card danger" onclick="event.stopPropagation();openDelete(\'' + p.id + '\')">Delete</button>' +
-          '<button class="btn-card primary" onclick="openProject(\'' + p.id + '\',\'' + (p.project_type||'single') + '\')">Open →</button>' +
+          '<button class="btn-card del" onclick="event.stopPropagation();openDel(\'' + p.id + '\')">Delete</button>' +
+          '<button class="btn-card open" onclick="event.stopPropagation();openProject(\'' + p.id + '\',\'' + ptype + '\')">Open →</button>' +
         '</div>' +
       '</div>';
 
     card.addEventListener("click", function(e) {
-      if (!e.target.closest("button")) openProject(p.id, p.project_type || "single");
+      if (!e.target.closest("button")) openProject(p.id, ptype);
     });
     grid.appendChild(card);
   });
 }
 
-function esc(s) {
-  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-}
+function esc(s) { return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
 function openProject(id, type) {
-  if (type === "multi" || type === "website") {
-    window.location.href = "multifile.html?project=" + id;
-  } else {
-    window.location.href = "editor.html?project=" + id;
-  }
+  window.location.href = (type === "repo" ? "multifile.html" : "editor.html") + "?project=" + id;
 }
 
 // ── New project modal ──────────────────────────────────────
-var selectedType = "single";
-var selectedLang = "python";
+var selType = "single";
+var selLang = "python";
 
 function openNewModal() {
-  selectType("single");
-  selectLang("python");
+  selType = "single"; selLang = "python";
   document.getElementById("proj-name").value = "";
+  ["single","repo"].forEach(function(t) {
+    document.getElementById("type-" + t).className = "type-card" + (t === selType ? " sel" : "");
+  });
+  ["python","javascript","cpp","html"].forEach(function(l) {
+    document.getElementById("lang-" + l).className = "lang-card" + (l === selLang ? " sel" : "");
+  });
+  document.getElementById("lang-section").style.display = "block";
   document.getElementById("new-modal").classList.add("open");
   setTimeout(function() { document.getElementById("proj-name").focus(); }, 100);
 }
 
-function closeNewModal() {
-  document.getElementById("new-modal").classList.remove("open");
-}
+function closeNewModal() { document.getElementById("new-modal").classList.remove("open"); }
+function closeModal(id)  { document.getElementById(id).classList.remove("open"); }
 
-function selectType(type) {
-  selectedType = type;
-  ["single","multi","website"].forEach(function(t) {
-    document.getElementById("type-" + t).className = "type-card" + (t === type ? " selected" : "");
+function selectType(t) {
+  selType = t;
+  ["single","repo"].forEach(function(x) {
+    document.getElementById("type-" + x).className = "type-card" + (x === t ? " sel" : "");
   });
-  // Website is always HTML+CSS+JS, so hide language picker for website and multi
-  var langSection = document.getElementById("lang-section");
-  langSection.style.display = (type === "single") ? "block" : "none";
-
-  // Also hide lang filter on dashboard for website
-  document.getElementById("lang-filter").style.display = (type === "website") ? "none" : "";
+  // Hide language picker for repo (can have any files)
+  document.getElementById("lang-section").style.display = (t === "single") ? "block" : "none";
 }
 
-function selectLang(lang) {
-  selectedLang = lang;
-  ["python","javascript","cpp","html"].forEach(function(l) {
-    document.getElementById("lang-" + l).className = "lang-card" + (l === lang ? " selected" : "");
+function selectLang(l) {
+  selLang = l;
+  ["python","javascript","cpp","html"].forEach(function(x) {
+    document.getElementById("lang-" + x).className = "lang-card" + (x === l ? " sel" : "");
   });
 }
 
 async function createProject() {
   var name = document.getElementById("proj-name").value.trim() || "Untitled";
-  var lang = selectedType === "website" ? "html" : (selectedType === "multi" ? null : selectedLang);
   var btn  = document.getElementById("create-btn");
   btn.disabled = true; btn.textContent = "Creating...";
-
   try {
-    var body = { name: name, project_type: selectedType };
-    if (lang) body.language = lang;
-
-    var res  = await fetch(API + "/projects", { method: "POST", headers: authH(), body: JSON.stringify(body) });
+    var body = { name: name, project_type: selType };
+    if (selType === "single") body.language = selLang;
+    var res  = await fetch(API + "/projects", { method:"POST", headers: authH(), body: JSON.stringify(body) });
     var data = await res.json();
     closeNewModal();
-    openProject(data.id, selectedType);
+    openProject(data.id, selType);
   } catch(e) {
-    alert("Could not create project. Is the server running?");
+    alert("Could not create project.");
   } finally {
     btn.disabled = false; btn.textContent = "Create project";
   }
 }
 
 // ── Delete ─────────────────────────────────────────────────
-var deleteId = null;
-function openDelete(id) { deleteId = id; document.getElementById("del-modal").classList.add("open"); }
+var delId = null;
+function openDel(id) { delId = id; document.getElementById("del-modal").classList.add("open"); }
 
 async function confirmDelete() {
-  if (!deleteId) return;
+  if (!delId) return;
   var btn = document.getElementById("del-btn");
   btn.disabled = true; btn.textContent = "Deleting...";
   try {
-    await fetch(API + "/projects/" + deleteId, { method: "DELETE", headers: authH() });
-    document.getElementById("del-modal").classList.remove("open");
-    allProjects = allProjects.filter(function(p) { return p.id !== deleteId; });
-    deleteId = null;
-    filterProjects();
-  } catch(e) { alert("Could not delete project."); }
-  finally { btn.disabled = false; btn.textContent = "Delete project"; }
+    await fetch(API + "/projects/" + delId, { method:"DELETE", headers: authH() });
+    closeModal("del-modal");
+    allProjects = allProjects.filter(function(p) { return p.id !== delId; });
+    delId = null; filterProjects();
+  } catch(e) { alert("Could not delete."); }
+  finally { btn.disabled = false; btn.textContent = "Delete"; }
 }
 
-// Keyboard
+// Keyboard & backdrop
 document.addEventListener("keydown", function(e) {
-  if (e.key === "Escape") { closeNewModal(); document.getElementById("del-modal").classList.remove("open"); }
+  if (e.key === "Escape") { closeNewModal(); closeModal("del-modal"); }
+  if (e.key === "Enter" && document.getElementById("new-modal").classList.contains("open")) {
+    e.preventDefault(); createProject();
+  }
 });
-document.getElementById("new-modal").addEventListener("click", function(e) { if (e.target === this) closeNewModal(); });
-document.getElementById("del-modal").addEventListener("click", function(e) { if (e.target === this) this.classList.remove("open"); });
+["new-modal","del-modal"].forEach(function(id) {
+  document.getElementById(id).addEventListener("click", function(e) {
+    if (e.target === this) { if (id==="new-modal") closeNewModal(); else closeModal(id); }
+  });
+});
 
-// Init
 document.getElementById("lang-section").style.display = "block";
 loadProjects();
 </script>
