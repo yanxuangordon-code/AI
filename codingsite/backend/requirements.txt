@@ -3,4 +3,4 @@ flask-cors
 flask-jwt-extended
 werkzeug
 resend
-gunicorn
+psycopg2-binary
