@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CodeSponge — Community</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; font-family: 'Inter', sans-serif; background: #0d1117; color: #e6edf3; min-height: 100vh; }
+
+:root {
+  --accent:  #4f8ef7;
+  --success: #3fb950;
+  --danger:  #f85149;
+  --warning: #e3b341;
+  --purple:  #a371f7;
+  --surface: #0d1117;
+  --surface2:#161b22;
+  --surface3:#1c2128;
+  --surface4:#22272e;
+  --border:  rgba(255,255,255,.08);
+  --text:    #e6edf3;
+  --muted:   #7d8590;
+  --mono:    'JetBrains Mono', monospace;
+}
+
+/* ── Nav ── */
+.topnav {
+  height: 56px; background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 24px; gap: 10px;
+  position: sticky; top: 0; z-index: 50;
+}
+.brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text); font-weight: 800; font-size: 15px; }
+.brand-icon { width: 28px; height: 28px; border-radius: 7px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff; flex-shrink: 0; }
+.brand-text span { color: var(--accent); }
+.nav-links { display: flex; gap: 2px; margin-left: 16px; }
+.nav-link { padding: 6px 12px; border-radius: 7px; font-size: 13px; font-weight: 500; color: var(--muted); text-decoration: none; transition: all .15s; }
+.nav-link:hover { color: var(--text); background: var(--surface3); }
+.nav-link.active { color: var(--text); background: var(--surface3); }
+.nav-spacer { flex: 1; }
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; cursor: pointer; flex-shrink: 0; }
+.btn-sm { background: var(--surface3); border: 1px solid var(--border); color: var(--text); border-radius: 7px; padding: 6px 12px; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; transition: all .15s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+.btn-sm:hover { border-color: rgba(255,255,255,.2); }
+.btn-accent { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-accent:hover { background: #6aa3f9; }
+
+/* ── Hero ── */
+.hero {
+  background: var(--surface2); border-bottom: 1px solid var(--border);
+  padding: 36px 0 28px; text-align: center;
+}
+.hero h1 { font-size: 28px; font-weight: 800; margin: 0 0 6px; }
+.hero p { color: var(--muted); font-size: 14px; margin: 0 0 20px; }
+.hero-stats { display: flex; justify-content: center; gap: 32px; }
+.stat { text-align: center; }
+.stat-num { font-size: 20px; font-weight: 800; color: var(--text); }
+.stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* ── Layout ── */
+.page-body { max-width: 1100px; margin: 0 auto; padding: 28px 24px 60px; display: flex; gap: 24px; }
+.main-col { flex: 1; min-width: 0; }
+.side-col { width: 280px; flex-shrink: 0; }
+
+/* ── Controls ── */
+.controls { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+.search-wrap { position: relative; flex: 1; min-width: 200px; }
+.search-wrap input { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 9px 12px 9px 36px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: border-color .15s; }
+.search-wrap input:focus { border-color: var(--accent); }
+.search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.filter-select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 9px 12px; font-size: 12px; font-family: 'Inter', sans-serif; outline: none; cursor: pointer; }
+.filter-select:focus { border-color: var(--accent); }
+
+.sort-tabs { display: flex; gap: 2px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
+.sort-tab { padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .15s; white-space: nowrap; }
+.sort-tab.active { background: var(--surface3); color: var(--text); }
+.sort-tab:hover:not(.active) { color: var(--text); }
+
+/* ── Post cards ── */
+.posts-list { display: flex; flex-direction: column; gap: 14px; }
+
+.post-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px;
+  transition: border-color .15s, box-shadow .15s;
+  cursor: pointer;
+}
+.post-card:hover { border-color: rgba(255,255,255,.15); box-shadow: 0 4px 20px rgba(0,0,0,.3); }
+
+.post-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+.post-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+.post-meta { flex: 1; min-width: 0; }
+.post-author { font-size: 12px; font-weight: 600; color: var(--text); }
+.post-author a { color: inherit; text-decoration: none; }
+.post-author a:hover { color: var(--accent); }
+.post-time { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.post-badges { display: flex; gap: 5px; flex-wrap: wrap; }
+.badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+.badge-lang { background: var(--surface3); color: var(--muted); border: 1px solid var(--border); }
+.badge-type { background: rgba(163,113,247,.15); color: var(--purple); border: 1px solid rgba(163,113,247,.2); }
+.badge-web  { background: rgba(63,185,80,.15);  color: var(--success); border: 1px solid rgba(63,185,80,.2); }
+
+.post-title { font-size: 15px; font-weight: 700; margin-bottom: 5px; }
+.post-desc  { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 12px; }
+
+.code-preview {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;
+  font-family: var(--mono); font-size: 11.5px; color: #8b949e;
+  line-height: 1.6; max-height: 120px; overflow: hidden;
+  position: relative; white-space: pre-wrap; word-break: break-all;
+}
+.code-preview::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 40px; background: linear-gradient(transparent, var(--surface));
+}
+
+.post-footer { display: flex; align-items: center; gap: 8px; }
+.post-action {
+  display: flex; align-items: center; gap: 5px;
+  background: none; border: 1px solid var(--border);
+  color: var(--muted); border-radius: 6px; padding: 5px 10px;
+  font-size: 11px; font-weight: 600; font-family: 'Inter', sans-serif;
+  cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.post-action:hover { border-color: rgba(255,255,255,.2); color: var(--text); }
+.post-action.liked { border-color: rgba(248,81,73,.4); color: var(--danger); background: rgba(248,81,73,.08); }
+.post-action svg { flex-shrink: 0; }
+.post-spacer { flex: 1; }
+.post-views { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+
+/* ── Hosted badge ── */
+.live-link { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; background: rgba(63,185,80,.1); border: 1px solid rgba(63,185,80,.25); color: var(--success); border-radius: 6px; font-size: 11px; font-weight: 600; text-decoration: none; transition: all .15s; }
+.live-link:hover { background: rgba(63,185,80,.2); }
+
+/* ── Empty / Loading ── */
+.feed-empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+.feed-empty h3 { font-size: 16px; font-weight: 700; color: var(--text); margin: 0 0 6px; }
+.feed-empty p { font-size: 13px; margin: 0; }
+.loading-row { display: flex; justify-content: center; padding: 40px; }
+.spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.load-more-btn { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--muted); border-radius: 8px; padding: 12px; font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; margin-top: 14px; transition: all .15s; }
+.load-more-btn:hover { color: var(--text); border-color: rgba(255,255,255,.2); }
+
+/* ── Sidebar ── */
+.side-section { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+.side-title { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px; }
+.publish-btn { width: 100%; background: var(--accent); border: none; color: #fff; border-radius: 8px; padding: 11px; font-size: 13px; font-weight: 700; font-family: 'Inter', sans-serif; cursor: pointer; transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 7px; }
+.publish-btn:hover { background: #6aa3f9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79,142,247,.3); }
+.publish-btn:active { transform: none; }
+.side-hint { font-size: 11px; color: var(--muted); margin-top: 10px; line-height: 1.5; text-align: center; }
+
+.trending-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); cursor: pointer; transition: color .15s; }
+.trending-item:last-child { border-bottom: none; padding-bottom: 0; }
+.trending-item:hover .ti-title { color: var(--accent); }
+.ti-rank { font-size: 12px; font-weight: 800; color: var(--muted); width: 16px; flex-shrink: 0; }
+.ti-info { flex: 1; min-width: 0; }
+.ti-title { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ti-meta  { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.ti-likes { font-size: 11px; color: var(--muted); flex-shrink: 0; }
+
+.lang-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 20px; background: var(--surface3); border: 1px solid var(--border); font-size: 11px; font-weight: 600; cursor: pointer; transition: all .15s; margin: 3px; }
+.lang-pill:hover { border-color: rgba(255,255,255,.2); color: var(--text); }
+.lang-pill.active { border-color: var(--accent); color: var(--accent); background: rgba(79,142,247,.1); }
+.lang-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* ── Modals ── */
+.modal-back { position: fixed; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 200; }
+.modal-back.open { display: flex; }
+.modal-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 28px; width: 500px; max-width: 94vw; box-shadow: 0 28px 80px rgba(0,0,0,.7); animation: modal-in .2s ease; }
+@keyframes modal-in { from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)} }
+.modal-title { font-size: 17px; font-weight: 800; margin: 0 0 4px; }
+.modal-sub   { font-size: 13px; color: var(--muted); margin: 0 0 20px; line-height: 1.5; }
+.form-label  { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; display: block; margin-bottom: 7px; }
+.form-input  { width: 100%; background: var(--surface3); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 10px 12px; font-size: 13px; font-family: 'Inter', sans-serif; outline: none; transition: border-color .15s; }
+.form-input:focus { border-color: var(--accent); }
+textarea.form-input { resize: vertical; min-height: 80px; }
+.form-group { margin-bottom: 16px; }
+.modal-actions { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
+.btn-prim  { background: var(--accent); border: none; color: #fff; border-radius: 8px; padding: 9px 16px; font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; transition: all .15s; }
+.btn-prim:hover { background: #6aa3f9; }
+.btn-prim:disabled { opacity:.5; cursor:not-allowed; }
+.btn-ghost { background: none; border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 9px 16px; font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; transition: all .15s; }
+.btn-ghost:hover { border-color: rgba(255,255,255,.2); }
+
+/* Project picker */
+.project-pick-list { max-height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
+.project-pick-item { padding: 10px 12px; cursor: pointer; font-size: 13px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; transition: background .1s; }
+.project-pick-item:last-child { border-bottom: none; }
+.project-pick-item:hover { background: var(--surface3); }
+.project-pick-item.selected { background: rgba(79,142,247,.1); }
+.pick-icon { font-size: 16px; }
+.pick-name { font-weight: 600; }
+.pick-lang { font-size: 11px; color: var(--muted); }
+
+/* Post detail modal */
+.post-detail-code {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px; margin-bottom: 16px;
+  font-family: var(--mono); font-size: 12px; color: #8b949e;
+  line-height: 1.7; max-height: 300px; overflow-y: auto;
+  white-space: pre-wrap; word-break: break-all;
+}
+.file-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 0; overflow-x: auto; }
+.file-tab { padding: 6px 14px; font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: color .1s; }
+.file-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+.file-tab:hover:not(.active) { color: var(--text); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ── Nav ── -->
+<nav class="topnav">
+  <a href="dashboard.html" class="brand">
+    <div class="brand-icon">CS</div>
+    <span class="brand-text">Code<span>Sponge</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+    <a href="community.html" class="nav-link active">Community</a>
+  </div>
+  <div class="nav-spacer"></div>
+  <div class="nav-right" id="nav-right">
+    <a href="index.html" class="btn-sm">Sign in</a>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<div class="hero">
+  <div style="max-width:600px;margin:0 auto;padding:0 24px">
+    <h1>&#127760; Community Hub</h1>
+    <p>Explore, share, and fork code from developers around the world.</p>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num" id="stat-posts">—</div><div class="stat-label">Projects shared</div></div>
+      <div class="stat"><div class="stat-num" id="stat-likes">—</div><div class="stat-label">Total likes</div></div>
+      <div class="stat"><div class="stat-num" id="stat-forks">—</div><div class="stat-label">Forks</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Page body ── -->
+<div class="page-body">
+
+  <!-- Main feed -->
+  <div class="main-col">
+    <div class="controls">
+      <div class="search-wrap">
+        <span class="search-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input id="search-input" type="text" placeholder="Search projects, titles, authors..." oninput="debounceLoad()"/>
+      </div>
+      <select class="filter-select" id="lang-filter" onchange="loadFeed(true)">
+        <option value="">All languages</option>
+        <option value="python">Python</option>
+        <option value="javascript">JavaScript</option>
+        <option value="cpp">C++</option>
+        <option value="html">HTML</option>
+      </select>
+      <div class="sort-tabs">
+        <div class="sort-tab active" id="sort-recent"   onclick="setSort('recent')">Recent</div>
+        <div class="sort-tab"        id="sort-trending" onclick="setSort('trending')">Trending</div>
+        <div class="sort-tab"        id="sort-top"      onclick="setSort('top')">Top</div>
+      </div>
+    </div>
+
+    <div id="posts-list" class="posts-list">
+      <div class="loading-row"><div class="spinner"></div></div>
+    </div>
+
+    <button class="load-more-btn" id="load-more-btn" style="display:none" onclick="loadMore()">Load more</button>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="side-col">
+    <!-- Publish -->
+    <div class="side-section" id="publish-section" style="display:none">
+      <div class="side-title">Share your work</div>
+      <button class="publish-btn" onclick="openPublishModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        Publish a project
+      </button>
+      <p class="side-hint">Share your code with the community. Others can view, like, and fork it.</p>
+    </div>
+
+    <!-- Trending -->
+    <div class="side-section">
+      <div class="side-title">&#128293; Trending today</div>
+      <div id="trending-list"><div style="color:var(--muted);font-size:12px">Loading...</div></div>
+    </div>
+
+    <!-- Languages -->
+    <div class="side-section">
+      <div class="side-title">Browse by language</div>
+      <div>
+        <span class="lang-pill" onclick="filterByLang('')">All</span>
+        <span class="lang-pill" onclick="filterByLang('python')"><span class="lang-dot" style="background:#3572A5"></span>Python</span>
+        <span class="lang-pill" onclick="filterByLang('javascript')"><span class="lang-dot" style="background:#f1e05a"></span>JavaScript</span>
+        <span class="lang-pill" onclick="filterByLang('cpp')"><span class="lang-dot" style="background:#f34b7d"></span>C++</span>
+        <span class="lang-pill" onclick="filterByLang('html')"><span class="lang-dot" style="background:#e34c26"></span>HTML</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Publish modal ── -->
+<div class="modal-back" id="publish-modal">
+  <div class="modal-box">
+    <p class="modal-title">&#128640; Publish to Community</p>
+    <p class="modal-sub">Choose a project to share, give it a title and description.</p>
+
+    <div class="form-group">
+      <label class="form-label">Select project</label>
+      <div class="project-pick-list" id="project-pick-list">
+        <div style="padding:14px;color:var(--muted);font-size:13px">Loading your projects...</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Title</label>
+      <input class="form-input" id="pub-title" placeholder="Give your project a catchy title" autocomplete="off"/>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Description <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+      <textarea class="form-input" id="pub-desc" placeholder="What does this project do? What did you learn?"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal('publish-modal')">Cancel</button>
+      <button class="btn-prim" id="pub-btn" onclick="doPublish()">Publish</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Post detail modal ── -->
+<div class="modal-back" id="detail-modal">
+  <div class="modal-box" style="width:640px;max-height:90vh;overflow-y:auto">
+    <div id="detail-content"></div>
+    <div class="modal-actions" id="detail-actions"></div>
+  </div>
+</div>
+
+<script>
+var API   = "https://codesponge-backend.onrender.com";
+var token = localStorage.getItem("token");
+var email = localStorage.getItem("email") || "";
+
+// ── Nav setup ──────────────────────────────────────────────
+(function() {
+  var nr = document.getElementById("nav-right");
+  if (token) {
+    nr.innerHTML =
+      '<a href="dashboard.html" class="btn-sm">My Projects</a>' +
+      '<div class="avatar" title="' + esc(email) + '">' + (email[0]||"?").toUpperCase() + '</div>';
+    document.getElementById("publish-section").style.display = "";
+  }
+})();
+
+// ── State ──────────────────────────────────────────────────
+var currentSort   = "recent";
+var currentOffset = 0;
+var totalPosts    = 0;
+var LIMIT         = 15;
+var selectedProjectId = null;
+var userProjects  = [];
+var searchTimer   = null;
+
+// ── Load feed ──────────────────────────────────────────────
+async function loadFeed(reset) {
+  if (reset) { currentOffset = 0; }
+  var list = document.getElementById("posts-list");
+  if (currentOffset === 0) list.innerHTML = '<div class="loading-row"><div class="spinner"></div></div>';
+
+  var q    = document.getElementById("search-input").value.trim();
+  var lang = document.getElementById("lang-filter").value;
+  var url  = API + "/community?sort=" + currentSort + "&limit=" + LIMIT + "&offset=" + currentOffset;
+  if (q)    url += "&q=" + encodeURIComponent(q);
+  if (lang) url += "&language=" + lang;
+
+  var headers = {};
+  if (token) headers["Authorization"] = "Bearer " + token;
+
+  try {
+    var res  = await fetch(url, { headers: headers });
+    var data = await res.json();
+    totalPosts = data.total || 0;
+
+    if (currentOffset === 0) list.innerHTML = "";
+
+    if (data.posts.length === 0 && currentOffset === 0) {
+      list.innerHTML = '<div class="feed-empty"><h3>No projects yet</h3><p>Be the first to publish something!</p></div>';
+    } else {
+      data.posts.forEach(function(p) { list.appendChild(makePostCard(p)); });
+    }
+
+    var moreBtn = document.getElementById("load-more-btn");
+    moreBtn.style.display = (currentOffset + data.posts.length < totalPosts) ? "" : "none";
+
+    // Update stats
+    if (currentOffset === 0) updateStats(data);
+
+  } catch(e) {
+    list.innerHTML = '<div class="feed-empty"><h3>Could not load posts</h3><p>Check your connection and try again.</p></div>';
+  }
+}
+
+function loadMore() {
+  currentOffset += LIMIT;
+  loadFeed(false);
+}
+
+function debounceLoad() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(function() { loadFeed(true); }, 400);
+}
+
+function setSort(s) {
+  currentSort = s;
+  ["recent","trending","top"].forEach(function(t) {
+    document.getElementById("sort-" + t).className = "sort-tab" + (t === s ? " active" : "");
+  });
+  loadFeed(true);
+}
+
+function filterByLang(lang) {
+  document.getElementById("lang-filter").value = lang;
+  document.querySelectorAll(".lang-pill").forEach(function(el) { el.classList.remove("active"); });
+  event.target.closest(".lang-pill").classList.add("active");
+  loadFeed(true);
+}
+
+function updateStats(data) {
+  document.getElementById("stat-posts").textContent = totalPosts;
+  var likes = 0, forks = 0;
+  (data.posts||[]).forEach(function(p) { likes += p.likes||0; forks += p.forks||0; });
+  document.getElementById("stat-likes").textContent = likes;
+  document.getElementById("stat-forks").textContent = forks;
+}
+
+// ── Make post card ─────────────────────────────────────────
+function makePostCard(p) {
+  var card = document.createElement("div");
+  card.className = "post-card";
+
+  var initials = (p.username||p.email||"?")[0].toUpperCase();
+  var timeAgo  = relTime(p.published_at);
+
+  var badges = '';
+  if (p.project_type === "multi")   badges += '<span class="badge badge-type">Multi-file</span>';
+  if (p.project_type === "website") badges += '<span class="badge badge-web">Website</span>';
+  if (p.language) badges += '<span class="badge badge-lang">' + esc(p.language) + '</span>';
+
+  var codePreview = (p.code_preview || "").trim();
+
+  card.innerHTML =
+    '<div class="post-header">' +
+      '<div class="post-avatar">' + initials + '</div>' +
+      '<div class="post-meta">' +
+        '<div class="post-author"><a href="#" onclick="event.stopPropagation()">' + esc(p.username||p.email) + '</a></div>' +
+        '<div class="post-time">' + timeAgo + '</div>' +
+      '</div>' +
+      '<div class="post-badges">' + badges + '</div>' +
+    '</div>' +
+    '<div class="post-title">' + esc(p.title) + '</div>' +
+    (p.description ? '<div class="post-desc">' + esc(p.description) + '</div>' : '') +
+    (codePreview ? '<div class="code-preview">' + esc(codePreview) + '</div>' : '') +
+    '<div class="post-footer">' +
+      '<button class="post-action' + (p.liked_by_me ? ' liked' : '') + '" id="like-' + p.id + '" onclick="event.stopPropagation();likePost(\'' + p.id + '\')">' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="' + (p.liked_by_me ? 'currentColor' : 'none') + '" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>' +
+        '<span id="likes-' + p.id + '">' + (p.likes||0) + '</span>' +
+      '</button>' +
+      '<button class="post-action" onclick="event.stopPropagation();forkPost(\'' + p.id + '\')">' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="6" cy="3" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>' +
+        (p.forks||0) + ' Fork' +
+      '</button>' +
+      (p.hosted_url ? '<a class="live-link" href="' + esc(p.hosted_url) + '" target="_blank" onclick="event.stopPropagation()">&#127760; Live</a>' : '') +
+      '<div class="post-spacer"></div>' +
+      '<span class="post-views"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' + (p.views||0) + '</span>' +
+    '</div>';
+
+  card.addEventListener("click", function() { openDetail(p.id); });
+  return card;
+}
+
+// ── Like ───────────────────────────────────────────────────
+async function likePost(postId) {
+  if (!token) { alert("Sign in to like posts."); return; }
+  try {
+    var res  = await fetch(API + "/community/" + postId + "/like", {
+      method: "POST", headers: { "Authorization": "Bearer " + token }
+    });
+    var data = await res.json();
+    var btn  = document.getElementById("like-" + postId);
+    var span = document.getElementById("likes-" + postId);
+    if (btn)  btn.className  = "post-action" + (data.liked ? " liked" : "");
+    if (span) span.textContent = data.likes;
+    // Update heart fill
+    if (btn) {
+      var svg = btn.querySelector("path");
+      if (svg) svg.setAttribute("fill", data.liked ? "currentColor" : "none");
+    }
+  } catch(e) {}
+}
+
+// ── Fork ───────────────────────────────────────────────────
+async function forkPost(postId) {
+  if (!token) { alert("Sign in to fork projects."); return; }
+  try {
+    var res  = await fetch(API + "/community/" + postId + "/fork", {
+      method: "POST", headers: { "Authorization": "Bearer " + token }
+    });
+    var data = await res.json();
+    if (data.project_id) {
+      var go = confirm("Forked! Open the project in your editor?");
+      if (go) {
+        var page = (data.project_type === "multi" || data.project_type === "website") ? "multifile.html" : "editor.html";
+        window.location.href = page + "?project=" + data.project_id;
+      }
+    }
+  } catch(e) { alert("Could not fork. Try again."); }
+}
+
+// ── Post detail ────────────────────────────────────────────
+async function openDetail(postId) {
+  openModal("detail-modal");
+  document.getElementById("detail-content").innerHTML = '<div class="loading-row"><div class="spinner"></div></div>';
+  document.getElementById("detail-actions").innerHTML = "";
+
+  try {
+    var headers = {};
+    if (token) headers["Authorization"] = "Bearer " + token;
+    var res  = await fetch(API + "/community/" + postId, { headers: headers });
+    var p    = await res.json();
+
+    var initials = (p.username||"?")[0].toUpperCase();
+    var badges   = '';
+    if (p.project_type === "multi")   badges += '<span class="badge badge-type">Multi-file</span>';
+    if (p.project_type === "website") badges += '<span class="badge badge-web">Website</span>';
+    if (p.language) badges += '<span class="badge badge-lang">' + esc(p.language) + '</span>';
+
+    // File tabs for multi-file
+    var codeSection = "";
+    var files = p.files || [];
+    if (files.length > 1) {
+      var tabs = files.map(function(f, i) {
+        return '<div class="file-tab' + (i===0?' active':'') + '" onclick="switchDetailTab(' + i + ',this)">' + esc(f.name) + '</div>';
+      }).join("");
+      var panels = files.map(function(f, i) {
+        return '<pre class="post-detail-code" id="detail-panel-' + i + '" style="' + (i>0?'display:none':'') + '">' + esc(f.content||"") + '</pre>';
+      }).join("");
+      codeSection = '<div class="file-tabs">' + tabs + '</div>' + panels;
+    } else {
+      var code = (files.length > 0 ? files[0].content : p.code) || "";
+      if (code.trim()) {
+        codeSection = '<pre class="post-detail-code">' + esc(code) + '</pre>';
+      }
+    }
+
+    document.getElementById("detail-content").innerHTML =
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">' +
+        '<div class="post-avatar" style="width:38px;height:38px;font-size:15px">' + initials + '</div>' +
+        '<div><div style="font-weight:700">' + esc(p.username||p.email) + '</div>' +
+        '<div style="font-size:11px;color:var(--muted)">' + relTime(p.published_at) + '</div></div>' +
+        '<div style="margin-left:auto;display:flex;gap:5px">' + badges + '</div>' +
+      '</div>' +
+      '<h2 style="font-size:18px;font-weight:800;margin:0 0 8px">' + esc(p.title) + '</h2>' +
+      (p.description ? '<p style="font-size:13px;color:var(--muted);margin:0 0 16px;line-height:1.6">' + esc(p.description) + '</p>' : '') +
+      codeSection +
+      (p.hosted_url ? '<a class="live-link" href="' + esc(p.hosted_url) + '" target="_blank" style="margin-bottom:16px;display:inline-flex">&#127760; View live site</a>' : '') +
+      '<div style="display:flex;gap:16px;font-size:12px;color:var(--muted);margin-top:10px">' +
+        '<span>&#10084; ' + (p.likes||0) + ' likes</span>' +
+        '<span>&#128256; ' + (p.forks||0) + ' forks</span>' +
+        '<span>&#128065; ' + (p.views||0) + ' views</span>' +
+      '</div>';
+
+    var actions = '<button class="btn-ghost" onclick="closeModal(\'detail-modal\')">Close</button>';
+    actions += '<button class="btn-ghost" onclick="likePost(\'' + p.id + '\')">' +
+      (p.liked_by_me ? '&#10084; Liked' : '&#10084; Like') + '</button>';
+    if (token) {
+      actions += '<button class="btn-prim" onclick="forkPost(\'' + p.id + '\')">&#128256; Fork project</button>';
+    }
+    document.getElementById("detail-actions").innerHTML = actions;
+
+  } catch(e) {
+    document.getElementById("detail-content").innerHTML = '<p style="color:var(--danger)">Could not load post.</p>';
+  }
+}
+
+function switchDetailTab(idx, el) {
+  document.querySelectorAll(".file-tab").forEach(function(t) { t.classList.remove("active"); });
+  el.classList.add("active");
+  document.querySelectorAll("[id^='detail-panel-']").forEach(function(p) { p.style.display = "none"; });
+  var panel = document.getElementById("detail-panel-" + idx);
+  if (panel) panel.style.display = "";
+}
+
+// ── Publish ────────────────────────────────────────────────
+async function openPublishModal() {
+  if (!token) { window.location.href = "index.html"; return; }
+  selectedProjectId = null;
+  document.getElementById("pub-title").value = "";
+  document.getElementById("pub-desc").value  = "";
+
+  var list = document.getElementById("project-pick-list");
+  list.innerHTML = '<div style="padding:14px;color:var(--muted);font-size:13px">Loading...</div>';
+  openModal("publish-modal");
+
+  try {
+    var res  = await fetch(API + "/projects", { headers: { "Authorization": "Bearer " + token } });
+    userProjects = await res.json();
+
+    if (userProjects.length === 0) {
+      list.innerHTML = '<div style="padding:14px;color:var(--muted);font-size:13px">No projects yet. Create one first.</div>';
+      return;
+    }
+
+    var icons = { single: "📄", multi: "📁", website: "🌐" };
+    list.innerHTML = "";
+    userProjects.forEach(function(p) {
+      var item = document.createElement("div");
+      item.className = "project-pick-item";
+      item.innerHTML =
+        '<span class="pick-icon">' + (icons[p.project_type||"single"]||"📄") + '</span>' +
+        '<div><div class="pick-name">' + esc(p.name) + '</div>' +
+        '<div class="pick-lang">' + (p.language || p.project_type || "") + '</div></div>';
+      item.onclick = function() {
+        selectedProjectId = p.id;
+        document.querySelectorAll(".project-pick-item").forEach(function(el) { el.classList.remove("selected"); });
+        item.classList.add("selected");
+        if (!document.getElementById("pub-title").value) {
+          document.getElementById("pub-title").value = p.name;
+        }
+      };
+      list.appendChild(item);
+    });
+  } catch(e) {
+    list.innerHTML = '<div style="padding:14px;color:var(--danger);font-size:13px">Could not load projects.</div>';
+  }
+}
+
+async function doPublish() {
+  var title = document.getElementById("pub-title").value.trim();
+  var desc  = document.getElementById("pub-desc").value.trim();
+  if (!title) { alert("Please enter a title."); return; }
+
+  var btn = document.getElementById("pub-btn");
+  btn.disabled = true; btn.textContent = "Publishing...";
+
+  try {
+    var body = { title: title, description: desc };
+    if (selectedProjectId) body.project_id = selectedProjectId;
+
+    var res  = await fetch(API + "/community/publish", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify(body)
+    });
+    var data = await res.json();
+    if (data.id) {
+      closeModal("publish-modal");
+      loadFeed(true);
+      loadTrending();
+    } else {
+      alert(data.error || "Could not publish.");
+    }
+  } catch(e) {
+    alert("Could not publish. Try again.");
+  } finally {
+    btn.disabled = false; btn.textContent = "Publish";
+  }
+}
+
+// ── Trending sidebar ───────────────────────────────────────
+async function loadTrending() {
+  try {
+    var res  = await fetch(API + "/community?sort=trending&limit=5");
+    var data = await res.json();
+    var list = document.getElementById("trending-list");
+    if (!data.posts || data.posts.length === 0) {
+      list.innerHTML = '<div style="color:var(--muted);font-size:12px">Nothing yet.</div>';
+      return;
+    }
+    list.innerHTML = "";
+    data.posts.forEach(function(p, i) {
+      var item = document.createElement("div");
+      item.className = "trending-item";
+      item.innerHTML =
+        '<div class="ti-rank">' + (i+1) + '</div>' +
+        '<div class="ti-info">' +
+          '<div class="ti-title">' + esc(p.title) + '</div>' +
+          '<div class="ti-meta">' + esc(p.username||"") + ' · ' + (p.language||"") + '</div>' +
+        '</div>' +
+        '<div class="ti-likes">&#10084; ' + (p.likes||0) + '</div>';
+      item.onclick = function() { openDetail(p.id); };
+      list.appendChild(item);
+    });
+  } catch(e) {}
+}
+
+// ── Modals ─────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add("open"); }
+function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+
+["publish-modal","detail-modal"].forEach(function(id) {
+  document.getElementById(id).addEventListener("click", function(e) {
+    if (e.target === this) closeModal(id);
+  });
+});
+
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape") { closeModal("publish-modal"); closeModal("detail-modal"); }
+  if (e.key === "Enter" && document.getElementById("publish-modal").classList.contains("open")) {
+    var active = document.activeElement;
+    if (active && active.tagName !== "TEXTAREA") { e.preventDefault(); doPublish(); }
+  }
+});
+
+// ── Utils ──────────────────────────────────────────────────
+function esc(s) {
+  return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function relTime(ts) {
+  if (!ts) return "";
+  var diff = (Date.now() - new Date(ts).getTime()) / 1000;
+  if (diff < 60)     return "just now";
+  if (diff < 3600)   return Math.floor(diff/60) + "m ago";
+  if (diff < 86400)  return Math.floor(diff/3600) + "h ago";
+  if (diff < 604800) return Math.floor(diff/86400) + "d ago";
+  return new Date(ts).toLocaleDateString(undefined, { month:"short", day:"numeric" });
+}
+
+// ── Init ───────────────────────────────────────────────────
+loadFeed(true);
+loadTrending();
+</script>
+</body>
+</html>
