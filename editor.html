@@ -21,7 +21,7 @@ html,body{height:100%;overflow:hidden;margin:0;font-family:'Inter',sans-serif}
 .brand-icon{width:24px;height:24px;border-radius:6px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;flex-shrink:0}
 .brand-text span{color:var(--accent)}
 .tb-sep{width:1px;height:18px;background:var(--border);flex-shrink:0;margin:0 2px}
-.proj-title{background:none;border:none;color:var(--text);font-size:13px;font-weight:600;font-family:'Inter',sans-serif;outline:none;padding:3px 7px;border-radius:6px;transition:background .15s;max-width:200px;border-bottom:1px solid transparent}
+.proj-title{background:none;border:none;color:var(--text);font-size:13px;font-weight:600;font-family:'Inter',sans-serif;outline:none;padding:3px 7px;border-radius:6px;transition:background .15s;max-width:200px}
 .proj-title:hover{background:var(--surface3)}
 .proj-title:focus{background:var(--surface3);box-shadow:0 0 0 1px var(--accent)}
 .lang-badge{display:flex;align-items:center;gap:5px;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;cursor:default}
@@ -31,8 +31,7 @@ html,body{height:100%;overflow:hidden;margin:0;font-family:'Inter',sans-serif}
 .save-dot{width:6px;height:6px;border-radius:50%;background:var(--success);flex-shrink:0;transition:background .2s}
 .save-pill.saving .save-dot{background:var(--warning);animation:pulse 1s infinite}
 .save-pill.error .save-dot{background:var(--danger)}
-.save-pill.saving{color:var(--warning)}
-.save-pill.error{color:var(--danger)}
+.save-pill.saving{color:var(--warning)}.save-pill.error{color:var(--danger)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 @keyframes spin{to{transform:rotate(360deg)}}
 .tb-btn{background:var(--surface3);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:5px 11px;font-size:11px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0}
@@ -59,27 +58,24 @@ html,body{height:100%;overflow:hidden;margin:0;font-family:'Inter',sans-serif}
 .out-panel{flex-shrink:0;display:flex;flex-direction:column;background:var(--surface2);min-width:160px;overflow:hidden}
 .out-header{height:35px;flex-shrink:0;display:flex;align-items:stretch;border-bottom:1px solid var(--border)}
 .out-tab{display:flex;align-items:center;padding:0 13px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .1s}
-.out-tab:hover{color:var(--text)}
-.out-tab.active{color:var(--text);border-bottom-color:var(--accent)}
+.out-tab:hover{color:var(--text)}.out-tab.active{color:var(--text);border-bottom-color:var(--accent)}
 .out-spacer{flex:1}
 .clear-btn{background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:0 10px;font-family:'Inter',sans-serif;transition:color .15s}
 .clear-btn:hover{color:var(--text)}
 .out-body{flex:1;overflow-y:auto;padding:12px 14px;min-height:0}
 #out-pre{font-family:var(--mono);font-size:12px;white-space:pre-wrap;line-height:1.75;margin:0;color:var(--success)}
-#out-pre.idle{color:var(--muted)}
-#out-pre.error{color:var(--danger)}
-#out-pre.running{color:var(--warning)}
+#out-pre.idle{color:var(--muted)}#out-pre.error{color:var(--danger)}#out-pre.running{color:var(--warning)}
 #html-frame{flex:1;border:none;background:#fff;display:none;min-height:0}
-.statusbar{height:22px;flex-shrink:0;background:var(--accent);display:flex;align-items:center;padding:0 12px;gap:12px}
-.sb-item{font-size:10px;color:rgba(255,255,255,.8);white-space:nowrap;display:flex;align-items:center;gap:4px}
-.sb-right{margin-left:auto;display:flex;gap:12px}
+.statusbar{height:22px;flex-shrink:0;background:var(--accent);display:flex;align-items:center;padding:0 12px;gap:10px}
+.sb-item{font-size:10px;color:rgba(255,255,255,.8);white-space:nowrap}
+.sb-right{margin-left:auto;display:flex;gap:10px}
 .sb-dot{opacity:.35}
-.sb-err-count{color:#ffd0ce;font-weight:700}
-.sb-warn-count{color:#fff3cd;font-weight:700}
+.sb-errs{color:#ffd0ce;font-weight:700}
+.sb-warns{color:#fff3cd;font-weight:700}
 .modal-back{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;z-index:100}
 .modal-back.open{display:flex}
-.modal-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:24px;width:420px;max-width:94vw;box-shadow:0 24px 64px rgba(0,0,0,.7);animation:modal-in .18s ease}
-@keyframes modal-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.modal-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:24px;width:420px;max-width:94vw;box-shadow:0 24px 64px rgba(0,0,0,.7);animation:mi .18s ease}
+@keyframes mi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .modal-title{font-size:15px;font-weight:800;margin:0 0 4px}
 .modal-sub{font-size:12px;color:var(--muted);margin:0 0 16px;line-height:1.5}
 .modal-input{width:100%;background:var(--surface3);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:9px 11px;font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s}
@@ -88,19 +84,15 @@ textarea.modal-input{resize:vertical;min-height:80px}
 .modal-label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:7px}
 .form-group{margin-bottom:14px}
 .modal-actions{display:flex;gap:8px;margin-top:18px;justify-content:flex-end}
-.btn-prim{background:var(--accent);border:none;color:#fff;border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s}
+.btn-prim{background:var(--accent);border:none;color:#fff;border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer}
 .btn-prim:hover{background:#6aa3f9}
 .btn-prim:disabled{opacity:.5;cursor:not-allowed}
-.btn-ghost{background:none;border:1px solid var(--border);color:var(--text);border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s}
+.btn-ghost{background:none;border:1px solid var(--border);color:var(--text);border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer}
 .btn-ghost:hover{border-color:rgba(255,255,255,.2)}
 .share-url-row{display:flex;gap:8px;margin-top:10px}
 .share-url-input{flex:1;background:var(--surface3);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:8px 11px;font-size:12px;font-family:var(--mono);outline:none}
-/* Toast */
-#cs-toast{position:fixed;bottom:36px;right:20px;z-index:9999;border-radius:9px;padding:10px 16px;font-size:12px;font-family:'Inter',sans-serif;max-width:360px;line-height:1.5;white-space:pre-wrap;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none}
-@keyframes toast-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+#cs-toast{position:fixed;bottom:36px;right:20px;z-index:9999;border-radius:9px;padding:12px 16px;font-size:12px;font-family:'Inter',sans-serif;max-width:380px;line-height:1.6;white-space:pre-wrap;box-shadow:0 8px 24px rgba(0,0,0,.5);display:none}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
 </style>
 </head>
 <body>
@@ -167,12 +159,12 @@ textarea.modal-input{resize:vertical;min-height:80px}
     <div class="sb-item">CodeSponge</div>
     <span class="sb-dot">·</span>
     <div class="sb-item" id="sb-lang">—</div>
-    <span class="sb-dot" id="sb-diag-sep" style="display:none">·</span>
+    <span class="sb-dot" id="sb-dsep" style="display:none">·</span>
     <div class="sb-item" id="sb-diag" style="display:none"></div>
     <div class="sb-right">
       <div class="sb-item" id="sb-cursor">Ln 1, Col 1</div>
       <span class="sb-dot">·</span>
-      <div class="sb-item">Ctrl+Enter run</div>
+      <div class="sb-item">Ctrl+Enter run · Ctrl+S save</div>
     </div>
   </div>
 </div>
@@ -214,427 +206,470 @@ var projectId = params.get("project");
 if (!projectId && !params.get("snippet")) window.location.href = "dashboard.html";
 function authH(){ return {"Content-Type":"application/json","Authorization":"Bearer "+token}; }
 
-var editor, currentLang = "python";
+var editor, currentLang = "python", runController = null;
 var LANG_COLORS = {python:"#3572A5",javascript:"#f1e05a",cpp:"#f34b7d",html:"#e34c26"};
 var LANG_LABELS = {python:"Python",javascript:"JavaScript",cpp:"C++",html:"HTML"};
-var runController = null; // AbortController for current run
 
-// ─────────────────────────────────────────────────────────────────────────────
-// LINTER RULES
-// ─────────────────────────────────────────────────────────────────────────────
-var RULES = {
+// ─── LINTER CHECKS ────────────────────────────────────────────────────────────
+// Each check: { word, fix (or null), msg, err (true=error, false=warning) }
+var LINT_RULES = {
   python: [
-    {pattern:"pirnt",   fix:"print",     msg:'Typo: did you mean "print"?',     sev:"error"},
-    {pattern:"prnit",   fix:"print",     msg:'Typo: did you mean "print"?',     sev:"error"},
-    {pattern:"imoprt",  fix:"import",    msg:'Typo: did you mean "import"?',    sev:"error"},
-    {pattern:"improt",  fix:"import",    msg:'Typo: did you mean "import"?',    sev:"error"},
-    {pattern:"deef ",   fix:"def ",      msg:'Typo: did you mean "def"?',       sev:"error"},
-    {pattern:"clsas ",  fix:"class ",    msg:'Typo: did you mean "class"?',     sev:"error"},
-    {pattern:"retunr",  fix:"return",    msg:'Typo: did you mean "return"?',    sev:"error"},
-    {pattern:"Treu",    fix:"True",      msg:'Typo: did you mean "True"?',      sev:"error"},
-    {pattern:"Ture",    fix:"True",      msg:'Typo: did you mean "True"?',      sev:"error"},
-    {pattern:"Flase",   fix:"False",     msg:'Typo: did you mean "False"?',     sev:"error"},
-    {pattern:"Fasle",   fix:"False",     msg:'Typo: did you mean "False"?',     sev:"error"},
-    {pattern:"Noen",    fix:"None",      msg:'Typo: did you mean "None"?',      sev:"error"},
-    {pattern:"excpet",  fix:"except",    msg:'Typo: did you mean "except"?',    sev:"error"},
-    {pattern:"eval(",   fix:null,        msg:'eval() can be dangerous — avoid if possible',  sev:"warning"},
-    {pattern:"exec(",   fix:null,        msg:'exec() can be dangerous — avoid if possible',  sev:"warning"},
-    {pattern:"except:", fix:null,        msg:'Bare except catches everything including KeyboardInterrupt. Use "except Exception as e:" instead', sev:"warning"},
-    {pattern:"import *",fix:null,        msg:'Wildcard import pollutes namespace — prefer explicit imports', sev:"warning"},
-    {pattern:"# TODO",  fix:null,        msg:'TODO: this needs to be implemented', sev:"warning"},
-    {pattern:"# FIXME", fix:null,        msg:'FIXME: this needs attention',        sev:"warning"},
+    {word:"pirnt",   fix:"print",   msg:"Typo: did you mean 'print'?",   err:true},
+    {word:"prnit",   fix:"print",   msg:"Typo: did you mean 'print'?",   err:true},
+    {word:"imoprt",  fix:"import",  msg:"Typo: did you mean 'import'?",  err:true},
+    {word:"improt",  fix:"import",  msg:"Typo: did you mean 'import'?",  err:true},
+    {word:"deef ",   fix:"def ",    msg:"Typo: did you mean 'def'?",     err:true},
+    {word:"clsas ",  fix:"class ",  msg:"Typo: did you mean 'class'?",   err:true},
+    {word:"retunr",  fix:"return",  msg:"Typo: did you mean 'return'?",  err:true},
+    {word:"Treu",    fix:"True",    msg:"Typo: did you mean 'True'?",    err:true},
+    {word:"Ture",    fix:"True",    msg:"Typo: did you mean 'True'?",    err:true},
+    {word:"Flase",   fix:"False",   msg:"Typo: did you mean 'False'?",   err:true},
+    {word:"Fasle",   fix:"False",   msg:"Typo: did you mean 'False'?",   err:true},
+    {word:"Noen",    fix:"None",    msg:"Typo: did you mean 'None'?",    err:true},
+    {word:"excpet",  fix:"except",  msg:"Typo: did you mean 'except'?",  err:true},
+    {word:"eval(",   fix:null,      msg:"eval() is dangerous — avoid if possible", err:false},
+    {word:"exec(",   fix:null,      msg:"exec() is dangerous — avoid if possible", err:false},
+    {word:"except:", fix:null,      msg:"Bare except catches everything. Use 'except Exception as e:' instead", err:false},
+    {word:"import *",fix:null,      msg:"Wildcard import pollutes namespace", err:false},
+    {word:"# TODO",  fix:null,      msg:"TODO: needs implementation",    err:false},
+    {word:"# FIXME", fix:null,      msg:"FIXME: needs attention",        err:false},
   ],
   cpp: [
-    {pattern:"cuot <<", fix:"cout <<",   msg:'Typo: did you mean "cout"?',      sev:"error"},
-    {pattern:"mian(",   fix:"main(",     msg:'Typo: did you mean "main"?',      sev:"error"},
-    {pattern:"void mian",fix:"void main",msg:'Typo: did you mean "main"?',      sev:"error"},
-    {pattern:"namepsace",fix:"namespace",msg:'Typo: did you mean "namespace"?', sev:"error"},
-    {pattern:"inlcude", fix:"include",   msg:'Typo: did you mean "include"?',   sev:"error"},
-    {pattern:"goto ",   fix:null,        msg:'"goto" is considered bad practice — use loops or functions', sev:"warning"},
-    {pattern:"// TODO", fix:null,        msg:'TODO: this needs to be implemented', sev:"warning"},
-    {pattern:"// FIXME",fix:null,        msg:'FIXME: this needs attention',        sev:"warning"},
+    {word:"cuot <<", fix:"cout <<", msg:"Typo: did you mean 'cout'?",    err:true},
+    {word:"mian(",   fix:"main(",   msg:"Typo: did you mean 'main'?",    err:true},
+    {word:"void mian",fix:"void main",msg:"Typo: did you mean 'main'?",  err:true},
+    {word:"namepsace",fix:"namespace",msg:"Typo: did you mean 'namespace'?",err:true},
+    {word:"inlcude", fix:"include", msg:"Typo: did you mean 'include'?", err:true},
+    {word:"goto ",   fix:null,      msg:"'goto' is bad practice — use loops or functions instead", err:false},
+    {word:"// TODO", fix:null,      msg:"TODO: needs implementation",    err:false},
+    {word:"// FIXME",fix:null,      msg:"FIXME: needs attention",        err:false},
   ]
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MONACO SETUP
-// ─────────────────────────────────────────────────────────────────────────────
-require.config({paths:{vs:"https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs"}});
-require(["vs/editor/editor.main"], function(){
+// ─── LINT FUNCTION ─────────────────────────────────────────────────────────────
+// This is THE function. Called directly, never wrapped.
+function runLint(model) {
+  if (!model) return;
+  var langId = model.getLanguageId();  // "python", "cpp", "javascript", etc.
+  var rules  = LINT_RULES[langId];
+  if (!rules) {
+    // Clear any old markers for unsupported languages
+    monaco.editor.setModelMarkers(model, "cs-lint", []);
+    updateDiagBar(model);
+    return;
+  }
 
-  // Configure built-in language services FIRST
-  monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({noSemanticValidation:false,noSyntaxValidation:false,noSuggestionDiagnostics:false});
-  monaco.languages.typescript.javascriptDefaults.setCompilerOptions({target:monaco.languages.typescript.ScriptTarget.ES2020,allowJs:true,checkJs:true,strict:false,noUnusedLocals:true});
-  monaco.languages.html.htmlDefaults.setOptions({validate:true,suggest:{html5:true}});
-  monaco.languages.css.cssDefaults.setOptions({validate:true});
-  monaco.languages.json.jsonDefaults.setDiagnosticsOptions({validate:true,allowComments:false});
+  var lines   = model.getLinesContent();  // array of line strings
+  var markers = [];
 
-  editor = monaco.editor.create(document.getElementById("monaco-editor"),{
-    value:"",language:"python",theme:"vs-dark",
-    fontSize:14,fontFamily:"'JetBrains Mono',monospace",fontLigatures:true,
-    minimap:{enabled:false},
-    automaticLayout:false, // prevents double-cursor bug
-    scrollBeyondLastLine:false,padding:{top:14,bottom:14},
-    cursorBlinking:"smooth",cursorSmoothCaretAnimation:"on",
-    smoothScrolling:true,renderLineHighlight:"gutter",tabSize:4,
-    scrollbar:{verticalScrollbarSize:5,horizontalScrollbarSize:5},
-    lightbulb:{enabled:"on"},
+  rules.forEach(function(rule) {
+    lines.forEach(function(line, lineIndex) {
+      var col = line.indexOf(rule.word);
+      while (col !== -1) {
+        markers.push({
+          severity:        rule.err ? monaco.MarkerSeverity.Error : monaco.MarkerSeverity.Warning,
+          message:         rule.msg,
+          startLineNumber: lineIndex + 1,
+          startColumn:     col + 1,
+          endLineNumber:   lineIndex + 1,
+          endColumn:       col + rule.word.length + 1,
+          source:          "CodeSponge",
+          // Store fix so context action can read it back
+          code:            rule.fix ? ("FIX:" + rule.fix) : ""
+        });
+        col = line.indexOf(rule.word, col + 1);
+      }
+    });
   });
 
-  // Manual layout — the ONLY correct fix for double cursor
-  function relayout(){
+  monaco.editor.setModelMarkers(model, "cs-lint", markers);
+  updateDiagBar(model);
+}
+
+function updateDiagBar(model) {
+  if (!model) return;
+  var all  = monaco.editor.getModelMarkers({resource: model.uri});
+  var errs = all.filter(function(m){ return m.severity === monaco.MarkerSeverity.Error;   }).length;
+  var warn = all.filter(function(m){ return m.severity === monaco.MarkerSeverity.Warning; }).length;
+  var diag = document.getElementById("sb-diag");
+  var dsep = document.getElementById("sb-dsep");
+  if (errs === 0 && warn === 0) { diag.style.display = "none"; dsep.style.display = "none"; return; }
+  dsep.style.display = "";
+  diag.style.display = "";
+  var parts = [];
+  if (errs > 0) parts.push('<span class="sb-errs">\u2715 ' + errs + ' error' + (errs > 1 ? "s" : "") + '</span>');
+  if (warn > 0) parts.push('<span class="sb-warns">\u26a0 ' + warn + ' warning' + (warn > 1 ? "s" : "") + '</span>');
+  diag.innerHTML = parts.join('<span style="opacity:.3;margin:0 4px">\u00b7</span>');
+}
+
+// ─── MONACO INIT ───────────────────────────────────────────────────────────────
+require.config({paths:{vs:"https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs"}});
+require(["vs/editor/editor.main"], function() {
+
+  // Built-in language diagnostics
+  monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+    noSemanticValidation:false, noSyntaxValidation:false, noSuggestionDiagnostics:false
+  });
+  monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+    target:monaco.languages.typescript.ScriptTarget.ES2020,
+    allowJs:true, checkJs:true, strict:false, noUnusedLocals:true
+  });
+  monaco.languages.html.htmlDefaults.setOptions({validate:true, suggest:{html5:true}});
+  monaco.languages.css.cssDefaults.setOptions({validate:true});
+  monaco.languages.json.jsonDefaults.setDiagnosticsOptions({validate:true});
+
+  editor = monaco.editor.create(document.getElementById("monaco-editor"), {
+    value:"", language:"python", theme:"vs-dark",
+    fontSize:14, fontFamily:"'JetBrains Mono',monospace", fontLigatures:true,
+    minimap:{enabled:false},
+    automaticLayout:false,       // MUST be false to prevent double cursor
+    scrollBeyondLastLine:false, padding:{top:14,bottom:14},
+    cursorBlinking:"smooth", cursorSmoothCaretAnimation:"on",
+    smoothScrolling:true, renderLineHighlight:"gutter", tabSize:4,
+    scrollbar:{verticalScrollbarSize:5, horizontalScrollbarSize:5},
+    lightbulb:{enabled:true},    // true not "on"
+  });
+
+  // Manual layout — prevents double cursor bug
+  function relayout() {
     var ep = document.getElementById("editor-pane");
-    if (ep && editor) editor.layout({width:ep.clientWidth,height:ep.clientHeight});
+    if (ep && editor) editor.layout({width: ep.clientWidth, height: ep.clientHeight});
   }
   window.addEventListener("resize", relayout);
   window.csRelayout = relayout;
 
-  editor.onDidChangeCursorPosition(function(e){
-    document.getElementById("sb-cursor").textContent = "Ln "+e.position.lineNumber+", Col "+e.position.column;
+  editor.onDidChangeCursorPosition(function(e) {
+    document.getElementById("sb-cursor").textContent =
+      "Ln " + e.position.lineNumber + ", Col " + e.position.column;
   });
 
+  // Auto-save + lint on change
   var saveTimer, lintTimer;
-  editor.onDidChangeModelContent(function(){
+  editor.onDidChangeModelContent(function() {
     setSave("saving");
     clearTimeout(saveTimer); saveTimer = setTimeout(saveProject, 1500);
-    clearTimeout(lintTimer); lintTimer = setTimeout(function(){ lintCurrentModel(); }, 500);
+    // Lint with short debounce
+    clearTimeout(lintTimer); lintTimer = setTimeout(function() {
+      runLint(editor.getModel());
+    }, 400);
   });
 
-  // Update diag bar when Monaco's own markers change (JS/HTML/CSS)
-  monaco.editor.onDidChangeMarkers(function(){
-    updateDiagBar();
+  // Also update diag bar when Monaco's own markers change (JS/HTML/CSS)
+  monaco.editor.onDidChangeMarkers(function() {
+    if (editor) updateDiagBar(editor.getModel());
   });
 
-  // ── LINTER ────────────────────────────────────────────────────────────────
-  // Key insight: markers must be set on model.uri, not the model itself
-  function lintCurrentModel(){
-    var model = editor.getModel();
-    if (!model) return;
-    var lang  = model.getLanguageId();
-    var rules = RULES[lang];
-    if (!rules) { monaco.editor.setModelMarkers(model,"cs-lint",[]); return; }
-
-    var lines   = model.getLinesContent(); // array of strings, one per line
-    var markers = [];
-
-    rules.forEach(function(rule){
-      lines.forEach(function(line, li){
-        var col = line.indexOf(rule.pattern);
-        while (col !== -1){
-          markers.push({
-            severity:        rule.sev === "error" ? monaco.MarkerSeverity.Error : monaco.MarkerSeverity.Warning,
-            message:         rule.msg,
-            startLineNumber: li + 1,
-            startColumn:     col + 1,
-            endLineNumber:   li + 1,
-            endColumn:       col + rule.pattern.length + 1,
-            source:          "CodeSponge",
-            // Store fix data so context action can retrieve it
-            code:            rule.fix ? ("fix:"+rule.fix) : ""
-          });
-          col = line.indexOf(rule.pattern, col + 1);
-        }
-      });
-    });
-
-    // setModelMarkers with owner "cs-lint" — this is what actually draws underlines
-    monaco.editor.setModelMarkers(model, "cs-lint", markers);
-    updateDiagBar();
-  }
-
-  window.lintCurrentModel = lintCurrentModel;
-
-  function updateDiagBar(){
-    var model = editor.getModel();
-    if (!model) return;
-    // Get ALL markers (both "cs-lint" and Monaco built-in)
-    var all      = monaco.editor.getModelMarkers({resource: model.uri});
-    var errors   = all.filter(function(m){ return m.severity === monaco.MarkerSeverity.Error; }).length;
-    var warnings = all.filter(function(m){ return m.severity === monaco.MarkerSeverity.Warning; }).length;
-    var diag  = document.getElementById("sb-diag");
-    var dsep  = document.getElementById("sb-diag-sep");
-    if (errors === 0 && warnings === 0){ diag.style.display="none"; dsep.style.display="none"; return; }
-    dsep.style.display = "";
-    diag.style.display = "";
-    var parts = [];
-    if (errors   > 0) parts.push('<span class="sb-err-count">\u2715 '+errors  +' error'  +(errors  >1?"s":"")+'</span>');
-    if (warnings > 0) parts.push('<span class="sb-warn-count">\u26a0 '+warnings+' warning'+(warnings>1?"s":"")+'</span>');
-    diag.innerHTML = parts.join('<span style="opacity:.35;margin:0 4px">\u00b7</span>');
-  }
-
-  // ── CONTEXT MENU ACTIONS ─────────────────────────────────────────────────
-  // IMPORTANT: keybindings must be null, group must be "navigation" or a new group
-
+  // ─── RIGHT-CLICK CONTEXT ACTIONS ───────────────────────────────────────────
   editor.addAction({
-    id:"cs.quickFix",
-    label:"\u26a1 Quick fix",  // actual Unicode, no HTML entity
-    contextMenuGroupId:"navigation",
-    contextMenuOrder:1.1,
-    run:function(ed){
-      var pos   = ed.getPosition();
-      var model = ed.getModel();
-      var all   = monaco.editor.getModelMarkers({resource:model.uri});
-      // Find markers on current line that have a fix
-      var fixable = all.filter(function(m){
+    id: "cs.quickfix",
+    label: "\u26a1 Quick fix",
+    contextMenuGroupId: "navigation",
+    contextMenuOrder: 1.5,
+    run: function(ed) {
+      var pos     = ed.getPosition();
+      var model   = ed.getModel();
+      var markers = monaco.editor.getModelMarkers({resource: model.uri}).filter(function(m) {
         return m.startLineNumber <= pos.lineNumber
             && m.endLineNumber   >= pos.lineNumber
-            && m.code && m.code.indexOf("fix:") === 0
+            && typeof m.code === "string"
+            && m.code.indexOf("FIX:") === 0
             && m.severity === monaco.MarkerSeverity.Error;
       });
-      if (!fixable.length){
-        showToast("No automatic fix available on this line.\nRight-click \u2192 Explain error for details.", "info");
+      if (!markers.length) {
+        showToast("No automatic fix available on line " + pos.lineNumber + ".\nTry 'Explain error' for details.", "info");
         return;
       }
-      var mk  = fixable[0];
-      var fix = mk.code.slice(4); // strip "fix:" prefix
-      var original = model.getValueInRange(new monaco.Range(mk.startLineNumber,mk.startColumn,mk.endLineNumber,mk.endColumn));
-      ed.executeEdits("cs-fix",[{
-        range:new monaco.Range(mk.startLineNumber,mk.startColumn,mk.endLineNumber,mk.endColumn),
-        text:fix
+      var mk  = markers[0];
+      var fix = mk.code.slice(4);
+      var original = model.getValueInRange(
+        new monaco.Range(mk.startLineNumber, mk.startColumn, mk.endLineNumber, mk.endColumn)
+      );
+      ed.executeEdits("cs-fix", [{
+        range: new monaco.Range(mk.startLineNumber, mk.startColumn, mk.endLineNumber, mk.endColumn),
+        text:  fix
       }]);
-      showToast('Fixed: replaced "'+original.trim()+'" \u2192 "'+fix+'"', "success");
+      showToast("Fixed: '" + original.trim() + "' \u2192 '" + fix + "'", "success");
     }
   });
 
   editor.addAction({
-    id:"cs.explainError",
-    label:"\u2139 Explain error / warning",
-    contextMenuGroupId:"navigation",
-    contextMenuOrder:1.2,
-    run:function(ed){
-      var pos   = ed.getPosition();
-      var model = ed.getModel();
-      var all   = monaco.editor.getModelMarkers({resource:model.uri});
-      var here  = all.filter(function(m){
+    id: "cs.explain",
+    label: "\u2139\ufe0f Explain error / warning",
+    contextMenuGroupId: "navigation",
+    contextMenuOrder: 1.6,
+    run: function(ed) {
+      var pos     = ed.getPosition();
+      var model   = ed.getModel();
+      var markers = monaco.editor.getModelMarkers({resource: model.uri}).filter(function(m) {
         return m.startLineNumber <= pos.lineNumber && m.endLineNumber >= pos.lineNumber;
       });
-      if (!here.length){
-        showToast("No errors or warnings on line "+pos.lineNumber+".\nYour code looks good here!", "info");
+      if (!markers.length) {
+        showToast("No errors or warnings on line " + pos.lineNumber + ". Looks good!", "info");
         return;
       }
-      var msg = here.map(function(m){
+      var lines = markers.map(function(m) {
         var icon = m.severity === monaco.MarkerSeverity.Error ? "\u274c" : "\u26a0\ufe0f";
-        return icon+" "+m.message;
-      }).join("\n\n");
-      showToast(msg, here[0].severity === monaco.MarkerSeverity.Error ? "error" : "warning");
+        return icon + " " + m.message;
+      });
+      showToast(lines.join("\n\n"), markers[0].severity === monaco.MarkerSeverity.Error ? "error" : "warning");
     }
   });
 
   editor.addAction({
-    id:"cs.ignoreWarning",
-    label:"\ud83d\udead Ignore warning on this line",
-    contextMenuGroupId:"navigation",
-    contextMenuOrder:1.3,
-    run:function(ed){
+    id: "cs.ignore",
+    label: "\ud83d\udead Ignore warning on this line",
+    contextMenuGroupId: "navigation",
+    contextMenuOrder: 1.7,
+    run: function(ed) {
       var pos   = ed.getPosition();
       var model = ed.getModel();
-      var all   = monaco.editor.getModelMarkers({resource:model.uri});
-      var kept  = all.filter(function(m){
-        return !(m.startLineNumber === pos.lineNumber && m.severity === monaco.MarkerSeverity.Warning && m.source === "CodeSponge");
+      var all   = monaco.editor.getModelMarkers({resource: model.uri});
+      var keep  = all.filter(function(m) {
+        return !(m.startLineNumber === pos.lineNumber
+              && m.severity === monaco.MarkerSeverity.Warning
+              && m.source === "CodeSponge");
       });
-      monaco.editor.setModelMarkers(model, "cs-lint", kept.filter(function(m){ return m.source==="CodeSponge"; }));
-      updateDiagBar();
-      showToast("Warning on line "+pos.lineNumber+" suppressed for this session.", "info");
+      // Re-set only our own markers minus suppressed ones
+      monaco.editor.setModelMarkers(model, "cs-lint",
+        keep.filter(function(m){ return m.source === "CodeSponge"; })
+      );
+      updateDiagBar(model);
+      showToast("Warning on line " + pos.lineNumber + " suppressed for this session.", "info");
     }
   });
 
   loadProject();
-  setTimeout(relayout, 200);
+  setTimeout(relayout, 300);
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────────────────────────────────────────
-function hideOverlay(){var el=document.getElementById("load-overlay");el.style.opacity="0";setTimeout(function(){el.style.display="none";},300);}
-
-function setSave(s){
-  var p=document.getElementById("save-pill"),t=document.getElementById("save-txt");
-  p.className="save-pill"+(s==="saving"?" saving":s==="error"?" error":"");
-  t.textContent=s==="saving"?"Saving...":s==="error"?"Save failed":"Saved";
+// ─── TOAST ─────────────────────────────────────────────────────────────────────
+var toastTimer;
+function showToast(msg, type) {
+  var el = document.getElementById("cs-toast");
+  var c = {
+    error:   {bg:"rgba(248,81,73,.18)",  border:"rgba(248,81,73,.5)",  color:"#f85149"},
+    warning: {bg:"rgba(227,179,65,.18)", border:"rgba(227,179,65,.5)", color:"#e3b341"},
+    success: {bg:"rgba(63,185,80,.18)",  border:"rgba(63,185,80,.5)",  color:"#3fb950"},
+    info:    {bg:"rgba(79,142,247,.18)", border:"rgba(79,142,247,.5)", color:"#4f8ef7"},
+  }[type] || {bg:"rgba(79,142,247,.18)",border:"rgba(79,142,247,.5)",color:"#4f8ef7"};
+  el.style.cssText = "position:fixed;bottom:36px;right:20px;z-index:9999;border-radius:9px;padding:12px 16px;"
+    + "font-size:12px;font-family:'Inter',sans-serif;max-width:380px;line-height:1.6;"
+    + "white-space:pre-wrap;box-shadow:0 8px 24px rgba(0,0,0,.5);"
+    + "background:" + c.bg + ";border:1px solid " + c.border + ";color:" + c.color + ";display:block";
+  el.textContent = msg;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() {
+    el.style.opacity = "0"; el.style.transition = "opacity .3s";
+    setTimeout(function(){ el.style.cssText = "display:none"; }, 300);
+  }, 6000);
 }
 
-function setLangUI(lang){
-  currentLang=lang;
-  document.getElementById("lang-dot").style.background=LANG_COLORS[lang]||"#7d8590";
-  document.getElementById("lang-txt").textContent=LANG_LABELS[lang]||lang;
-  document.getElementById("lang-badge").style.display="flex";
-  document.getElementById("sb-lang").textContent=LANG_LABELS[lang]||lang;
-  if(editor) monaco.editor.setModelLanguage(editor.getModel(), lang==="cpp"?"cpp":lang);
-  document.getElementById("ot-prev").style.display=(lang==="html")?"":"none";
-  switchOut(lang==="html"?"preview":"output");
-  // Re-run linter when language changes
-  setTimeout(function(){ if(window.lintCurrentModel) window.lintCurrentModel(); }, 300);
+// ─── SAVE STATUS ───────────────────────────────────────────────────────────────
+function setSave(s) {
+  var p = document.getElementById("save-pill"), t = document.getElementById("save-txt");
+  p.className = "save-pill" + (s==="saving" ? " saving" : s==="error" ? " error" : "");
+  t.textContent = s==="saving" ? "Saving..." : s==="error" ? "Save failed" : "Saved";
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// LOAD PROJECT
-// ─────────────────────────────────────────────────────────────────────────────
-async function loadProject(){
-  var snippet=params.get("snippet");
-  if(snippet){loadSnippet(snippet);return;}
-  var hintTimer=setTimeout(function(){document.getElementById("load-hint").classList.add("show");},5000);
-  for(var attempt=0;attempt<3;attempt++){
-    try{
-      if(attempt>0){document.getElementById("load-msg").textContent="Retrying... ("+(attempt+1)+"/3)";await new Promise(function(r){setTimeout(r,2000);});}
-      var res=await fetch(API+"/projects/"+projectId,{headers:authH()});
+// ─── LANGUAGE UI ───────────────────────────────────────────────────────────────
+function setLangUI(lang) {
+  currentLang = lang;
+  document.getElementById("lang-dot").style.background = LANG_COLORS[lang] || "#7d8590";
+  document.getElementById("lang-txt").textContent = LANG_LABELS[lang] || lang;
+  document.getElementById("lang-badge").style.display = "flex";
+  document.getElementById("sb-lang").textContent = LANG_LABELS[lang] || lang;
+  if (editor) monaco.editor.setModelLanguage(editor.getModel(), lang === "cpp" ? "cpp" : lang);
+  document.getElementById("ot-prev").style.display = (lang === "html") ? "" : "none";
+  switchOut(lang === "html" ? "preview" : "output");
+  // Run linter immediately after language change
+  setTimeout(function(){ if (editor) runLint(editor.getModel()); }, 300);
+}
+
+// ─── OVERLAY ───────────────────────────────────────────────────────────────────
+function hideOverlay() {
+  var el = document.getElementById("load-overlay");
+  el.style.opacity = "0";
+  setTimeout(function(){ el.style.display = "none"; }, 300);
+}
+
+// ─── LOAD ──────────────────────────────────────────────────────────────────────
+async function loadProject() {
+  var snippet = params.get("snippet");
+  if (snippet) { loadSnippet(snippet); return; }
+  var hintTimer = setTimeout(function(){ document.getElementById("load-hint").classList.add("show"); }, 5000);
+  for (var attempt = 0; attempt < 3; attempt++) {
+    try {
+      if (attempt > 0) {
+        document.getElementById("load-msg").textContent = "Retrying... (" + (attempt+1) + "/3)";
+        await new Promise(function(r){ setTimeout(r, 2000); });
+      }
+      var res = await fetch(API + "/projects/" + projectId, {headers: authH()});
       clearTimeout(hintTimer);
-      if(res.status===401){window.location.href="index.html";return;}
-      if(!res.ok)throw new Error("HTTP "+res.status);
-      var data=await res.json();
-      document.title=data.name+" - CodeSponge";
-      document.getElementById("proj-title").value=data.name;
-      setLangUI(data.language||"python");
-      editor.setValue(data.code||getDefault(data.language));
+      if (res.status === 401) { window.location.href = "index.html"; return; }
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      var data = await res.json();
+      document.title = data.name + " - CodeSponge";
+      document.getElementById("proj-title").value = data.name;
+      setLangUI(data.language || "python");
+      editor.setValue(data.code || getDefault(data.language));
       setSave("saved");
       hideOverlay();
-      if(window.csRelayout)setTimeout(window.csRelayout,100);
+      if (window.csRelayout) setTimeout(window.csRelayout, 100);
+      // Run linter on loaded code
+      setTimeout(function(){ runLint(editor.getModel()); }, 600);
       return;
-    }catch(err){console.error("Attempt "+(attempt+1)+" failed:",err);}
+    } catch(err) { console.error("Attempt " + (attempt+1) + " failed:", err); }
   }
   clearTimeout(hintTimer);
-  document.getElementById("proj-title").value="Error loading";
-  document.getElementById("load-msg").textContent="Could not load project.";
-  document.getElementById("load-hint").textContent="Check your connection and refresh.";
+  document.getElementById("proj-title").value = "Error loading";
+  document.getElementById("load-msg").textContent = "Could not load project.";
+  document.getElementById("load-hint").textContent = "Check your connection and refresh.";
   document.getElementById("load-hint").classList.add("show");
-  setTimeout(hideOverlay,2000);
+  setTimeout(hideOverlay, 2000);
 }
 
-async function loadSnippet(id){
-  try{
-    var res=await fetch(API+"/snippets/"+id);
-    var d=await res.json();
-    setLangUI(d.language||"python");editor.setValue(d.code||"");
-    document.getElementById("save-txt").textContent="Read-only";
-    document.getElementById("save-pill").style.opacity=".6";
+async function loadSnippet(id) {
+  try {
+    var res = await fetch(API + "/snippets/" + id);
+    var d   = await res.json();
+    setLangUI(d.language || "python");
+    editor.setValue(d.code || "");
+    document.getElementById("save-txt").textContent = "Read-only";
+    document.getElementById("save-pill").style.opacity = ".6";
     hideOverlay();
-  }catch(e){alert("Could not load snippet.");hideOverlay();}
+    setTimeout(function(){ runLint(editor.getModel()); }, 600);
+  } catch(e) { alert("Could not load snippet."); hideOverlay(); }
 }
 
-async function saveProject(){
-  if(params.get("snippet"))return;
-  try{
-    var r=await fetch(API+"/projects/"+projectId,{method:"PUT",headers:authH(),body:JSON.stringify({code:editor.getValue(),language:currentLang})});
-    setSave(r.ok?"saved":"error");
-  }catch(e){setSave("error");}
+async function saveProject() {
+  if (params.get("snippet")) return;
+  try {
+    var r = await fetch(API + "/projects/" + projectId, {
+      method:"PUT", headers:authH(),
+      body:JSON.stringify({code:editor.getValue(), language:currentLang})
+    });
+    setSave(r.ok ? "saved" : "error");
+  } catch(e) { setSave("error"); }
 }
 
-async function renameProject(){
-  if(params.get("snippet"))return;
-  var name=document.getElementById("proj-title").value.trim();if(!name)return;
-  document.title=name+" - CodeSponge";
-  try{await fetch(API+"/projects/"+projectId,{method:"PUT",headers:authH(),body:JSON.stringify({code:editor.getValue(),language:currentLang,name:name})});}catch(e){}
+async function renameProject() {
+  if (params.get("snippet")) return;
+  var name = document.getElementById("proj-title").value.trim();
+  if (!name) return;
+  document.title = name + " - CodeSponge";
+  try {
+    await fetch(API + "/projects/" + projectId, {
+      method:"PUT", headers:authH(),
+      body:JSON.stringify({code:editor.getValue(), language:currentLang, name:name})
+    });
+  } catch(e) {}
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// RUN & STOP
-// ─────────────────────────────────────────────────────────────────────────────
-function setRunning(running){
-  document.getElementById("run-btn").disabled=running;
-  document.getElementById("run-btn").style.display=running?"none":"flex";
-  document.getElementById("stop-btn").style.display=running?"flex":"none";
+// ─── RUN & STOP ────────────────────────────────────────────────────────────────
+function setRunning(running) {
+  document.getElementById("run-btn").disabled = running;
+  document.getElementById("run-btn").style.display = running ? "none" : "flex";
+  document.getElementById("stop-btn").style.display = running ? "flex" : "none";
 }
 
-function stopCode(){
-  if(runController){runController.abort();}
+function stopCode() {
+  if (runController) runController.abort();
   setRunning(false);
-  var pre=document.getElementById("out-pre");
-  pre.textContent=(pre.textContent||"")+(pre.textContent?"\n\n":"")+"--- Stopped by user ---";
-  pre.className="error";
+  var pre = document.getElementById("out-pre");
+  if (pre.textContent && pre.textContent !== "Running...")
+    pre.textContent += "\n\n\u2014 Stopped by user \u2014";
+  else
+    pre.textContent = "\u2014 Stopped by user \u2014";
+  pre.className = "error";
 }
 
-async function runCode(){
-  var code=editor.getValue();
-  if(currentLang==="html"){document.getElementById("html-frame").srcdoc=code;switchOut("preview");return;}
-  runController=new AbortController();
+async function runCode() {
+  var code = editor.getValue();
+  if (currentLang === "html") {
+    document.getElementById("html-frame").srcdoc = code;
+    switchOut("preview"); return;
+  }
+  runController = new AbortController();
   setRunning(true);
-  var pre=document.getElementById("out-pre");
-  pre.className="running";pre.textContent="Running...";switchOut("output");
-  try{
-    var res=await fetch(API+"/run",{
-      method:"POST",headers:authH(),
-      body:JSON.stringify({language:currentLang,code:code}),
+  var pre = document.getElementById("out-pre");
+  pre.className = "running"; pre.textContent = "Running...";
+  switchOut("output");
+  try {
+    var res  = await fetch(API + "/run", {
+      method:"POST", headers:authH(),
+      body:JSON.stringify({language:currentLang, code:code}),
       signal:runController.signal
     });
-    var data=await res.json();
-    if(data.error&&data.error.trim()){pre.textContent=data.error;pre.className="error";}
-    else{pre.textContent=data.output||(data.error?data.error:"(no output)");pre.className=data.error?"error":"";}
-  }catch(e){
-    if(e.name==="AbortError")return; // stopped by user, already handled
-    pre.textContent="Could not connect to server.";pre.className="error";
-  }finally{
-    setRunning(false);runController=null;
+    var data = await res.json();
+    if (data.error && data.error.trim()) {
+      pre.textContent = (data.output ? data.output + "\n\n" : "") + data.error;
+      pre.className   = "error";
+    } else {
+      pre.textContent = data.output || "(no output)";
+      pre.className   = "";
+    }
+  } catch(e) {
+    if (e.name === "AbortError") return;
+    pre.textContent = "Could not connect to server.";
+    pre.className   = "error";
+  } finally {
+    setRunning(false); runController = null;
   }
 }
 
-function clearOut(){var p=document.getElementById("out-pre");p.textContent="Press Run or Ctrl+Enter to execute...";p.className="idle";}
-
-function switchOut(tab){
-  var isOut=(tab==="output");
-  document.getElementById("ot-out").className="out-tab"+(isOut?" active":"");
-  document.getElementById("ot-prev").className="out-tab"+(!isOut?" active":"");
-  document.getElementById("out-body").style.display=isOut?"":"none";
-  document.getElementById("html-frame").style.display=isOut?"none":"block";
-  document.getElementById("html-frame").style.flex=isOut?"":"1";
+function clearOut() {
+  var p = document.getElementById("out-pre");
+  p.textContent = "Press Run or Ctrl+Enter to execute..."; p.className = "idle";
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SHARE & PUBLISH
-// ─────────────────────────────────────────────────────────────────────────────
-async function openShareModal(){
-  try{
-    var res=await fetch(API+"/snippets",{method:"POST",headers:authH(),body:JSON.stringify({language:currentLang,code:editor.getValue()})});
-    var data=await res.json();
-    document.getElementById("share-url").value=location.origin+"/AI/editor.html?snippet="+data.id;
+function switchOut(tab) {
+  var isOut = (tab === "output");
+  document.getElementById("ot-out").className  = "out-tab" + (isOut  ? " active" : "");
+  document.getElementById("ot-prev").className = "out-tab" + (!isOut ? " active" : "");
+  document.getElementById("out-body").style.display   = isOut ? ""     : "none";
+  document.getElementById("html-frame").style.display = isOut ? "none" : "block";
+  document.getElementById("html-frame").style.flex    = isOut ? ""     : "1";
+}
+
+// ─── SHARE / PUBLISH ────────────────────────────────────────────────────────────
+async function openShareModal() {
+  try {
+    var res  = await fetch(API + "/snippets", {method:"POST", headers:authH(), body:JSON.stringify({language:currentLang, code:editor.getValue()})});
+    var data = await res.json();
+    document.getElementById("share-url").value = location.origin + "/AI/editor.html?snippet=" + data.id;
     openModal("share-modal");
-  }catch(e){alert("Could not create share link.");}
+  } catch(e) { alert("Could not create share link."); }
 }
-function copyShareUrl(){
-  navigator.clipboard.writeText(document.getElementById("share-url").value).catch(function(){document.getElementById("share-url").select();document.execCommand("copy");});
-  var btn=document.getElementById("copy-btn");btn.textContent="Copied!";setTimeout(function(){btn.textContent="Copy";},2000);
+function copyShareUrl() {
+  navigator.clipboard.writeText(document.getElementById("share-url").value).catch(function(){
+    document.getElementById("share-url").select(); document.execCommand("copy");
+  });
+  var btn = document.getElementById("copy-btn");
+  btn.textContent = "Copied!"; setTimeout(function(){ btn.textContent = "Copy"; }, 2000);
 }
-function openPublishModal(){
-  if(!token){window.location.href="index.html";return;}
-  document.getElementById("pub-title").value=document.getElementById("proj-title").value||"";
-  document.getElementById("pub-desc").value="";
+function openPublishModal() {
+  if (!token) { window.location.href = "index.html"; return; }
+  document.getElementById("pub-title").value = document.getElementById("proj-title").value || "";
+  document.getElementById("pub-desc").value  = "";
   openModal("pub-modal");
-  setTimeout(function(){document.getElementById("pub-title").focus();},100);
+  setTimeout(function(){ document.getElementById("pub-title").focus(); }, 100);
 }
-async function doPublish(){
-  var title=document.getElementById("pub-title").value.trim();
-  var desc=document.getElementById("pub-desc").value.trim();
-  if(!title){alert("Please enter a title.");return;}
+async function doPublish() {
+  var title = document.getElementById("pub-title").value.trim();
+  var desc  = document.getElementById("pub-desc").value.trim();
+  if (!title) { alert("Please enter a title."); return; }
   await saveProject();
-  var btn=document.getElementById("pub-btn");btn.disabled=true;btn.textContent="Publishing...";
-  try{
-    var res=await fetch(API+"/community/publish",{method:"POST",headers:authH(),body:JSON.stringify({project_id:projectId,title:title,description:desc})});
-    var data=await res.json();
-    if(data.id){closeModal("pub-modal");if(confirm("Published! Open Community Hub?"))window.location.href="community.html";}
-    else alert(data.error||"Could not publish.");
-  }catch(e){alert("Could not publish.");}
-  finally{btn.disabled=false;btn.textContent="Publish";}
+  var btn = document.getElementById("pub-btn"); btn.disabled = true; btn.textContent = "Publishing...";
+  try {
+    var res  = await fetch(API + "/community/publish", {method:"POST", headers:authH(), body:JSON.stringify({project_id:projectId, title:title, description:desc})});
+    var data = await res.json();
+    if (data.id) { closeModal("pub-modal"); if (confirm("Published! Open Community Hub?")) window.location.href = "community.html"; }
+    else alert(data.error || "Could not publish.");
+  } catch(e) { alert("Could not publish."); }
+  finally { btn.disabled = false; btn.textContent = "Publish"; }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TOAST
-// ─────────────────────────────────────────────────────────────────────────────
-var toastTimer;
-function showToast(msg,type){
-  var el=document.getElementById("cs-toast");
-  var c={
-    error:  {bg:"rgba(248,81,73,.18)",  border:"rgba(248,81,73,.5)",  color:"#f85149"},
-    warning:{bg:"rgba(227,179,65,.18)", border:"rgba(227,179,65,.5)", color:"#e3b341"},
-    success:{bg:"rgba(63,185,80,.18)",  border:"rgba(63,185,80,.5)",  color:"#3fb950"},
-    info:   {bg:"rgba(79,142,247,.18)", border:"rgba(79,142,247,.5)", color:"#4f8ef7"},
-  }[type]||{bg:"rgba(79,142,247,.18)",border:"rgba(79,142,247,.5)",color:"#4f8ef7"};
-  el.style.cssText="position:fixed;bottom:36px;right:20px;z-index:9999;border-radius:9px;padding:12px 16px;font-size:12px;font-family:'Inter',sans-serif;max-width:380px;line-height:1.6;white-space:pre-wrap;box-shadow:0 8px 24px rgba(0,0,0,.5);animation:toast-in .2s ease;background:"+c.bg+";border:1px solid "+c.border+";color:"+c.color+";display:block";
-  el.textContent=msg;
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(function(){el.style.opacity="0";el.style.transition="opacity .3s";setTimeout(function(){el.style.display="none";el.style.opacity="";el.style.transition="";},300);},6000);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// RESIZER — calls relayout during drag to prevent double cursor
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── RESIZER ───────────────────────────────────────────────────────────────────
 (function(){
   var rs=document.getElementById("resizer"),ep=document.getElementById("editor-pane"),op=document.getElementById("out-panel"),br=document.getElementById("body-row");
   var d=false,sx,sew;
@@ -660,20 +695,22 @@ function showToast(msg,type){
 
 function openModal(id){document.getElementById(id).classList.add("open");}
 function closeModal(id){document.getElementById(id).classList.remove("open");}
-["share-modal","pub-modal"].forEach(function(id){document.getElementById(id).addEventListener("click",function(e){if(e.target===this)closeModal(id);});});
+["share-modal","pub-modal"].forEach(function(id){
+  document.getElementById(id).addEventListener("click",function(e){if(e.target===this)closeModal(id);});
+});
 document.addEventListener("keydown",function(e){
   if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){e.preventDefault();runCode();}
   if((e.metaKey||e.ctrlKey)&&e.key==="s"){e.preventDefault();saveProject();}
   if(e.key==="Escape"){closeModal("share-modal");closeModal("pub-modal");}
 });
 
-function getDefault(lang){
+function getDefault(lang) {
   return {
-    python:'# Python\nprint("Hello, World!")',
-    javascript:'// JavaScript\nconsole.log("Hello, World!");',
-    cpp:'#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello, World!" << endl;\n    return 0;\n}',
-    html:'<!DOCTYPE html>\n<html>\n<head>\n  <style>body{font-family:sans-serif;background:#0d1117;color:#e6edf3;padding:40px;}</style>\n</head>\n<body>\n  <h1>Hello, World!</h1>\n</body>\n</html>'
-  }[lang]||"";
+    python:     '# Python\nprint("Hello, World!")',
+    javascript: '// JavaScript\nconsole.log("Hello, World!");',
+    cpp:        '#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello, World!" << endl;\n    return 0;\n}',
+    html:       '<!DOCTYPE html>\n<html>\n<head>\n  <style>body{font-family:sans-serif;background:#0d1117;color:#e6edf3;padding:40px;}</style>\n</head>\n<body>\n  <h1>Hello, World!</h1>\n</body>\n</html>'
+  }[lang] || "";
 }
 </script>
 </body>
