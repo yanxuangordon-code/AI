@@ -248,8 +248,6 @@ def list_projects():
 # ── Projects: Create ──────────────────────────────────────────────────────────
 @app.route("/projects", methods=["POST"])
 @jwt_required()
-@app.route("/projects", methods=["POST"])
-@jwt_required()
 def create_project():
     user_id = get_jwt_identity()
     data    = request.json
@@ -284,6 +282,72 @@ def create_project():
     )
     con.commit(); con.close()
     return jsonify({"id": proj_id, "name": name, "language": lang, "project_type": ptype})
+ 
+ 
+# REPLACE run_python(), run_javascript(), run_cpp() with these:
+# Key change: use -c flag / direct exec so errors stop execution at the error line
+# rather than pre-scanning. stderr goes to error field, stdout to output field.
+ 
+def run_python(code):
+    with tempfile.NamedTemporaryFile(suffix=".py", delete=False, mode="w", encoding="utf-8") as f:
+        f.write(code); fname = f.name
+    try:
+        p = subprocess.run(
+            ["python3", "-u", fname],  # -u = unbuffered so output order is correct
+            capture_output=True, text=True, timeout=10
+        )
+        # Return stdout as output, stderr as error
+        # If there's stderr but also stdout, show both (partial output before error)
+        output = p.stdout
+        error  = p.stderr
+        return {"output": output, "error": error}
+    except subprocess.TimeoutExpired:
+        return {"output": "", "error": "Error: execution timed out after 10 seconds."}
+    finally:
+        os.unlink(fname)
+ 
+ 
+def run_javascript(code):
+    with tempfile.NamedTemporaryFile(suffix=".js", delete=False, mode="w", encoding="utf-8") as f:
+        f.write(code); fname = f.name
+    try:
+        p = subprocess.run(
+            ["node", "--stack-trace-limit=5", fname],
+            capture_output=True, text=True, timeout=10
+        )
+        return {"output": p.stdout, "error": p.stderr}
+    except subprocess.TimeoutExpired:
+        return {"output": "", "error": "Error: execution timed out after 10 seconds."}
+    finally:
+        os.unlink(fname)
+ 
+ 
+def run_cpp(code):
+    with tempfile.NamedTemporaryFile(suffix=".cpp", delete=False, mode="w", encoding="utf-8") as f:
+        f.write(code); src = f.name
+    out_bin = src.replace(".cpp", "")
+    try:
+        # Compile step
+        cp = subprocess.run(
+            ["g++", "-o", out_bin, src, "-std=c++17", "-Wall"],
+            capture_output=True, text=True, timeout=15
+        )
+        if cp.returncode != 0:
+            # Compilation error — clean up error message
+            return {"output": "", "error": cp.stderr}
+ 
+        # Run step
+        rp = subprocess.run(
+            [out_bin],
+            capture_output=True, text=True, timeout=10
+        )
+        return {"output": rp.stdout, "error": rp.stderr}
+    except subprocess.TimeoutExpired:
+        return {"output": "", "error": "Error: execution timed out after 10 seconds."}
+    finally:
+        os.unlink(src)
+        if os.path.exists(out_bin):
+            os.unlink(out_bin)
  
  
 # REPLACE run_python(), run_javascript(), run_cpp() with these:
@@ -428,8 +492,6 @@ def serve_site(proj_id, filename):
     return send_from_directory(os.path.join(SITES_DIR, proj_id), os.path.basename(filename))
 
 # ── Run code ──────────────────────────────────────────────────────────────────
-@app.route("/run", methods=["POST"])
-@jwt_required()
 @app.route("/run", methods=["POST"])
 @jwt_required()
 def run_code():
