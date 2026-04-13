@@ -102,6 +102,9 @@ def init_db():
     con.close()
 
 init_db()
+@app.route("/ping")
+def ping():
+    return jsonify({"ok": True})
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def make_code():
