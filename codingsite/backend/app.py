@@ -29,6 +29,29 @@ def get_db():
     con = psycopg2.connect(DATABASE_URL)
     con.autocommit = False
     return con
+@app.route("/auth/oauth", methods=["POST"])
+def oauth_login():
+    data     = request.json
+    email    = (data.get("email") or "").strip().lower()
+    name     = data.get("name") or ""
+    if not email:
+        return jsonify({"error": "No email provided"}), 400
+    con = get_db(); cur = con.cursor()
+    cur.execute("SELECT id, username FROM users WHERE email=%s", (email,))
+    row = cur.fetchone()
+    if row:
+        # Existing user — log in
+        user_id  = row[0]
+        username = row[1] or email.split("@")[0]
+    else:
+        # New user — create account
+        user_id  = str(uuid.uuid4())
+        username = email.split("@")[0]
+        cur.execute("INSERT INTO users (id, email, password, username, verified) VALUES (%s,%s,%s,%s,1)",
+                    (user_id, email, generate_password_hash(str(uuid.uuid4())), username))
+    con.commit(); con.close()
+    token = create_access_token(identity=user_id)
+    return jsonify({"token": token, "email": email, "username": username})
 
 def init_db():
     con = get_db()
