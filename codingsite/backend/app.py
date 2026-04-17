@@ -179,6 +179,78 @@ def run_python(code):
     finally:
         os.unlink(fname)
 
+@app.route("/users/profile", methods=["PUT"])
+@jwt_required()
+def update_profile():
+    user_id = get_jwt_identity()
+    data     = request.json
+    username = (data.get("username") or "").strip().lower()
+    bio      = (data.get("bio") or "").strip()[:300]  # max 300 chars
+ 
+    if not username or len(username) < 3:
+        return jsonify({"error": "Username must be at least 3 characters"}), 400
+    if not re.match(r'^[a-z0-9_]+$', username):
+        return jsonify({"error": "Username can only contain letters, numbers and underscores"}), 400
+ 
+    con = get_db(); cur = con.cursor()
+    # Check username not taken by someone else
+    cur.execute("SELECT id FROM users WHERE username=%s AND id!=%s", (username, user_id))
+    if cur.fetchone():
+        con.close()
+        return jsonify({"error": "That username is already taken"}), 400
+ 
+    cur.execute("UPDATE users SET username=%s, bio=%s WHERE id=%s", (username, bio, user_id))
+    con.commit(); con.close()
+    return jsonify({"message": "Profile updated", "username": username})
+ 
+ 
+# Change password
+@app.route("/auth/change-password", methods=["POST"])
+@jwt_required()
+def change_password():
+    user_id  = get_jwt_identity()
+    data     = request.json
+    curr     = data.get("current_password", "")
+    new_pass = data.get("new_password", "")
+ 
+    if not curr or not new_pass:
+        return jsonify({"error": "All fields required"}), 400
+    if len(new_pass) < 6:
+        return jsonify({"error": "New password must be at least 6 characters"}), 400
+ 
+    con = get_db(); cur = con.cursor()
+    cur.execute("SELECT password FROM users WHERE id=%s", (user_id,))
+    row = cur.fetchone()
+    if not row or not check_password_hash(row[0], curr):
+        con.close()
+        return jsonify({"error": "Current password is incorrect"}), 401
+ 
+    cur.execute("UPDATE users SET password=%s WHERE id=%s",
+                (generate_password_hash(new_pass), user_id))
+    con.commit(); con.close()
+    return jsonify({"message": "Password changed"})
+ 
+ 
+# Delete account
+@app.route("/users/me", methods=["DELETE"])
+@jwt_required()
+def delete_account():
+    user_id = get_jwt_identity()
+    con = get_db(); cur = con.cursor()
+    # Delete all user data
+    cur.execute("DELETE FROM post_likes WHERE user_id=%s", (user_id,))
+    cur.execute("DELETE FROM community_posts WHERE user_id=%s", (user_id,))
+    cur.execute("DELETE FROM projects WHERE user_id=%s", (user_id,))
+    cur.execute("DELETE FROM users WHERE id=%s", (user_id,))
+    con.commit(); con.close()
+    return jsonify({"message": "Account deleted"})
+ 
+ 
+# Ping route (add this too if you haven't already)
+@app.route("/ping")
+def ping():
+    return jsonify({"ok": True})
+
 def run_javascript(code):
     with tempfile.NamedTemporaryFile(suffix=".js", delete=False, mode="w", encoding="utf-8") as f:
         f.write(code)
