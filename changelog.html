@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CodeSponge — Changelog</title>
+<script src="ping.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh}
+:root{--accent:#4f8ef7;--success:#3fb950;--danger:#f85149;--warning:#e3b341;--purple:#a371f7;--surface:#0d1117;--surface2:#161b22;--surface3:#1c2128;--border:rgba(255,255,255,.08);--text:#e6edf3;--muted:#7d8590}
+.nav{height:56px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:8px;position:sticky;top:0;z-index:50}
+.brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--text);font-weight:800;font-size:16px}
+.brand-icon{width:30px;height:30px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0}
+.brand-txt span{color:var(--accent)}
+.nav-links{display:flex;gap:2px;margin-left:12px}
+.nav-link{padding:5px 11px;border-radius:7px;font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:all .15s}
+.nav-link:hover{color:var(--text);background:var(--surface3)}
+.nav-link.active{color:var(--text);background:var(--surface3)}
+.nav-sp{flex:1}
+.page{max-width:720px;margin:0 auto;padding:48px 28px 80px}
+.hero{text-align:center;margin-bottom:56px}
+.hero h1{font-size:36px;font-weight:800;margin:0 0 12px}
+.hero p{font-size:16px;color:var(--muted);margin:0 0 24px;line-height:1.6}
+.hero-badges{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--muted)}
+/* Timeline */
+.timeline{position:relative}
+.timeline::before{content:'';position:absolute;left:16px;top:0;bottom:0;width:2px;background:var(--border)}
+.tl-entry{position:relative;padding-left:48px;margin-bottom:40px}
+.tl-dot{position:absolute;left:8px;top:6px;width:18px;height:18px;border-radius:50%;border:2px solid var(--border);background:var(--surface);z-index:1;display:flex;align-items:center;justify-content:center}
+.tl-dot.released{background:var(--success);border-color:var(--success)}
+.tl-dot.upcoming{background:var(--surface2);border-color:var(--accent)}
+.tl-dot.in-progress{background:var(--warning);border-color:var(--warning)}
+.tl-date{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.tl-version{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface3);border:1px solid var(--border);border-radius:5px;padding:2px 8px;color:var(--accent)}
+.tl-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.04em}
+.tl-status.released{background:rgba(63,185,80,.15);color:var(--success);border:1px solid rgba(63,185,80,.3)}
+.tl-status.upcoming{background:rgba(79,142,247,.15);color:var(--accent);border:1px solid rgba(79,142,247,.3)}
+.tl-status.in-progress{background:rgba(227,179,65,.15);color:var(--warning);border:1px solid rgba(227,179,65,.3)}
+.tl-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px 22px}
+.tl-title{font-size:17px;font-weight:800;margin:0 0 6px}
+.tl-desc{font-size:13px;color:var(--muted);margin:0 0 16px;line-height:1.6}
+.feature-list{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.feature-item{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.5}
+.fi-icon{flex-shrink:0;margin-top:1px;font-size:14px}
+.fi-text{flex:1}
+.fi-text b{color:var(--text)}
+.fi-text span{color:var(--muted)}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;margin-left:6px;vertical-align:middle}
+.tag-new{background:rgba(79,142,247,.15);color:var(--accent);border:1px solid rgba(79,142,247,.25)}
+.tag-fix{background:rgba(248,81,73,.12);color:var(--danger);border:1px solid rgba(248,81,73,.25)}
+.tag-improvement{background:rgba(163,113,247,.12);color:var(--purple);border:1px solid rgba(163,113,247,.25)}
+/* CTA */
+.cta{background:linear-gradient(135deg,rgba(79,142,247,.08),rgba(163,113,247,.06));border:1px solid rgba(79,142,247,.2);border-radius:14px;padding:32px;text-align:center;margin-top:48px}
+.cta h2{font-size:20px;font-weight:800;margin:0 0 8px}
+.cta p{font-size:13px;color:var(--muted);margin:0 0 20px}
+.btn-cta{display:inline-flex;align-items:center;gap:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;padding:10px 22px;font-size:14px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;text-decoration:none;transition:all .15s}
+.btn-cta:hover{background:#6aa3f9;transform:translateY(-1px);box-shadow:0 4px 12px rgba(79,142,247,.3)}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="dashboard.html" class="brand"><div class="brand-icon">CS</div><span class="brand-txt">Code<span>Sponge</span></span></a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link">Projects</a>
+    <a href="community.html" class="nav-link">Community</a>
+    <a href="settings.html" class="nav-link">Settings</a>
+    <a href="changelog.html" class="nav-link active">Changelog</a>
+  </div>
+  <div class="nav-sp"></div>
+</nav>
+
+<div class="page">
+  <div class="hero">
+    <h1>What's new in CodeSponge</h1>
+    <p>Every update, improvement and fix — tracked in one place.</p>
+    <div class="hero-badges">
+      <div class="hero-badge"><span style="width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0;display:inline-block"></span>Released</div>
+      <div class="hero-badge"><span style="width:8px;height:8px;border-radius:50%;background:var(--warning);flex-shrink:0;display:inline-block"></span>In progress</div>
+      <div class="hero-badge"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;display:inline-block"></span>Coming soon</div>
+    </div>
+  </div>
+
+  <div class="timeline">
+
+    <!-- Upcoming -->
+    <div class="tl-entry">
+      <div class="tl-dot upcoming"></div>
+      <div class="tl-date">
+        Coming soon
+        <span class="tl-version">v0.6</span>
+        <span class="tl-status upcoming">Upcoming</span>
+      </div>
+      <div class="tl-card">
+        <div class="tl-title">Collaboration &amp; sharing</div>
+        <div class="tl-desc">Work on projects together in real time and share your work more easily.</div>
+        <ul class="feature-list">
+          <li class="feature-item"><span class="fi-icon">👥</span><div class="fi-text"><b>Real-time collaboration</b> <span>— Multiple people editing the same project simultaneously</span></div></li>
+          <li class="feature-item"><span class="fi-icon">💬</span><div class="fi-text"><b>Comments on community posts</b> <span>— Reply to and discuss published projects</span></div></li>
+          <li class="feature-item"><span class="fi-icon">📌</span><div class="fi-text"><b>Embed code snippets</b> <span>— Embed runnable code on any website</span></div></li>
+          <li class="feature-item"><span class="fi-icon">🏷️</span><div class="fi-text"><b>Project tags</b> <span>— Label projects for better organisation</span></div></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- In progress -->
+    <div class="tl-entry">
+      <div class="tl-dot in-progress"></div>
+      <div class="tl-date">
+        In progress
+        <span class="tl-version">v0.5</span>
+        <span class="tl-status in-progress">In progress</span>
+      </div>
+      <div class="tl-card">
+        <div class="tl-title">AI features &amp; smart editor</div>
+        <div class="tl-desc">Bringing AI into the coding experience in a meaningful way.</div>
+        <ul class="feature-list">
+          <li class="feature-item"><span class="fi-icon">🤖</span><div class="fi-text"><b>Explain code with AI</b> <span>— Right-click any selection to get a plain English explanation</span></div></li>
+          <li class="feature-item"><span class="fi-icon">🔧</span><div class="fi-text"><b>AI fix suggestions</b> <span>— Get smart suggestions to fix errors beyond simple typos</span></div></li>
+          <li class="feature-item"><span class="fi-icon">📝</span><div class="fi-text"><b>Generate boilerplate</b> <span>— Ask AI to scaffold common patterns (Flask server, sorting algorithm, etc.)</span></div></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- v0.4 released -->
+    <div class="tl-entry">
+      <div class="tl-dot released"></div>
+      <div class="tl-date">
+        April 2026
+        <span class="tl-version">v0.4</span>
+        <span class="tl-status released">Released</span>
+      </div>
+      <div class="tl-card">
+        <div class="tl-title">Settings, editor improvements &amp; more</div>
+        <div class="tl-desc">A huge round of quality-of-life improvements across the whole app.</div>
+        <ul class="feature-list">
+          <li class="feature-item"><span class="fi-icon">⚙️</span><div class="fi-text"><b>Settings page</b><span class="tag tag-new">New</span> <span>— Customise font size, tab size, word wrap, theme and accent colour</span></div></li>
+          <li class="feature-item"><span class="fi-icon">🎨</span><div class="fi-text"><b>Accent colour picker</b><span class="tag tag-new">New</span> <span>— 8 accent colours that apply across the whole app</span></div></li>
+          <li class="feature-item"><span class="fi-icon">🔤</span><div class="fi-text"><b>Font size controls in editor</b><span class="tag tag-new">New</span> <span>— Increase or decrease font size with + and - buttons</span></div></li>
+          <li class="feature-item"><span class="fi-icon">📄</span><div class="fi-text"><b>Import file into editor</b><span class="tag tag-new">New</span> <span>— Click Import or drag and drop any text file</span></div></li>
+          <li class="feature-item"><span class="fi-icon">↩️</span><div class="fi-text"><b>Word wrap toggle</b><span class="tag tag-new">New</span> <span>— Wrap long lines instead of scrolling</span></div></li>
+          <li class="feature-item"><span class="fi-icon">✨</span><div class="fi-text"><b>Format code button</b><span class="tag tag-new">New</span> <span>— Auto-indent and format with one click (Shift+Alt+F)</span></div></li>
+          <li class="feature-item"><span class="fi-icon">🌓</span><div class="fi-text"><b>Theme switcher in status bar</b><span class="tag tag-new">New</span> <span>— Click the theme label to cycle Dark/Light/High Contrast</span></div></li>
+          <li class="feature-item"><span class="fi-icon">⏱️</span><div class="fi-text"><b>Execution time in output</b><span class="tag tag-new">New</span> <span>— See how long your code took to run</span></div></li>
+          <li class="feature-item"><span class="fi-icon">📋</span><div class="fi-text"><b>Copy output button</b><span class="tag tag-new">New</span> <span>— One click to copy the entire output panel</span></div></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- v0.3 released -->
+    <div class="tl-entry">
+      <div class="tl-dot released"></div>
+      <div class="tl-date">
+        April 2026
+        <span class="tl-version">v0.3</span>
+        <span class="tl-status released">Released</span>
+      </div>
+      <div class="tl-card">
+        <div class="tl-title">Dashboard, community &amp; skeleton loading</div>
+        <div class="tl-desc">Big improvements to how the dashboard feels and a full community hub.</div>
+        <ul class="feature-list">
+          <li class="feature-item"><span class="fi-icon">💀</span><div class="fi-text"><b>Skeleton loading cards</b><span class="tag tag-new">New</span> <span>— Instant visual feedback while projects load</span></div></li>
+          <li class="feature-item"><span class="fi-icon">⚡</span><div class="fi-text"><b>localStorage cache</b><span class="tag tag-improvement">Improved</span> <span>— Projects appear instantly on repeat visits</span></div></li>
+          <li class="feature-item"><span class="fi-icon">📊</span><div class="fi-text"><b>Stats bar on dashboard</b><span class="tag tag-new">New</span> <span>— Total projects, single files, repos and hosted sites at a glance</span></div></li>
+          <li class="feature-item"><span class="fi-icon">🔁</span><div class="fi-text"><b>Quick-open last project</b><span class="tag tag-new">New</span> <span>— Banner at the top to continue from where you left off</span></div></li>
+          <li class="feature-item"><span class="fi-icon">✏️</span><div class="fi-text"><b>Inline rename</b><span class="tag tag-new">New</span> <span>— Click ✎ on any project card to rename in place</span></div></li>
+          <li class="feature-item"><span class="fi-icon">⌨️</span><div class="fi-text"><b>Keyboard shortcuts</b><span class="tag tag-new">New</span> <span>— N for new project, / to search, G for community, ? for help</span></div></li>
+          <li class="feature-item"><span class="fi-icon">🌐</span><div class="fi-text"><b>Community hub</b><span class="tag tag-new">New</span> <span>— Publish, fork, like and discover projects from other users</span></div></li>
+          <li class="feature-item"><span class="fi-icon">🗂️</span><div class="fi-text"><b>Duplicate project</b><span class="tag tag-new">New</span> <span>— Copy any project including all its code with one click</span></div></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- v0.2 released -->
+    <div class="tl-entry">
+      <div class="tl-dot released"></div>
+      <div class="tl-date">
+        April 2026
+        <span class="tl-version">v0.2</span>
+        <span class="tl-status released">Released</span>
+      </div>
+      <div class="tl-card">
+        <div class="tl-title">Editor, linter &amp; multi-file projects</div>
+        <div class="tl-desc">A proper code editor with smart error detection and repo support.</div>
+        <ul class="feature-list">
+          <li class="feature-item"><span class="fi-icon">🔴</span><div class="fi-text"><b>Red underlines for typos</b><span class="tag tag-new">New</span> <span>— Catches misspellings like pirnt, Flase, retunr etc.</span></div></li>
+          <li class="feature-item"><span class="fi-icon">🟡</span><div class="fi-text"><b>Yellow warnings</b><span class="tag tag-new">New</span> <span>— Flags eval(), bare except, wildcard imports, undefined names</span></div></li>
+          <li class="feature-item"><span class="fi-icon">⚡</span><div class="fi-text"><b>Quick fix via right-click</b><span class="tag tag-new">New</span> <span>— Auto-corrects detected typos with one click</span></div></li>
+          <li class="feature-item"><span class="fi-icon">🐍</span><div class="fi-text"><b>Undefined name detection</b><span class="tag tag-new">New</span> <span>— Warns when you call a function that isn't defined anywhere in the file</span></div></li>
+          <li class="feature-item"><span class="fi-icon">📁</span><div class="fi-text"><b>Repo (multi-file) projects</b><span class="tag tag-new">New</span> <span>— Multiple files, tabs, file tree and host as a website</span></div></li>
+          <li class="feature-item"><span class="fi-icon">⏹️</span><div class="fi-text"><b>Stop button</b><span class="tag tag-new">New</span> <span>— Cancel a running script at any time</span></div></li>
+          <li class="feature-item"><span class="fi-icon">🔢</span><div class="fi-text"><b>Sequential project naming</b><span class="tag tag-improvement">Improved</span> <span>— Unnamed projects get names like Project 001, 002, 003</span></div></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- v0.1 released -->
+    <div class="tl-entry">
+      <div class="tl-dot released"></div>
+      <div class="tl-date">
+        April 2026
+        <span class="tl-version">v0.1</span>
+        <span class="tl-status released">Released</span>
+      </div>
+      <div class="tl-card">
+        <div class="tl-title">Initial launch 🎉</div>
+        <div class="tl-desc">CodeSponge goes live. A cloud coding playground built from scratch.</div>
+        <ul class="feature-list">
+          <li class="feature-item"><span class="fi-icon">✅</span><div class="fi-text"><b>Run Python, JavaScript, C++ and HTML</b> <span>in the cloud</span></div></li>
+          <li class="feature-item"><span class="fi-icon">✅</span><div class="fi-text"><b>Monaco editor</b> <span>with syntax highlighting</span></div></li>
+          <li class="feature-item"><span class="fi-icon">✅</span><div class="fi-text"><b>Cloud project saves</b> <span>backed by PostgreSQL on Supabase</span></div></li>
+          <li class="feature-item"><span class="fi-icon">✅</span><div class="fi-text"><b>Email verification signup</b> <span>with username support</span></div></li>
+          <li class="feature-item"><span class="fi-icon">✅</span><div class="fi-text"><b>Share snippets</b> <span>via a public link</span></div></li>
+          <li class="feature-item"><span class="fi-icon">✅</span><div class="fi-text"><b>Draggable resizer</b> <span>between editor and output panels</span></div></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="cta">
+    <h2>Start coding</h2>
+    <p>CodeSponge is free forever. No credit card, no limits.</p>
+    <a href="dashboard.html" class="btn-cta">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Go to dashboard
+    </a>
+  </div>
+</div>
+</body>
+</html>
