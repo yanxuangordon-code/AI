@@ -231,7 +231,36 @@ def change_password():
     return jsonify({"message": "Password changed"})
  
  
+# Change password
+@app.route("/auth/change-password", methods=["POST"])
+@jwt_required()
+def change_password():
+    user_id  = get_jwt_identity()
+    data     = request.json
+    curr     = data.get("current_password", "")
+    new_pass = data.get("new_password", "")
+ 
+    if not curr or not new_pass:
+        return jsonify({"error": "All fields required"}), 400
+    if len(new_pass) < 6:
+        return jsonify({"error": "New password must be at least 6 characters"}), 400
+ 
+    con = get_db(); cur = con.cursor()
+    cur.execute("SELECT password FROM users WHERE id=%s", (user_id,))
+    row = cur.fetchone()
+    if not row or not check_password_hash(row[0], curr):
+        con.close()
+        return jsonify({"error": "Current password is incorrect"}), 401
+ 
+    cur.execute("UPDATE users SET password=%s WHERE id=%s",
+                (generate_password_hash(new_pass), user_id))
+    con.commit(); con.close()
+    return jsonify({"message": "Password changed"})
+ 
+ 
 # Delete account
+@app.route("/users/me", methods=["DELETE"])
+@jwt_required()
 @app.route("/users/me", methods=["DELETE"])
 @jwt_required()
 def delete_account():
