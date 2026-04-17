@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CodeSponge — Settings</title>
+<script src="ping.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh}
+:root{
+  --accent:#4f8ef7;--success:#3fb950;--danger:#f85149;--warning:#e3b341;--purple:#a371f7;
+  --surface:#0d1117;--surface2:#161b22;--surface3:#1c2128;--surface4:#22272e;
+  --border:rgba(255,255,255,.08);--text:#e6edf3;--muted:#7d8590;
+}
+.nav{height:56px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:8px;position:sticky;top:0;z-index:50}
+.brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--text);font-weight:800;font-size:16px}
+.brand-icon{width:30px;height:30px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0}
+.brand-txt span{color:var(--accent)}
+.nav-links{display:flex;gap:2px;margin-left:12px}
+.nav-link{padding:5px 11px;border-radius:7px;font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:all .15s}
+.nav-link:hover{color:var(--text);background:var(--surface3)}
+.nav-link.active{color:var(--text);background:var(--surface3)}
+.nav-sp{flex:1}
+
+/* ── Layout ── */
+.page{max-width:800px;margin:0 auto;padding:32px 28px 80px;display:grid;grid-template-columns:200px 1fr;gap:28px;align-items:start}
+@media(max-width:700px){.page{grid-template-columns:1fr}.settings-nav{display:none}}
+
+/* ── Settings nav ── */
+.settings-nav{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:8px;position:sticky;top:76px}
+.snav-item{padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px}
+.snav-item:hover{color:var(--text);background:var(--surface3)}
+.snav-item.active{color:var(--text);background:var(--surface3);font-weight:600}
+.snav-sep{height:1px;background:var(--border);margin:6px 0}
+
+/* ── Settings panels ── */
+.settings-panel{display:none}
+.settings-panel.active{display:block}
+.panel-title{font-size:20px;font-weight:800;margin:0 0 4px}
+.panel-sub{font-size:13px;color:var(--muted);margin:0 0 28px}
+
+/* ── Cards ── */
+.settings-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:16px}
+.card-title{font-size:13px;font-weight:700;margin:0 0 16px;display:flex;align-items:center;gap:8px}
+.card-title-sep{flex:1;height:1px;background:var(--border)}
+
+/* ── Form elements ── */
+.field{margin-bottom:18px}
+.field:last-child{margin-bottom:0}
+.field-label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:7px}
+.field-hint{font-size:11px;color:var(--muted);margin-top:5px}
+.field-input{width:100%;background:var(--surface3);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 12px;font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s}
+.field-input:focus{border-color:var(--accent)}
+textarea.field-input{resize:vertical;min-height:80px;line-height:1.5}
+.field-select{width:100%;background:var(--surface3);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 12px;font-size:13px;font-family:'Inter',sans-serif;outline:none;cursor:pointer}
+.field-select:focus{border-color:var(--accent)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ── Toggle switch ── */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.toggle-row:last-child{border-bottom:none;padding-bottom:0}
+.toggle-info{flex:1;min-width:0}
+.toggle-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.toggle-desc{font-size:11px;color:var(--muted)}
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0;margin-left:16px}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;background:var(--surface3);border-radius:11px;cursor:pointer;transition:background .2s;border:1px solid var(--border)}
+.toggle input:checked + .toggle-track{background:var(--accent);border-color:var(--accent)}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:14px;height:14px;background:#fff;border-radius:50%;transition:transform .2s;pointer-events:none}
+.toggle input:checked ~ .toggle-thumb{transform:translateX(18px)}
+
+/* ── Slider ── */
+.range-row{display:flex;align-items:center;gap:12px}
+.range-row input[type=range]{flex:1;accent-color:var(--accent)}
+.range-val{font-size:13px;font-weight:700;color:var(--text);min-width:32px;text-align:right}
+
+/* ── Color/theme picker ── */
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.theme-card{border:2px solid var(--border);border-radius:10px;padding:12px 10px;cursor:pointer;text-align:center;transition:all .15s}
+.theme-card:hover{border-color:rgba(255,255,255,.2)}
+.theme-card.sel{border-color:var(--accent);background:rgba(79,142,247,.08)}
+.theme-preview{height:48px;border-radius:7px;margin-bottom:8px;font-family:'JetBrains Mono',monospace;font-size:10px;padding:6px 8px;text-align:left;overflow:hidden;line-height:1.4}
+.theme-name{font-size:11px;font-weight:700;color:var(--text)}
+
+/* ── Accent color ── */
+.accent-grid{display:flex;gap:10px;flex-wrap:wrap}
+.accent-dot{width:32px;height:32px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .15s}
+.accent-dot.sel{border-color:#fff;transform:scale(1.1)}
+.accent-dot:hover{transform:scale(1.1)}
+
+/* ── Danger zone ── */
+.danger-card{background:rgba(248,81,73,.06);border:1px solid rgba(248,81,73,.2);border-radius:12px;padding:22px;margin-bottom:16px}
+.danger-title{font-size:13px;font-weight:700;color:var(--danger);margin:0 0 8px}
+.danger-desc{font-size:12px;color:var(--muted);margin:0 0 16px;line-height:1.5}
+
+/* ── Buttons ── */
+.btn-save{background:var(--accent);border:none;color:#fff;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s}
+.btn-save:hover{background:#6aa3f9}
+.btn-save:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{background:none;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s}
+.btn-ghost:hover{border-color:rgba(255,255,255,.2)}
+.btn-danger-soft{background:rgba(248,81,73,.12);border:1px solid rgba(248,81,73,.3);color:var(--danger);border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s}
+.btn-danger-soft:hover{background:rgba(248,81,73,.2)}
+.btn-row{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+
+/* ── Avatar upload ── */
+.avatar-section{display:flex;align-items:center;gap:20px;margin-bottom:20px}
+.big-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;flex-shrink:0;cursor:pointer;position:relative;overflow:hidden}
+.big-avatar:hover::after{content:'Edit';position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.avatar-info h3{font-size:16px;font-weight:700;margin:0 0 4px}
+.avatar-info p{font-size:12px;color:var(--muted);margin:0 0 10px}
+
+/* ── Editor preview ── */
+.editor-preview{background:#1e1e1e;border-radius:8px;padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.6;color:#d4d4d4;margin-top:10px;min-height:80px;white-space:pre}
+.editor-preview.theme-light{background:#ffffff;color:#000000}
+.editor-preview.theme-hc{background:#000000;color:#ffffff}
+.ep-kw{color:#569cd6}.ep-fn{color:#dcdcaa}.ep-str{color:#ce9178}.ep-num{color:#b5cea8}.ep-comment{color:#6a9955}
+.editor-preview.theme-light .ep-kw{color:#0000ff}.editor-preview.theme-light .ep-fn{color:#795e26}.editor-preview.theme-light .ep-str{color:#a31515}.editor-preview.theme-light .ep-comment{color:#008000}
+.editor-preview.theme-hc .ep-kw{color:#569cd6}.editor-preview.theme-hc .ep-str{color:#ce9178}
+
+/* Toast */
+#toast{position:fixed;bottom:24px;right:20px;z-index:9999;border-radius:9px;padding:10px 16px;font-size:12px;font-family:'Inter',sans-serif;max-width:320px;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="dashboard.html" class="brand">
+    <div class="brand-icon">CS</div>
+    <span class="brand-txt">Code<span>Sponge</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link">Projects</a>
+    <a href="community.html" class="nav-link">Community</a>
+    <a href="settings.html" class="nav-link active">Settings</a>
+    <a href="changelog.html" class="nav-link">Changelog</a>
+  </div>
+  <div class="nav-sp"></div>
+</nav>
+
+<div class="page">
+  <!-- Settings nav -->
+  <div class="settings-nav">
+    <div class="snav-item active" onclick="showPanel('profile')" id="snav-profile">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Profile
+    </div>
+    <div class="snav-item" onclick="showPanel('editor')" id="snav-editor">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      Editor
+    </div>
+    <div class="snav-item" onclick="showPanel('appearance')" id="snav-appearance">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M12 2v2M4.93 4.93l1.41 1.41M2 12h2M4.93 19.07l1.41-1.41M12 20v2M19.07 19.07l-1.41-1.41M20 12h2"/></svg>
+      Appearance
+    </div>
+    <div class="snav-sep"></div>
+    <div class="snav-item" onclick="showPanel('account')" id="snav-account">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Account
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div>
+
+    <!-- Profile panel -->
+    <div class="settings-panel active" id="panel-profile">
+      <div class="panel-title">Profile</div>
+      <div class="panel-sub">How others see you on CodeSponge</div>
+
+      <div class="settings-card">
+        <div class="avatar-section">
+          <div class="big-avatar" id="big-avatar">?</div>
+          <div class="avatar-info">
+            <h3 id="profile-display-name">Loading...</h3>
+            <p id="profile-email-display"></p>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Username</label>
+          <input class="field-input" id="field-username" type="text" placeholder="coolcoder123" autocomplete="off"/>
+          <div class="field-hint">Only letters, numbers and underscores. This is public.</div>
+        </div>
+        <div class="field">
+          <label class="field-label">Bio</label>
+          <textarea class="field-input" id="field-bio" placeholder="Tell others a bit about yourself..."></textarea>
+        </div>
+        <div class="field">
+          <label class="field-label">Email</label>
+          <input class="field-input" id="field-email" type="email" disabled style="opacity:.6;cursor:not-allowed"/>
+          <div class="field-hint">Email cannot be changed.</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-save" id="save-profile-btn" onclick="saveProfile()">Save profile</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Editor panel -->
+    <div class="settings-panel" id="panel-editor">
+      <div class="panel-title">Editor</div>
+      <div class="panel-sub">Personalise your coding environment</div>
+
+      <div class="settings-card">
+        <div class="card-title">Text &amp; font <div class="card-title-sep"></div></div>
+
+        <div class="field">
+          <label class="field-label">Font size</label>
+          <div class="range-row">
+            <input type="range" min="11" max="24" value="14" id="pref-fontsize" oninput="updateEditorPreview()"/>
+            <span class="range-val" id="fontsize-val">14px</span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Tab size</label>
+          <select class="field-select" id="pref-tabsize" onchange="updateEditorPreview()">
+            <option value="2">2 spaces</option>
+            <option value="4" selected>4 spaces</option>
+            <option value="8">8 spaces</option>
+          </select>
+        </div>
+
+        <div class="card-title" style="margin-top:20px">Options <div class="card-title-sep"></div></div>
+        <div class="toggle-row">
+          <div class="toggle-info"><div class="toggle-label">Word wrap</div><div class="toggle-desc">Wrap long lines instead of scrolling</div></div>
+          <label class="toggle"><input type="checkbox" id="pref-wordwrap"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info"><div class="toggle-label">Minimap</div><div class="toggle-desc">Show code overview on the right</div></div>
+          <label class="toggle"><input type="checkbox" id="pref-minimap"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info"><div class="toggle-label">Line numbers</div><div class="toggle-desc">Show line numbers in the gutter</div></div>
+          <label class="toggle"><input type="checkbox" id="pref-linenumbers" checked/><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info"><div class="toggle-label">Font ligatures</div><div class="toggle-desc">Enable JetBrains Mono ligatures (e.g. =&gt;, !=)</div></div>
+          <label class="toggle"><input type="checkbox" id="pref-ligatures" checked/><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info"><div class="toggle-label">Smooth scrolling</div><div class="toggle-desc">Animate scrolling in the editor</div></div>
+          <label class="toggle"><input type="checkbox" id="pref-smoothscroll" checked/><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+
+        <div class="card-title" style="margin-top:20px">Default language <div class="card-title-sep"></div></div>
+        <div class="field">
+          <label class="field-label">New single-file projects default to</label>
+          <select class="field-select" id="pref-deflang">
+            <option value="python">Python</option>
+            <option value="javascript">JavaScript</option>
+            <option value="cpp">C++</option>
+            <option value="html">HTML</option>
+          </select>
+        </div>
+
+        <div class="card-title" style="margin-top:20px">Preview <div class="card-title-sep"></div></div>
+        <div class="editor-preview" id="editor-preview"><span class="ep-kw">def</span> <span class="ep-fn">greet</span>(name):
+    <span class="ep-comment"># say hello</span>
+    <span class="ep-kw">return</span> <span class="ep-str">f"Hello, {name}!"</span>
+
+<span class="ep-fn">print</span>(greet(<span class="ep-str">"World"</span>))</div>
+
+        <div class="btn-row">
+          <button class="btn-save" onclick="saveEditorPrefs()">Save editor settings</button>
+          <button class="btn-ghost" onclick="resetEditorPrefs()">Reset to defaults</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Appearance panel -->
+    <div class="settings-panel" id="panel-appearance">
+      <div class="panel-title">Appearance</div>
+      <div class="panel-sub">Customise how CodeSponge looks</div>
+
+      <div class="settings-card">
+        <div class="card-title">Editor theme <div class="card-title-sep"></div></div>
+        <div class="theme-grid">
+          <div class="theme-card sel" id="theme-dark" onclick="selectTheme('dark')">
+            <div class="theme-preview" style="background:#1e1e1e;color:#d4d4d4"><span style="color:#569cd6">def</span> hello():<br>  <span style="color:#ce9178">"world"</span></div>
+            <div class="theme-name">Dark (VS Code)</div>
+          </div>
+          <div class="theme-card" id="theme-light" onclick="selectTheme('light')">
+            <div class="theme-preview" style="background:#ffffff;color:#000000"><span style="color:#0000ff">def</span> hello():<br>  <span style="color:#a31515">"world"</span></div>
+            <div class="theme-name">Light</div>
+          </div>
+          <div class="theme-card" id="theme-hc" onclick="selectTheme('hc-black')">
+            <div class="theme-preview" style="background:#000000;color:#ffffff"><span style="color:#569cd6">def</span> hello():<br>  <span style="color:#ce9178">"world"</span></div>
+            <div class="theme-name">High Contrast</div>
+          </div>
+        </div>
+
+        <div class="card-title" style="margin-top:24px">Accent colour <div class="card-title-sep"></div></div>
+        <div class="accent-grid" id="accent-grid">
+          <div class="accent-dot sel" style="background:#4f8ef7" data-color="#4f8ef7" onclick="selectAccent('#4f8ef7')" title="Blue (default)"></div>
+          <div class="accent-dot" style="background:#a371f7" data-color="#a371f7" onclick="selectAccent('#a371f7')" title="Purple"></div>
+          <div class="accent-dot" style="background:#3fb950" data-color="#3fb950" onclick="selectAccent('#3fb950')" title="Green"></div>
+          <div class="accent-dot" style="background:#e3b341" data-color="#e3b341" onclick="selectAccent('#e3b341')" title="Amber"></div>
+          <div class="accent-dot" style="background:#f85149" data-color="#f85149" onclick="selectAccent('#f85149')" title="Red"></div>
+          <div class="accent-dot" style="background:#f0883e" data-color="#f0883e" onclick="selectAccent('#f0883e')" title="Orange"></div>
+          <div class="accent-dot" style="background:#39d353" data-color="#39d353" onclick="selectAccent('#39d353')" title="Lime"></div>
+          <div class="accent-dot" style="background:#58a6ff" data-color="#58a6ff" onclick="selectAccent('#58a6ff')" title="Sky"></div>
+        </div>
+        <div class="field-hint" style="margin-top:10px">Accent colour is applied to buttons, links and highlights throughout the app.</div>
+
+        <div class="btn-row">
+          <button class="btn-save" onclick="saveAppearance()">Save appearance</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Account panel -->
+    <div class="settings-panel" id="panel-account">
+      <div class="panel-title">Account</div>
+      <div class="panel-sub">Manage your account security</div>
+
+      <div class="settings-card">
+        <div class="card-title">Change password <div class="card-title-sep"></div></div>
+        <div class="field">
+          <label class="field-label">Current password</label>
+          <input class="field-input" id="curr-pass" type="password" placeholder="Enter current password"/>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label">New password</label>
+            <input class="field-input" id="new-pass" type="password" placeholder="At least 6 characters"/>
+          </div>
+          <div class="field">
+            <label class="field-label">Confirm password</label>
+            <input class="field-input" id="confirm-pass" type="password" placeholder="Repeat new password"/>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-save" onclick="changePassword()">Update password</button>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="card-title">Session <div class="card-title-sep"></div></div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Signed in as <b style="color:var(--text)" id="session-email"></b></div>
+        <button class="btn-ghost" onclick="logout()">Sign out</button>
+      </div>
+
+      <div class="danger-card">
+        <div class="danger-title">⚠️ Danger zone</div>
+        <div class="danger-desc">Once you delete your account, all your projects, settings and community posts will be permanently removed. This action cannot be undone.</div>
+        <button class="btn-danger-soft" onclick="confirmDeleteAccount()">Delete my account</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+var API   = "https://codesponge-backend.onrender.com";
+var token = localStorage.getItem("token");
+if (!token) window.location.href = "index.html";
+var email    = localStorage.getItem("email") || "";
+var username = localStorage.getItem("username") || "";
+function authH(){ return {"Content-Type":"application/json","Authorization":"Bearer "+token}; }
+
+// ── Init display ──────────────────────────────────────────────────────────────
+document.getElementById("big-avatar").textContent        = (email[0]||"?").toUpperCase();
+document.getElementById("profile-display-name").textContent = username || email;
+document.getElementById("profile-email-display").textContent = email;
+document.getElementById("field-email").value             = email;
+document.getElementById("field-username").value          = username;
+document.getElementById("session-email").textContent     = email;
+
+// ── Panel switching ───────────────────────────────────────────────────────────
+function showPanel(id){
+  document.querySelectorAll(".settings-panel").forEach(function(p){p.classList.remove("active");});
+  document.querySelectorAll(".snav-item").forEach(function(i){i.classList.remove("active");});
+  document.getElementById("panel-"+id).classList.add("active");
+  document.getElementById("snav-"+id).classList.add("active");
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+var toastTimer;
+function showToast(msg,type){
+  var el=document.getElementById("toast");
+  var c={success:{bg:"rgba(63,185,80,.18)",border:"rgba(63,185,80,.4)",color:"#3fb950"},error:{bg:"rgba(248,81,73,.18)",border:"rgba(248,81,73,.4)",color:"#f85149"},info:{bg:"rgba(79,142,247,.18)",border:"rgba(79,142,247,.4)",color:"#4f8ef7"}}[type]||{bg:"rgba(79,142,247,.18)",border:"rgba(79,142,247,.4)",color:"#4f8ef7"};
+  el.style.cssText="position:fixed;bottom:24px;right:20px;z-index:9999;border-radius:9px;padding:10px 16px;font-size:12px;font-family:'Inter',sans-serif;max-width:320px;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.4);background:"+c.bg+";border:1px solid "+c.border+";color:"+c.color+";display:block";
+  el.textContent=msg;clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){el.style.display="none";},3000);
+}
+
+// ── Load prefs from localStorage ──────────────────────────────────────────────
+function loadPrefs(){
+  var prefs=JSON.parse(localStorage.getItem("cs_editor_prefs")||"{}");
+  var fs=prefs.fontSize||14;
+  document.getElementById("pref-fontsize").value=fs;
+  document.getElementById("fontsize-val").textContent=fs+"px";
+  document.getElementById("pref-tabsize").value=prefs.tabSize||4;
+  document.getElementById("pref-wordwrap").checked=!!prefs.wordWrap;
+  document.getElementById("pref-minimap").checked=!!prefs.minimap;
+  document.getElementById("pref-linenumbers").checked=prefs.lineNumbers!==false;
+  document.getElementById("pref-ligatures").checked=prefs.ligatures!==false;
+  document.getElementById("pref-smoothscroll").checked=prefs.smoothScroll!==false;
+  document.getElementById("pref-deflang").value=prefs.defaultLang||"python";
+  var ap=JSON.parse(localStorage.getItem("cs_appearance")||"{}");
+  selectTheme(ap.theme||"dark",true);
+  selectAccent(ap.accent||"#4f8ef7",true);
+  updateEditorPreview();
+}
+
+function updateEditorPreview(){
+  var fs=document.getElementById("pref-fontsize").value;
+  document.getElementById("fontsize-val").textContent=fs+"px";
+  document.getElementById("editor-preview").style.fontSize=fs+"px";
+}
+
+// ── Theme ─────────────────────────────────────────────────────────────────────
+var currentTheme="dark";
+function selectTheme(t,silent){
+  currentTheme=t;
+  ["dark","light","hc"].forEach(function(x){
+    var id="theme-"+(x==="hc"?"hc":x);
+    if(document.getElementById(id))document.getElementById(id).className="theme-card"+(x===t||("hc-black"===t&&x==="hc")?" sel":"");
+  });
+  if(!silent){
+    var prefs=JSON.parse(localStorage.getItem("cs_appearance")||"{}");
+    prefs.theme=t; localStorage.setItem("cs_appearance",JSON.stringify(prefs));
+    applyAccent();
+    showToast("Theme updated — refresh any open editors to apply","info");
+  }
+}
+
+// ── Accent ────────────────────────────────────────────────────────────────────
+var currentAccent="#4f8ef7";
+function selectAccent(c,silent){
+  currentAccent=c;
+  document.querySelectorAll(".accent-dot").forEach(function(d){
+    d.className="accent-dot"+(d.dataset.color===c?" sel":"");
+  });
+  applyAccent(c);
+  if(!silent){
+    var prefs=JSON.parse(localStorage.getItem("cs_appearance")||"{}");
+    prefs.accent=c; localStorage.setItem("cs_appearance",JSON.stringify(prefs));
+  }
+}
+function applyAccent(c){
+  if(!c)c=currentAccent;
+  document.documentElement.style.setProperty("--accent",c);
+}
+
+// ── Save profile ──────────────────────────────────────────────────────────────
+async function saveProfile(){
+  var newUsername=document.getElementById("field-username").value.trim();
+  var bio=document.getElementById("field-bio").value.trim();
+  if(!newUsername){showToast("Username cannot be empty","error");return;}
+  var btn=document.getElementById("save-profile-btn");btn.disabled=true;btn.textContent="Saving...";
+  try{
+    var r=await fetch(API+"/users/profile",{method:"PUT",headers:authH(),body:JSON.stringify({username:newUsername,bio:bio})});
+    var d=await r.json();
+    if(!r.ok){showToast(d.error||"Could not save profile","error");return;}
+    localStorage.setItem("username",newUsername);
+    document.getElementById("profile-display-name").textContent=newUsername;
+    showToast("Profile saved!","success");
+  }catch(e){showToast("Could not connect to server","error");}
+  finally{btn.disabled=false;btn.textContent="Save profile";}
+}
+
+// ── Load bio from server ──────────────────────────────────────────────────────
+async function loadProfile(){
+  if(!username)return;
+  try{
+    var r=await fetch(API+"/users/"+username,{headers:authH()});
+    var d=await r.json();
+    if(d.bio)document.getElementById("field-bio").value=d.bio;
+  }catch(e){}
+}
+
+// ── Save editor prefs (localStorage only) ─────────────────────────────────────
+function saveEditorPrefs(){
+  var prefs={
+    fontSize:     parseInt(document.getElementById("pref-fontsize").value),
+    tabSize:      parseInt(document.getElementById("pref-tabsize").value),
+    wordWrap:     document.getElementById("pref-wordwrap").checked,
+    minimap:      document.getElementById("pref-minimap").checked,
+    lineNumbers:  document.getElementById("pref-linenumbers").checked,
+    ligatures:    document.getElementById("pref-ligatures").checked,
+    smoothScroll: document.getElementById("pref-smoothscroll").checked,
+    defaultLang:  document.getElementById("pref-deflang").value,
+  };
+  localStorage.setItem("cs_editor_prefs",JSON.stringify(prefs));
+  showToast("Editor settings saved — refresh any open editors to apply","success");
+}
+
+function resetEditorPrefs(){
+  localStorage.removeItem("cs_editor_prefs");
+  loadPrefs();
+  showToast("Editor settings reset to defaults","info");
+}
+
+function saveAppearance(){
+  var ap={theme:currentTheme,accent:currentAccent};
+  localStorage.setItem("cs_appearance",JSON.stringify(ap));
+  applyAccent();
+  showToast("Appearance saved!","success");
+}
+
+// ── Change password ───────────────────────────────────────────────────────────
+async function changePassword(){
+  var curr=document.getElementById("curr-pass").value;
+  var next=document.getElementById("new-pass").value;
+  var conf=document.getElementById("confirm-pass").value;
+  if(!curr||!next){showToast("Please fill in all fields","error");return;}
+  if(next.length<6){showToast("New password must be at least 6 characters","error");return;}
+  if(next!==conf){showToast("Passwords do not match","error");return;}
+  try{
+    var r=await fetch(API+"/auth/change-password",{method:"POST",headers:authH(),body:JSON.stringify({current_password:curr,new_password:next})});
+    var d=await r.json();
+    if(!r.ok){showToast(d.error||"Could not change password","error");return;}
+    document.getElementById("curr-pass").value="";
+    document.getElementById("new-pass").value="";
+    document.getElementById("confirm-pass").value="";
+    showToast("Password changed!","success");
+  }catch(e){showToast("Could not connect to server","error");}
+}
+
+function logout(){ localStorage.clear(); window.location.href="index.html"; }
+
+function confirmDeleteAccount(){
+  if(confirm("Are you absolutely sure? This will delete ALL your projects and data permanently.")){
+    if(confirm("Last chance — this cannot be undone. Delete account?")){
+      deleteAccount();
+    }
+  }
+}
+async function deleteAccount(){
+  try{
+    await fetch(API+"/users/me",{method:"DELETE",headers:authH()});
+    localStorage.clear();window.location.href="index.html";
+  }catch(e){showToast("Could not delete account. Please try again.","error");}
+}
+
+// Apply saved accent colour immediately on load
+(function(){
+  var ap=JSON.parse(localStorage.getItem("cs_appearance")||"{}");
+  if(ap.accent)document.documentElement.style.setProperty("--accent",ap.accent);
+})();
+
+loadPrefs();
+loadProfile();
+</script>
+</body>
+</html>
