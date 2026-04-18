@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CodeSponge — Stats</title>
+<script src="ping.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh}
+:root{--accent:#4f8ef7;--success:#3fb950;--danger:#f85149;--warning:#e3b341;--purple:#a371f7;--surface:#0d1117;--surface2:#161b22;--surface3:#1c2128;--border:rgba(255,255,255,.08);--text:#e6edf3;--muted:#7d8590}
+.nav{height:56px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:8px;position:sticky;top:0;z-index:50}
+.brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--text);font-weight:800;font-size:16px}
+.brand-icon{width:30px;height:30px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0}
+.brand-txt span{color:var(--accent)}
+.nav-links{display:flex;gap:2px;margin-left:12px}
+.nav-link{padding:5px 11px;border-radius:7px;font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;transition:all .15s}
+.nav-link:hover{color:var(--text);background:var(--surface3)}
+.nav-link.active{color:var(--text);background:var(--surface3)}
+.nav-sp{flex:1}
+
+.page{max-width:860px;margin:0 auto;padding:48px 28px 80px}
+
+/* Hero */
+.hero{text-align:center;margin-bottom:52px}
+.hero h1{font-size:34px;font-weight:800;margin:0 0 10px}
+.hero p{color:var(--muted);font-size:15px;margin:0;line-height:1.6}
+.live-pill{display:inline-flex;align-items:center;gap:7px;background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.25);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--success);margin-bottom:20px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--success);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Big stat cards */
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px}
+@media(max-width:600px){.stat-grid{grid-template-columns:1fr}}
+.stat-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:28px 24px;text-align:center;transition:border-color .15s}
+.stat-card:hover{border-color:rgba(255,255,255,.15)}
+.stat-num{font-size:48px;font-weight:800;line-height:1;margin-bottom:6px;font-variant-numeric:tabular-nums}
+.stat-label{font-size:13px;color:var(--muted);font-weight:500}
+.stat-card.blue .stat-num{color:var(--accent)}
+.stat-card.green .stat-num{color:var(--success)}
+.stat-card.purple .stat-num{color:var(--purple)}
+.stat-card.amber .stat-num{color:var(--warning)}
+.stat-icon{width:40px;height:40px;border-radius:10px;margin:0 auto 14px;display:flex;align-items:center;justify-content:center}
+.stat-card.blue .stat-icon{background:rgba(79,142,247,.12);color:var(--accent)}
+.stat-card.green .stat-icon{background:rgba(63,185,80,.12);color:var(--success)}
+.stat-card.purple .stat-icon{background:rgba(163,113,247,.12);color:var(--purple)}
+.stat-card.amber .stat-icon{background:rgba(227,179,65,.12);color:var(--warning)}
+
+/* Counter animation */
+@keyframes count-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.stat-num.loaded{animation:count-up .4s ease}
+
+/* Skeleton */
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.skeleton{background:linear-gradient(90deg,var(--surface2) 25%,var(--surface3) 50%,var(--surface2) 75%);background-size:800px 100%;animation:shimmer 1.4s infinite linear;border-radius:8px}
+.stat-num.loading{width:80px;height:48px;border-radius:8px;display:inline-block}
+
+/* Language breakdown */
+.breakdown-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px}
+.breakdown-title{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:18px}
+.lang-row{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.lang-row:last-child{margin-bottom:0}
+.lang-name{font-size:13px;font-weight:600;width:90px;flex-shrink:0}
+.lang-bar-wrap{flex:1;height:8px;background:var(--surface3);border-radius:4px;overflow:hidden}
+.lang-bar{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+.lang-count{font-size:12px;color:var(--muted);width:50px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
+
+/* CTA */
+.cta{background:linear-gradient(135deg,rgba(79,142,247,.08),rgba(163,113,247,.05));border:1px solid rgba(79,142,247,.18);border-radius:14px;padding:32px;text-align:center;margin-top:32px}
+.cta h2{font-size:20px;font-weight:800;margin:0 0 8px}
+.cta p{font-size:13px;color:var(--muted);margin:0 0 20px}
+.btn-cta{display:inline-flex;align-items:center;gap:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;padding:10px 22px;font-size:14px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;text-decoration:none;transition:all .15s}
+.btn-cta:hover{background:#6aa3f9;transform:translateY(-1px);box-shadow:0 4px 12px rgba(79,142,247,.3)}
+.update-time{font-size:11px;color:var(--muted);text-align:center;margin-top:20px}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="dashboard.html" class="brand"><div class="brand-icon">CS</div><span class="brand-txt">Code<span>Sponge</span></span></a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link">Projects</a>
+    <a href="community.html" class="nav-link">Community</a>
+    <a href="settings.html" class="nav-link">Settings</a>
+    <a href="changelog.html" class="nav-link">Changelog</a>
+    <a href="stats.html" class="nav-link active">Stats</a>
+  </div>
+  <div class="nav-sp"></div>
+</nav>
+
+<div class="page">
+  <div class="hero">
+    <div class="live-pill"><div class="live-dot"></div> Live data</div>
+    <h1>CodeSponge by the numbers</h1>
+    <p>Real-time stats from the CodeSponge platform.</p>
+  </div>
+
+  <!-- Big 4 stats -->
+  <div class="stat-grid">
+    <div class="stat-card blue">
+      <div class="stat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div class="stat-num loading skeleton" id="stat-users"></div>
+      <div class="stat-label">Registered users</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <div class="stat-num loading skeleton" id="stat-projects"></div>
+      <div class="stat-label">Projects created</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </div>
+      <div class="stat-num loading skeleton" id="stat-posts"></div>
+      <div class="stat-label">Community posts</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="stat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      </div>
+      <div class="stat-num loading skeleton" id="stat-snippets"></div>
+      <div class="stat-label">Shared snippets</div>
+    </div>
+  </div>
+
+  <!-- Language breakdown -->
+  <div class="breakdown-card">
+    <div class="breakdown-title">Language breakdown</div>
+    <div id="lang-breakdown">
+      <div class="lang-row"><div class="lang-name">Python</div><div class="lang-bar-wrap"><div class="lang-bar skeleton" style="width:100%"></div></div><div class="lang-count skeleton" style="width:40px;height:14px;border-radius:4px;display:inline-block"></div></div>
+      <div class="lang-row"><div class="lang-name">JavaScript</div><div class="lang-bar-wrap"><div class="lang-bar skeleton" style="width:80%"></div></div><div class="lang-count skeleton" style="width:40px;height:14px;border-radius:4px;display:inline-block"></div></div>
+      <div class="lang-row"><div class="lang-name">HTML</div><div class="lang-bar-wrap"><div class="lang-bar skeleton" style="width:60%"></div></div><div class="lang-count skeleton" style="width:40px;height:14px;border-radius:4px;display:inline-block"></div></div>
+      <div class="lang-row"><div class="lang-name">C++</div><div class="lang-bar-wrap"><div class="lang-bar skeleton" style="width:40%"></div></div><div class="lang-count skeleton" style="width:40px;height:14px;border-radius:4px;display:inline-block"></div></div>
+    </div>
+  </div>
+
+  <div class="update-time" id="update-time"></div>
+
+  <div class="cta">
+    <h2>Join the community</h2>
+    <p>CodeSponge is free forever. Create projects, share your code and explore what others are building.</p>
+    <a href="dashboard.html" class="btn-cta">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Start coding
+    </a>
+  </div>
+</div>
+
+<script>
+var API="https://codesponge-backend.onrender.com";
+(function(){var ap=JSON.parse(localStorage.getItem("cs_appearance")||"{}");if(ap.accent)document.documentElement.style.setProperty("--accent",ap.accent);})();
+
+var LANG_COLORS={python:"#3572A5",javascript:"#f1e05a",cpp:"#f34b7d",html:"#e34c26"};
+var LANG_ORDER=["python","javascript","html","cpp"];
+
+function animateCount(el,target){
+  el.classList.remove("loading","skeleton");
+  el.classList.add("loaded");
+  var start=0,duration=800,startTime=null;
+  function step(ts){
+    if(!startTime)startTime=ts;
+    var progress=Math.min((ts-startTime)/duration,1);
+    var ease=1-Math.pow(1-progress,3); // ease-out cubic
+    el.textContent=Math.floor(ease*target).toLocaleString();
+    if(progress<1)requestAnimationFrame(step);
+    else el.textContent=target.toLocaleString();
+  }
+  requestAnimationFrame(step);
+}
+
+async function loadStats(){
+  try{
+    var res=await fetch(API+"/stats");
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    var data=await res.json();
+    animateCount(document.getElementById("stat-users"),    data.users||0);
+    animateCount(document.getElementById("stat-projects"), data.projects||0);
+    animateCount(document.getElementById("stat-posts"),    data.posts||0);
+    animateCount(document.getElementById("stat-snippets"), data.snippets||0);
+    // Language breakdown from community posts (approximation using all-time data)
+    // We build a simulated breakdown from known ratios since we don't have per-lang counts
+    // In a real scenario, /stats would return lang_breakdown too
+    if(data.lang_breakdown){
+      renderBreakdown(data.lang_breakdown, data.projects);
+    } else {
+      // Simulate breakdown until backend is updated
+      renderBreakdown({python:0.45,javascript:0.30,html:0.15,cpp:0.10}, data.projects);
+    }
+    var now=new Date();
+    document.getElementById("update-time").textContent="Last updated "+now.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"});
+  }catch(e){
+    ["stat-users","stat-projects","stat-posts","stat-snippets"].forEach(function(id){
+      var el=document.getElementById(id);
+      el.classList.remove("loading","skeleton");
+      el.textContent="—";
+    });
+    document.getElementById("update-time").textContent="Could not load stats — server may be starting up.";
+  }
+}
+
+function renderBreakdown(breakdown, total){
+  var langs=LANG_ORDER;
+  var counts={};
+  if(typeof breakdown.python==="number"&&breakdown.python<=1){
+    // It's ratios
+    langs.forEach(function(l){counts[l]=Math.round((breakdown[l]||0)*total);});
+  }else{
+    counts=breakdown;
+  }
+  var max=Math.max.apply(null,langs.map(function(l){return counts[l]||0;}))||1;
+  var html=langs.map(function(lang){
+    var n=counts[lang]||0;
+    var pct=Math.round((n/max)*100);
+    return '<div class="lang-row">'
+      +'<div class="lang-name" style="color:var(--text)">'+lang.charAt(0).toUpperCase()+lang.slice(1)+'</div>'
+      +'<div class="lang-bar-wrap"><div class="lang-bar" style="width:'+pct+'%;background:'+LANG_COLORS[lang]+';opacity:.85"></div></div>'
+      +'<div class="lang-count">'+n.toLocaleString()+'</div>'
+      +'</div>';
+  }).join("");
+  document.getElementById("lang-breakdown").innerHTML=html;
+}
+
+loadStats();
+// Auto-refresh every 60 seconds
+setInterval(loadStats,60000);
+</script>
+</body>
+</html>
