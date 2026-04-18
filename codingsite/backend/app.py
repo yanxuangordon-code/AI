@@ -29,29 +29,6 @@ def get_db():
     con = psycopg2.connect(DATABASE_URL)
     con.autocommit = False
     return con
-@app.route("/auth/oauth", methods=["POST"])
-def oauth_login():
-    data     = request.json
-    email    = (data.get("email") or "").strip().lower()
-    name     = data.get("name") or ""
-    if not email:
-        return jsonify({"error": "No email provided"}), 400
-    con = get_db(); cur = con.cursor()
-    cur.execute("SELECT id, username FROM users WHERE email=%s", (email,))
-    row = cur.fetchone()
-    if row:
-        # Existing user — log in
-        user_id  = row[0]
-        username = row[1] or email.split("@")[0]
-    else:
-        # New user — create account
-        user_id  = str(uuid.uuid4())
-        username = email.split("@")[0]
-        cur.execute("INSERT INTO users (id, email, password, username, verified) VALUES (%s,%s,%s,%s,1)",
-                    (user_id, email, generate_password_hash(str(uuid.uuid4())), username))
-    con.commit(); con.close()
-    token = create_access_token(identity=user_id)
-    return jsonify({"token": token, "email": email, "username": username})
 
 def init_db():
     con = get_db()
@@ -125,9 +102,6 @@ def init_db():
     con.close()
 
 init_db()
-@app.route("/ping")
-def ping():
-    return jsonify({"ok": True})
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def make_code():
@@ -178,107 +152,6 @@ def run_python(code):
         return {"output": "", "error": "Error: execution timed out after 10 seconds."}
     finally:
         os.unlink(fname)
-
-@app.route("/users/profile", methods=["PUT"])
-@jwt_required()
-def update_profile():
-    user_id = get_jwt_identity()
-    data     = request.json
-    username = (data.get("username") or "").strip().lower()
-    bio      = (data.get("bio") or "").strip()[:300]  # max 300 chars
- 
-    if not username or len(username) < 3:
-        return jsonify({"error": "Username must be at least 3 characters"}), 400
-    if not re.match(r'^[a-z0-9_]+$', username):
-        return jsonify({"error": "Username can only contain letters, numbers and underscores"}), 400
- 
-    con = get_db(); cur = con.cursor()
-    # Check username not taken by someone else
-    cur.execute("SELECT id FROM users WHERE username=%s AND id!=%s", (username, user_id))
-    if cur.fetchone():
-        con.close()
-        return jsonify({"error": "That username is already taken"}), 400
- 
-    cur.execute("UPDATE users SET username=%s, bio=%s WHERE id=%s", (username, bio, user_id))
-    con.commit(); con.close()
-    return jsonify({"message": "Profile updated", "username": username})
- 
- 
-# Change password
-@app.route("/auth/change-password", methods=["POST"])
-@jwt_required()
-def change_password():
-    user_id  = get_jwt_identity()
-    data     = request.json
-    curr     = data.get("current_password", "")
-    new_pass = data.get("new_password", "")
- 
-    if not curr or not new_pass:
-        return jsonify({"error": "All fields required"}), 400
-    if len(new_pass) < 6:
-        return jsonify({"error": "New password must be at least 6 characters"}), 400
- 
-    con = get_db(); cur = con.cursor()
-    cur.execute("SELECT password FROM users WHERE id=%s", (user_id,))
-    row = cur.fetchone()
-    if not row or not check_password_hash(row[0], curr):
-        con.close()
-        return jsonify({"error": "Current password is incorrect"}), 401
- 
-    cur.execute("UPDATE users SET password=%s WHERE id=%s",
-                (generate_password_hash(new_pass), user_id))
-    con.commit(); con.close()
-    return jsonify({"message": "Password changed"})
- 
- 
-# Change password
-@app.route("/auth/change-password", methods=["POST"])
-@jwt_required()
-def change_password():
-    user_id  = get_jwt_identity()
-    data     = request.json
-    curr     = data.get("current_password", "")
-    new_pass = data.get("new_password", "")
- 
-    if not curr or not new_pass:
-        return jsonify({"error": "All fields required"}), 400
-    if len(new_pass) < 6:
-        return jsonify({"error": "New password must be at least 6 characters"}), 400
- 
-    con = get_db(); cur = con.cursor()
-    cur.execute("SELECT password FROM users WHERE id=%s", (user_id,))
-    row = cur.fetchone()
-    if not row or not check_password_hash(row[0], curr):
-        con.close()
-        return jsonify({"error": "Current password is incorrect"}), 401
- 
-    cur.execute("UPDATE users SET password=%s WHERE id=%s",
-                (generate_password_hash(new_pass), user_id))
-    con.commit(); con.close()
-    return jsonify({"message": "Password changed"})
- 
- 
-# Delete account
-@app.route("/users/me", methods=["DELETE"])
-@jwt_required()
-@app.route("/users/me", methods=["DELETE"])
-@jwt_required()
-def delete_account():
-    user_id = get_jwt_identity()
-    con = get_db(); cur = con.cursor()
-    # Delete all user data
-    cur.execute("DELETE FROM post_likes WHERE user_id=%s", (user_id,))
-    cur.execute("DELETE FROM community_posts WHERE user_id=%s", (user_id,))
-    cur.execute("DELETE FROM projects WHERE user_id=%s", (user_id,))
-    cur.execute("DELETE FROM users WHERE id=%s", (user_id,))
-    con.commit(); con.close()
-    return jsonify({"message": "Account deleted"})
- 
- 
-# Ping route (add this too if you haven't already)
-@app.route("/ping")
-def ping():
-    return jsonify({"ok": True})
 
 def run_javascript(code):
     with tempfile.NamedTemporaryFile(suffix=".js", delete=False, mode="w", encoding="utf-8") as f:
@@ -836,6 +709,37 @@ def get_profile(username):
         "bio":        user["bio"],
         "created_at": str(user["created_at"]),
         "posts":      posts
+    })
+
+
+# ── Ping (keep server awake via UptimeRobot) ──────────────────────────────────
+@app.route("/ping")
+def ping():
+    return jsonify({"ok": True})
+
+# ── Public site stats ─────────────────────────────────────────────────────────
+@app.route("/stats")
+def site_stats():
+    con = get_db(); cur = con.cursor()
+    cur.execute("SELECT COUNT(*) FROM users")
+    users = cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM projects")
+    projects = cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM community_posts")
+    posts = cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM snippets")
+    snippets = cur.fetchone()[0]
+    con.close()
+    # Per-language breakdown
+    cur.execute("SELECT language, COUNT(*) FROM projects WHERE language IS NOT NULL GROUP BY language")
+    lang_rows = cur.fetchall()
+    lang_breakdown = {row[0]: row[1] for row in lang_rows}
+    return jsonify({
+        "users":          users,
+        "projects":       projects,
+        "posts":          posts,
+        "snippets":       snippets,
+        "lang_breakdown": lang_breakdown,
     })
 
 if __name__ == "__main__":
