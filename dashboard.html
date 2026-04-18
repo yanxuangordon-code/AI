@@ -465,6 +465,10 @@ function logout(){ localStorage.clear(); window.location.href="index.html"; }
 function authH(){ return {"Content-Type":"application/json","Authorization":"Bearer "+token}; }
 
 var allProjects=[], currentSort="updated";
+// Global error handler - prevents one error from silently breaking everything
+window.addEventListener("error", function(e){
+  console.error("JS Error:", e.message, "at", e.filename, e.lineno);
+});
 var LANG_ICONS={python:"Py",javascript:"JS",cpp:"C++",html:"HTML"};
 var LANG_COLORS={python:"ci-python",javascript:"ci-javascript",cpp:"ci-cpp",html:"ci-html"};
 
@@ -825,7 +829,18 @@ function toggleDensity(){
   document.getElementById("density-btn").style.background=isCompact?"rgba(79,142,247,.1)":"var(--surface3)";
 }
 // Restore density on load
-(function(){if(localStorage.getItem("cs_compact")==="1"){var g=document.getElementById("projects-grid");if(g){g.classList.add("compact");var b=document.getElementById("density-btn");if(b){b.style.color="var(--accent)";b.style.borderColor="rgba(79,142,247,.3)";b.style.background="rgba(79,142,247,.1)";}}})();
+(function(){
+  if(localStorage.getItem("cs_compact")==="1"){
+    var g=document.getElementById("projects-grid");
+    if(g) g.classList.add("compact");
+    var b=document.getElementById("density-btn");
+    if(b){
+      b.style.color="var(--accent)";
+      b.style.borderColor="rgba(79,142,247,.3)";
+      b.style.background="rgba(79,142,247,.1)";
+    }
+  }
+})();
 document.addEventListener("keydown",function(e){
   var tag=(document.activeElement.tagName||"").toLowerCase();
   var inInput=(tag==="input"||tag==="textarea"||tag==="select");
