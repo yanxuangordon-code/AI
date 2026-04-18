@@ -720,7 +720,8 @@ def ping():
 # ── Public site stats ─────────────────────────────────────────────────────────
 @app.route("/stats")
 def site_stats():
-    con = get_db(); cur = con.cursor()
+    con = get_db()
+    cur = con.cursor()
     cur.execute("SELECT COUNT(*) FROM users")
     users = cur.fetchone()[0]
     cur.execute("SELECT COUNT(*) FROM projects")
@@ -729,11 +730,10 @@ def site_stats():
     posts = cur.fetchone()[0]
     cur.execute("SELECT COUNT(*) FROM snippets")
     snippets = cur.fetchone()[0]
-    con.close()
-    # Per-language breakdown
     cur.execute("SELECT language, COUNT(*) FROM projects WHERE language IS NOT NULL GROUP BY language")
     lang_rows = cur.fetchall()
     lang_breakdown = {row[0]: row[1] for row in lang_rows}
+    con.close()
     return jsonify({
         "users":          users,
         "projects":       projects,
@@ -741,6 +741,71 @@ def site_stats():
         "snippets":       snippets,
         "lang_breakdown": lang_breakdown,
     })
+
+
+# ── Update user profile ───────────────────────────────────────────────────────
+@app.route("/users/profile", methods=["PUT"])
+@jwt_required()
+def update_profile():
+    user_id  = get_jwt_identity()
+    data     = request.json
+    username = (data.get("username") or "").strip().lower()
+    bio      = (data.get("bio") or "").strip()[:300]
+
+    if not username or len(username) < 3:
+        return jsonify({"error": "Username must be at least 3 characters"}), 400
+    if not re.match(r"^[a-z0-9_]+$", username):
+        return jsonify({"error": "Username can only contain letters, numbers and underscores"}), 400
+
+    con = get_db()
+    cur = con.cursor()
+    cur.execute("SELECT id FROM users WHERE username=%s AND id!=%s", (username, user_id))
+    if cur.fetchone():
+        con.close()
+        return jsonify({"error": "That username is already taken"}), 400
+    cur.execute("UPDATE users SET username=%s, bio=%s WHERE id=%s", (username, bio, user_id))
+    con.commit()
+    con.close()
+    return jsonify({"message": "Profile updated", "username": username})
+
+# ── Change password ───────────────────────────────────────────────────────────
+@app.route("/auth/change-password", methods=["POST"])
+@jwt_required()
+def change_password():
+    user_id  = get_jwt_identity()
+    data     = request.json
+    curr     = data.get("current_password", "")
+    new_pass = data.get("new_password", "")
+    if not curr or not new_pass:
+        return jsonify({"error": "All fields required"}), 400
+    if len(new_pass) < 6:
+        return jsonify({"error": "New password must be at least 6 characters"}), 400
+    con = get_db()
+    cur = con.cursor()
+    cur.execute("SELECT password FROM users WHERE id=%s", (user_id,))
+    row = cur.fetchone()
+    if not row or not check_password_hash(row[0], curr):
+        con.close()
+        return jsonify({"error": "Current password is incorrect"}), 401
+    cur.execute("UPDATE users SET password=%s WHERE id=%s", (generate_password_hash(new_pass), user_id))
+    con.commit()
+    con.close()
+    return jsonify({"message": "Password changed"})
+
+# ── Delete account ────────────────────────────────────────────────────────────
+@app.route("/users/me", methods=["DELETE"])
+@jwt_required()
+def delete_account():
+    user_id = get_jwt_identity()
+    con = get_db()
+    cur = con.cursor()
+    cur.execute("DELETE FROM post_likes WHERE user_id=%s", (user_id,))
+    cur.execute("DELETE FROM community_posts WHERE user_id=%s", (user_id,))
+    cur.execute("DELETE FROM projects WHERE user_id=%s", (user_id,))
+    cur.execute("DELETE FROM users WHERE id=%s", (user_id,))
+    con.commit()
+    con.close()
+    return jsonify({"message": "Account deleted"})
 
 if __name__ == "__main__":
     app.run(debug=True)
