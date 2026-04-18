@@ -16,7 +16,7 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
   --text:#e6edf3;--muted:#7d8590;
 }
 
-/* ── Nav ── */
+/*  Nav  */
 .nav{height:56px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:8px;position:sticky;top:0;z-index:50}
 .brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--text);font-weight:800;font-size:16px}
 .brand-icon{width:30px;height:30px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0}
@@ -37,7 +37,7 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
 .avatar-menu-sep{height:1px;background:var(--border);margin:4px 0}
 .avatar-name{padding:8px 12px;font-size:12px;color:var(--muted);font-weight:600}
 
-/* ── Stats bar ── */
+/*  Stats bar  */
 .stats-bar{background:var(--surface2);border-bottom:1px solid var(--border);padding:10px 0;display:none}
 .stats-inner{max-width:980px;margin:0 auto;padding:0 28px;display:flex;gap:28px;flex-wrap:wrap;align-items:center}
 .stat{display:flex;align-items:center;gap:6px}
@@ -45,7 +45,7 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
 .stat-label{font-size:12px;color:var(--muted)}
 .stat-sep{color:var(--border)}
 
-/* ── Quick-open banner ── */
+/*  Quick-open banner  */
 .quick-open{background:linear-gradient(135deg,rgba(79,142,247,.08),rgba(163,113,247,.06));border-bottom:1px solid var(--border);padding:14px 0;display:none}
 .quick-open-inner{max-width:980px;margin:0 auto;padding:0 28px;display:flex;align-items:center;gap:14px}
 .quick-open-icon{width:38px;height:38px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;background:rgba(79,142,247,.15);border:1px solid rgba(79,142,247,.25);color:var(--accent)}
@@ -57,7 +57,7 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
 .quick-open-dismiss{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;border-radius:4px;font-size:18px;line-height:1;flex-shrink:0}
 .quick-open-dismiss:hover{color:var(--text)}
 
-/* ── Hero ── */
+/*  Hero  */
 .hero{background:var(--surface2);border-bottom:1px solid var(--border);padding:28px 0 22px}
 .container{max-width:980px;margin:0 auto;padding:0 28px}
 .hero-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
@@ -78,19 +78,25 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
 .sort-tab:hover{color:var(--text)}
 .sort-tab.active{background:var(--surface3);border-color:var(--border);color:var(--text)}
 
-/* ── Body layout: grid + sidebar ── */
+/*  Body layout: grid + sidebar  */
 .dash-body{padding:24px 0 60px}
 .dash-layout{display:grid;grid-template-columns:1fr 280px;gap:24px;align-items:start}
 @media(max-width:860px){.dash-layout{grid-template-columns:1fr}.dash-sidebar{display:none}}
 
-/* ── Skeleton ── */
+/*  Skeleton  */
 @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
 .skeleton{background:linear-gradient(90deg,var(--surface2) 25%,var(--surface3) 50%,var(--surface2) 75%);background-size:800px 100%;animation:shimmer 1.4s infinite linear;border-radius:12px}
 .skeleton-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px}
 .skeleton-line{height:12px;border-radius:6px}
 
-/* ── Project cards ── */
+/*  Project cards  */
 .projects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.projects-grid.compact{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.projects-grid.compact .project-card{padding:12px}
+.projects-grid.compact .card-icon{width:32px;height:32px;font-size:10px}
+.projects-grid.compact .card-name{font-size:13px}
+.projects-grid.compact .card-badges{display:none}
+.projects-grid.compact .card-date{font-size:10px}
 .project-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .1s;display:flex;flex-direction:column;gap:12px;position:relative}
 .project-card:hover{border-color:rgba(255,255,255,.18);box-shadow:0 4px 20px rgba(0,0,0,.3);transform:translateY(-2px)}
 .card-top{display:flex;align-items:flex-start;gap:12px}
@@ -135,7 +141,7 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
 .empty-state h3{font-size:15px;font-weight:700;color:var(--text);margin:0 0 5px}
 .empty-state p{font-size:13px;margin:0}
 
-/* ── Sidebar ── */
+/*  Sidebar  */
 .dash-sidebar{display:flex;flex-direction:column;gap:14px}
 .sidebar-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px}
 .sidebar-title{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px}
@@ -153,7 +159,7 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
 .tip-item{font-size:12px;color:var(--muted);line-height:1.5;padding-left:14px;position:relative}
 .tip-item::before{content:'→';position:absolute;left:0;color:var(--accent);font-size:11px}
 
-/* ── Modals ── */
+/*  Modals  */
 .modal-back{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:100}
 .modal-back.open{display:flex}
 .modal-box{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:28px;width:500px;max-width:94vw;box-shadow:0 28px 80px rgba(0,0,0,.7);animation:mi .18s ease}
@@ -208,7 +214,7 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
 </head>
 <body>
 
-<!-- ── Nav ── -->
+<!--  Nav  -->
 <nav class="nav">
   <a href="dashboard.html" class="brand">
     <div class="brand-icon">CS</div>
@@ -219,6 +225,7 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
     <a href="community.html" class="nav-link">Community</a>
     <a href="settings.html" class="nav-link">Settings</a>
     <a href="changelog.html" class="nav-link">Changelog</a>
+    <a href="stats.html" class="nav-link">Stats</a>
   </div>
   <div class="nav-sp"></div>
   <div class="nav-right">
@@ -245,7 +252,7 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
   </div>
 </nav>
 
-<!-- ── Stats bar ── -->
+<!--  Stats bar  -->
 <div class="stats-bar" id="stats-bar">
   <div class="stats-inner">
     <div class="stat"><div class="stat-num" id="stat-total">0</div><div class="stat-label">projects</div></div>
@@ -258,7 +265,7 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
   </div>
 </div>
 
-<!-- ── Quick-open last project ── -->
+<!--  Quick-open last project  -->
 <div class="quick-open" id="quick-open">
   <div class="quick-open-inner">
     <div class="card-icon ci-python quick-open-icon" id="qo-icon">Py</div>
@@ -271,12 +278,12 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
   </div>
 </div>
 
-<!-- ── Hero ── -->
+<!--  Hero  -->
 <div class="hero">
   <div class="container">
     <div class="hero-row">
       <div class="hero-text">
-        <h1>Good <span class="greeting" id="greeting">morning</span>, <span id="hero-name">there</span> 👋</h1>
+        <h1>Good <span class="greeting" id="greeting">morning</span>, <span id="hero-name">there</span> </h1>
         <p>Pick up where you left off, or start something new.</p>
       </div>
     </div>
@@ -299,6 +306,10 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
         <option value="cpp">C++</option>
         <option value="html">HTML</option>
       </select>
+      <button class="tb-btn" id="density-btn" onclick="toggleDensity()" title="Toggle compact view [D]" style="background:var(--surface3);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:8px 12px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        View
+      </button>
       <button class="btn-new" onclick="openNewModal()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         New <span style="opacity:.7;font-size:10px;margin-left:2px">[N]</span>
@@ -313,7 +324,7 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
   </div>
 </div>
 
-<!-- ── Body ── -->
+<!--  Body  -->
 <div class="dash-body">
   <div class="container">
     <div class="dash-layout">
@@ -345,7 +356,7 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
         <div class="sidebar-card">
           <div class="sidebar-title">Tips</div>
           <div class="tips-list">
-            <div class="tip-item">Click the ✎ button on any card to rename it inline</div>
+            <div class="tip-item">Click the  button on any card to rename it inline</div>
             <div class="tip-item">Repo projects can be hosted as a live website</div>
             <div class="tip-item">Publish any project to the Community Hub for others to fork</div>
             <div class="tip-item">Use Ctrl+Enter in the editor to run your code</div>
@@ -356,7 +367,7 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
   </div>
 </div>
 
-<!-- ── New Project Modal ── -->
+<!--  New Project Modal  -->
 <div class="modal-back" id="new-modal">
   <div class="modal-box">
     <p class="modal-title">New project</p>
@@ -365,11 +376,11 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
       <label class="form-label">Project type</label>
       <div class="type-grid">
         <div class="type-card sel" id="type-single" onclick="selectType('single')">
-          <div class="type-card-icon">📄</div>
+          <div class="type-card-icon"></div>
           <div><div class="type-card-label">Single file</div><div class="type-card-desc">One file. Run Python, JS, C++ or HTML instantly.</div></div>
         </div>
         <div class="type-card" id="type-repo" onclick="selectType('repo')">
-          <div class="type-card-icon">📁</div>
+          <div class="type-card-icon"></div>
           <div><div class="type-card-label">Repo</div><div class="type-card-desc">Multiple files. Host as a website.</div></div>
         </div>
       </div>
@@ -394,7 +405,7 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
   </div>
 </div>
 
-<!-- ── Delete Modal ── -->
+<!--  Delete Modal  -->
 <div class="modal-back" id="del-modal">
   <div class="modal-box" style="width:400px">
     <p class="modal-title">Delete project?</p>
@@ -406,15 +417,16 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
   </div>
 </div>
 
-<!-- ── Keyboard shortcuts overlay ── -->
+<!--  Keyboard shortcuts overlay  -->
 <div id="kbd-overlay" onclick="if(event.target===this)closeKbdOverlay()">
   <div class="kbd-panel">
-    <h3>⌨️ Keyboard shortcuts</h3>
+    <h3>⌨ Keyboard shortcuts</h3>
     <div class="kbd-group">
       <div class="kbd-group-title">Dashboard</div>
       <div class="kbd-entry"><span class="kbd-entry-label">New project</span><div class="kbd-combo"><span class="kbd-key">N</span></div></div>
       <div class="kbd-entry"><span class="kbd-entry-label">Focus search</span><div class="kbd-combo"><span class="kbd-key">/</span></div></div>
       <div class="kbd-entry"><span class="kbd-entry-label">Go to Community</span><div class="kbd-combo"><span class="kbd-key">G</span></div></div>
+      <div class="kbd-entry"><span class="kbd-entry-label">Toggle compact view</span><div class="kbd-combo"><span class="kbd-key">D</span></div></div>
       <div class="kbd-entry"><span class="kbd-entry-label">Show shortcuts</span><div class="kbd-combo"><span class="kbd-key">?</span></div></div>
       <div class="kbd-entry"><span class="kbd-entry-label">Close modal / dismiss</span><div class="kbd-combo"><span class="kbd-key">Esc</span></div></div>
     </div>
@@ -456,7 +468,7 @@ var allProjects=[], currentSort="updated";
 var LANG_ICONS={python:"Py",javascript:"JS",cpp:"C++",html:"HTML"};
 var LANG_COLORS={python:"ci-python",javascript:"ci-javascript",cpp:"ci-cpp",html:"ci-html"};
 
-// ── Activity log (localStorage) ───────────────────────────────────────────────
+//  Activity log (localStorage) 
 function logActivity(type,name,id,ptype){
   var log=[];
   try{log=JSON.parse(localStorage.getItem("cs_activity")||"[]");}catch(e){}
@@ -492,7 +504,7 @@ function relTime(ts){
 // Load and render activity on start
 try{renderActivity(JSON.parse(localStorage.getItem("cs_activity")||"[]"));}catch(e){}
 
-// ── Quick-open last project ────────────────────────────────────────────────────
+//  Quick-open last project 
 var lastProjectData = null;
 
 function showQuickOpen(projects){
@@ -521,7 +533,7 @@ function dismissQuickOpen(){
   document.getElementById("quick-open").style.display="none";
 }
 
-// ── Avatar menu ───────────────────────────────────────────────────────────────
+//  Avatar menu 
 function toggleAvatarMenu(){
   document.getElementById("avatar-menu").classList.toggle("open");
 }
@@ -530,7 +542,7 @@ document.addEventListener("click",function(e){
   if(!e.target.closest(".card-menu-wrap")) document.querySelectorAll(".card-ctx-menu.open").forEach(function(m){m.classList.remove("open");});
 });
 
-// ── Toast ─────────────────────────────────────────────────────────────────────
+//  Toast 
 var toastTimer;
 function showToast(msg,type){
   var el=document.getElementById("toast");
@@ -541,11 +553,11 @@ function showToast(msg,type){
   toastTimer=setTimeout(function(){el.style.display="none";},3000);
 }
 
-// ── Keyboard shortcuts overlay ────────────────────────────────────────────────
+//  Keyboard shortcuts overlay 
 function openKbdOverlay(){ document.getElementById("kbd-overlay").classList.add("open"); }
 function closeKbdOverlay(){ document.getElementById("kbd-overlay").classList.remove("open"); }
 
-// ── Load ──────────────────────────────────────────────────────────────────────
+//  Load 
 async function loadProjects(){
   showSkeletons();
   var cached=localStorage.getItem("cs_projects_cache");
@@ -599,7 +611,7 @@ function showSkeletons(){
   }
 }
 
-// ── Sort ──────────────────────────────────────────────────────────────────────
+//  Sort 
 function setSort(s){
   currentSort=s;
   ["updated","name","created"].forEach(function(t){document.getElementById("sort-"+t).className="sort-tab"+(t===s?" active":"");});
@@ -623,7 +635,7 @@ function filterProjects(){
   })));
 }
 
-// ── Render ────────────────────────────────────────────────────────────────────
+//  Render 
 function renderGrid(list){
   var grid=document.getElementById("projects-grid"),count=document.getElementById("project-count");
   grid.innerHTML="";
@@ -644,7 +656,7 @@ function renderGrid(list){
     var badges="";
     if(ptype==="repo")badges+='<span class="badge badge-repo">Repo</span>';
     if(p.language)badges+='<span class="badge badge-lang">'+esc(p.language)+'</span>';
-    if(p.hosted_url)badges+='<span class="badge badge-live">&#127760; Live</span>';
+    if(p.hosted_url)badges+='<span class="badge badge-live"> Live</span>';
     card.innerHTML=
       '<div class="card-top">'
         +'<div class="card-icon '+iconClass+'">'+iconText+'</div>'
@@ -702,7 +714,7 @@ function copyProjectLink(id,type){
   navigator.clipboard.writeText(url).then(function(){showToast("Project link copied!","success");}).catch(function(){showToast("Could not copy link","error");});
 }
 
-// ── Duplicate project ─────────────────────────────────────────────────────────
+//  Duplicate project 
 async function duplicateProject(id){
   var p=allProjects.find(function(x){return x.id===id;});
   if(!p){showToast("Project not found","error");return;}
@@ -729,7 +741,7 @@ async function duplicateProject(id){
   }catch(e){showToast("Could not duplicate project","error");}
 }
 
-// ── Inline rename ─────────────────────────────────────────────────────────────
+//  Inline rename 
 function startRename(id,currentName){
   var el=document.getElementById("pname-"+id);if(!el)return;
   var inp=document.createElement("input");inp.className="card-name-input";inp.value=currentName;
@@ -749,7 +761,7 @@ async function commitRename(id,newName,el,oldName){
   catch(e){showToast("Could not rename","error");}
 }
 
-// ── New project ───────────────────────────────────────────────────────────────
+//  New project 
 var selType="single",selLang="python";
 function openNewModal(){
   selType="single";selLang="python";
@@ -780,7 +792,7 @@ async function createProject(){
   finally{btn.disabled=false;btn.textContent="Create project";}
 }
 
-// ── Delete ────────────────────────────────────────────────────────────────────
+//  Delete 
 var delId=null;
 function openDel(id,name){
   delId=id;
@@ -803,7 +815,17 @@ async function confirmDelete(){
   finally{btn.disabled=false;btn.textContent="Delete";}
 }
 
-// ── Keyboard shortcuts ────────────────────────────────────────────────────────
+//  Keyboard shortcuts 
+function toggleDensity(){
+  var grid=document.getElementById("projects-grid");
+  var isCompact=grid.classList.toggle("compact");
+  localStorage.setItem("cs_compact",isCompact?"1":"0");
+  document.getElementById("density-btn").style.color=isCompact?"var(--accent)":"var(--muted)";
+  document.getElementById("density-btn").style.borderColor=isCompact?"rgba(79,142,247,.3)":"var(--border)";
+  document.getElementById("density-btn").style.background=isCompact?"rgba(79,142,247,.1)":"var(--surface3)";
+}
+// Restore density on load
+(function(){if(localStorage.getItem("cs_compact")==="1"){var g=document.getElementById("projects-grid");if(g){g.classList.add("compact");var b=document.getElementById("density-btn");if(b){b.style.color="var(--accent)";b.style.borderColor="rgba(79,142,247,.3)";b.style.background="rgba(79,142,247,.1)";}}})();
 document.addEventListener("keydown",function(e){
   var tag=(document.activeElement.tagName||"").toLowerCase();
   var inInput=(tag==="input"||tag==="textarea"||tag==="select");
@@ -812,6 +834,7 @@ document.addEventListener("keydown",function(e){
   if(e.key==="n"||e.key==="N"){e.preventDefault();openNewModal();return;}
   if(e.key==="/"){ e.preventDefault();document.getElementById("search-input").focus();return;}
   if(e.key==="g"||e.key==="G"){window.location.href="community.html";return;}
+  if(e.key==="d"||e.key==="D"){toggleDensity();return;}
   if(e.key==="?"){openKbdOverlay();return;}
   if(e.key==="Enter"&&document.getElementById("new-modal").classList.contains("open")){e.preventDefault();createProject();}
 });
