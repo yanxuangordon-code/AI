@@ -123,6 +123,7 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
     <a href="community.html" class="nav-link active">Community</a>
     <a href="settings.html" class="nav-link">Settings</a>
     <a href="changelog.html" class="nav-link">Changelog</a>
+    <a href="stats.html" class="nav-link">Stats</a>
   </div>
   <div class="nav-sp"></div>
 </nav>
@@ -185,7 +186,7 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
         <div class="modal-title" id="m-title"></div>
         <div class="modal-author" id="m-author"></div>
       </div>
-      <button class="modal-close" onclick="closePreview()">Close ✕</button>
+      <button class="modal-close" onclick="closePreview()">Close </button>
     </div>
     <div class="modal-desc" id="m-desc"></div>
     <pre class="modal-code" id="m-code"></pre>
@@ -194,6 +195,10 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
       <div class="modal-stat" style="margin-left:12px" id="m-views"></div>
       <div class="modal-stat" style="margin-left:12px" id="m-forks"></div>
       <div class="modal-stat-sep"></div>
+      <button class="btn-ghost" id="m-copy-code-btn" onclick="copyPostCode()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy code
+      </button>
       <button class="btn-ghost" id="m-share-btn" onclick="sharePost()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
         Share
@@ -230,7 +235,7 @@ var allPosts=[], openPostId=null;
 var LANG_ICONS={python:"Py",javascript:"JS",cpp:"C++",html:"HTML"};
 var ICON_CLASS={python:"pi-python",javascript:"pi-javascript",cpp:"pi-cpp",html:"pi-html"};
 
-// ── Toast ────────────────────────────────────────────────────────────────────
+//  Toast 
 var toastT;
 function showToast(msg,type){
   var el=document.getElementById("toast");
@@ -240,7 +245,7 @@ function showToast(msg,type){
   toastT=setTimeout(function(){el.style.display="none";},3000);
 }
 
-// ── Tabs ─────────────────────────────────────────────────────────────────────
+//  Tabs 
 function setTab(t){
   currentTab=t;currentOffset=0;
   ["trending","top","recent","mine"].forEach(function(x){
@@ -250,11 +255,11 @@ function setTab(t){
   reload();
 }
 
-// ── Debounce search ───────────────────────────────────────────────────────────
+//  Debounce search 
 var searchDebounce;
 function debounceSearch(){clearTimeout(searchDebounce);searchDebounce=setTimeout(function(){currentOffset=0;reload();},350);}
 
-// ── Load posts ────────────────────────────────────────────────────────────────
+//  Load posts 
 async function reload(){
   currentOffset=0;allPosts=[];
   showSkeletons();
@@ -287,6 +292,7 @@ async function fetchPosts(replace){
     currentTotal=data.total||posts.length;
     if(currentTab==="mine")posts=posts.filter(function(p){return p.username===username;});
     if(replace)allPosts=posts;else allPosts=allPosts.concat(posts);
+    updateTabCounts(currentTotal);
     renderPosts();
   }catch(e){
     document.getElementById("posts-grid").innerHTML='<div class="empty"><h3>Could not load posts</h3><p>Check your connection. <a href="javascript:reload()" style="color:var(--accent)">Try again</a></p></div>';
@@ -301,7 +307,24 @@ async function loadMore(){
   btn.disabled=false;btn.textContent="Load more";
 }
 
-// ── Render posts ──────────────────────────────────────────────────────────────
+//  Render posts 
+function updateTabCounts(total){
+  var label=currentTab==="trending"?"Trending":currentTab==="top"?"Top liked":currentTab==="recent"?"Recent":"My posts";
+  var tabEl=document.getElementById("tab-"+currentTab);
+  if(tabEl){
+    // Update the active tab with count (just update text content beside the SVG)
+    var spans=tabEl.querySelectorAll("span.tab-count");
+    if(spans.length===0){
+      var span=document.createElement("span");
+      span.className="tab-count";
+      span.style.cssText="font-size:10px;font-weight:700;background:var(--surface3);border:1px solid var(--border);border-radius:20px;padding:1px 6px;color:var(--muted);margin-left:2px";
+      span.textContent=total>999?"999+":total;
+      tabEl.appendChild(span);
+    }else{
+      spans[0].textContent=total>999?"999+":total;
+    }
+  }
+}
 function renderPosts(){
   var g=document.getElementById("posts-grid");g.innerHTML="";
   if(!allPosts.length){
@@ -350,7 +373,7 @@ function renderPosts(){
 function relTime(ts){var d=(Date.now()-new Date(ts).getTime())/1000;if(d<60)return"just now";if(d<3600)return Math.floor(d/60)+"m ago";if(d<86400)return Math.floor(d/3600)+"h ago";if(d<2592000)return Math.floor(d/86400)+"d ago";return Math.floor(d/2592000)+"mo ago";}
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
 
-// ── Like ──────────────────────────────────────────────────────────────────────
+//  Like 
 async function toggleLike(postId, btn){
   if(!token){showToast("Sign in to like posts","info");return;}
   try{
@@ -373,7 +396,7 @@ async function toggleLike(postId, btn){
   }catch(e){showToast("Could not like post","error");}
 }
 
-// ── Fork ──────────────────────────────────────────────────────────────────────
+//  Fork 
 async function forkPost(postId,title,ptype){
   if(!token){showToast("Sign in to fork projects","info");return;}
   showToast("Forking '"+title+"'...","info");
@@ -388,7 +411,7 @@ async function forkPost(postId,title,ptype){
   }catch(e){showToast("Could not fork","error");}
 }
 
-// ── Preview modal ─────────────────────────────────────────────────────────────
+//  Preview modal 
 function openPreview(p){
   openPostId=p.id;
   var ptype=p.project_type||"single";
@@ -397,7 +420,7 @@ function openPreview(p){
   document.getElementById("m-icon").className="modal-icon "+iconClass;
   document.getElementById("m-icon").textContent=iconText;
   document.getElementById("m-title").textContent=p.title;
-  document.getElementById("m-author").innerHTML='by <a href="#">'+esc(p.username||"unknown")+'</a> · '+relTime(p.published_at)+(p.hosted_url?' · <a href="'+esc(p.hosted_url)+'" target="_blank" style="color:var(--success)">&#127760; View live</a>':'');
+  document.getElementById("m-author").innerHTML='by <a href="#">'+esc(p.username||"unknown")+'</a> · '+relTime(p.published_at)+(p.hosted_url?' · <a href="'+esc(p.hosted_url)+'" target="_blank" style="color:var(--success)"> View live</a>':'');
   document.getElementById("m-desc").textContent=p.description||"";
   document.getElementById("m-code").textContent=p.code_preview||(p.code||"");
   document.getElementById("m-likes").textContent="\u2665 "+(p.likes||0)+" likes";
@@ -416,6 +439,15 @@ function forkFromModal(){
   var p=allPosts.find(function(x){return x.id===openPostId;});
   if(p)forkPost(p.id,p.title,p.project_type||"single");
 }
+function copyPostCode(){
+  var code=document.getElementById("m-code").textContent;
+  if(!code){showToast("No code to copy","info");return;}
+  navigator.clipboard.writeText(code).then(function(){
+    var btn=document.getElementById("m-copy-code-btn");
+    btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+    setTimeout(function(){btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy code';},2000);
+  }).catch(function(){showToast("Could not copy","error");});
+}
 function sharePost(){
   var url=location.origin+location.pathname+"?post="+openPostId;
   navigator.clipboard.writeText(url).then(function(){showToast("Link copied to clipboard!","success");}).catch(function(){showToast("Could not copy link","error");});
@@ -423,7 +455,7 @@ function sharePost(){
 
 document.addEventListener("keydown",function(e){if(e.key==="Escape")closePreview();});
 
-// ── Init ──────────────────────────────────────────────────────────────────────
+//  Init 
 // Check if URL has a ?post= param to open directly
 (function(){
   var urlParams=new URLSearchParams(window.location.search);
