@@ -96,6 +96,7 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
     <div class="live-pill"><div class="live-dot"></div> Live data</div>
     <h1>CodeSponge by the numbers</h1>
     <p>Real-time stats from the CodeSponge platform.</p>
+    <p id="stats-status" style="display:none;font-size:12px;margin-top:10px;padding:8px 16px;background:rgba(227,179,65,.1);border:1px solid rgba(227,179,65,.25);border-radius:8px;color:var(--warning)"></p>
   </div>
 
   <!-- Big 4 stats -->
@@ -104,28 +105,28 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
       <div class="stat-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       </div>
-      <div class="stat-num loading skeleton" id="stat-users"></div>
+      <div class="stat-num" id="stat-users" style="color:var(--muted);font-size:24px">...</div>
       <div class="stat-label">Registered users</div>
     </div>
     <div class="stat-card green">
       <div class="stat-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
       </div>
-      <div class="stat-num loading skeleton" id="stat-projects"></div>
+      <div class="stat-num" id="stat-projects" style="color:var(--muted);font-size:24px">...</div>
       <div class="stat-label">Projects created</div>
     </div>
     <div class="stat-card purple">
       <div class="stat-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
       </div>
-      <div class="stat-num loading skeleton" id="stat-posts"></div>
+      <div class="stat-num" id="stat-posts" style="color:var(--muted);font-size:24px">...</div>
       <div class="stat-label">Community posts</div>
     </div>
     <div class="stat-card amber">
       <div class="stat-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
       </div>
-      <div class="stat-num loading skeleton" id="stat-snippets"></div>
+      <div class="stat-num" id="stat-snippets" style="color:var(--muted);font-size:24px">...</div>
       <div class="stat-label">Shared snippets</div>
     </div>
   </div>
@@ -133,12 +134,7 @@ body{margin:0;font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;mi
   <!-- Language breakdown -->
   <div class="breakdown-card">
     <div class="breakdown-title">Language breakdown</div>
-    <div id="lang-breakdown">
-      <div class="lang-row"><div class="lang-name">Python</div><div class="lang-bar-wrap"><div class="lang-bar skeleton" style="width:100%"></div></div><div class="lang-count skeleton" style="width:40px;height:14px;border-radius:4px;display:inline-block"></div></div>
-      <div class="lang-row"><div class="lang-name">JavaScript</div><div class="lang-bar-wrap"><div class="lang-bar skeleton" style="width:80%"></div></div><div class="lang-count skeleton" style="width:40px;height:14px;border-radius:4px;display:inline-block"></div></div>
-      <div class="lang-row"><div class="lang-name">HTML</div><div class="lang-bar-wrap"><div class="lang-bar skeleton" style="width:60%"></div></div><div class="lang-count skeleton" style="width:40px;height:14px;border-radius:4px;display:inline-block"></div></div>
-      <div class="lang-row"><div class="lang-name">C++</div><div class="lang-bar-wrap"><div class="lang-bar skeleton" style="width:40%"></div></div><div class="lang-count skeleton" style="width:40px;height:14px;border-radius:4px;display:inline-block"></div></div>
-    </div>
+    <div id="lang-breakdown"><div style="font-size:13px;color:var(--muted);padding:8px 0">Loading language data...</div></div>
   </div>
 
   <div class="update-time" id="update-time"></div>
@@ -162,6 +158,7 @@ var LANG_ORDER=["python","javascript","html","cpp"];
 
 function animateCount(el,target){
   el.classList.remove("loading","skeleton");
+  el.removeAttribute("style"); // remove the ... placeholder style
   el.classList.add("loaded");
   var start=0,duration=800,startTime=null;
   function step(ts){
@@ -199,9 +196,14 @@ async function loadStats(){
     ["stat-users","stat-projects","stat-posts","stat-snippets"].forEach(function(id){
       var el=document.getElementById(id);
       el.classList.remove("loading","skeleton");
+      el.removeAttribute("style");
       el.textContent="—";
     });
-    document.getElementById("update-time").textContent="Could not load stats — server may be starting up.";
+    document.getElementById("lang-breakdown").innerHTML='<div style="font-size:13px;color:var(--muted);padding:8px 0">Could not load — server is starting up. This may take up to 30 seconds. <a href="javascript:loadStats()" style="color:var(--accent)">Try again</a></div>';
+    document.getElementById("update-time").textContent="";
+    var statusEl=document.getElementById("stats-status");
+    statusEl.style.display="";
+    statusEl.textContent="Server is starting up or /stats route not yet deployed. Make sure you have deployed the latest app.py, then refresh in 30 seconds.";
   }
 }
 
