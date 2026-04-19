@@ -6,7 +6,7 @@ from flask_jwt_extended import (
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 import resend
-import subprocess, uuid, os, tempfile, random, string, json
+import subprocess, uuid, os, tempfile, random, string, json, re
 import psycopg2
 import psycopg2.extras
 from datetime import datetime, timedelta
