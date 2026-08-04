@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>CodeSponge — Editor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
+<script src="ping.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box}
@@ -189,7 +190,7 @@ var projectId=params.get("project");
 if(!projectId&&!params.get("snippet"))window.location.href="dashboard.html";
 function authH(){return{"Content-Type":"application/json","Authorization":"Bearer "+token};}
 (function(){var ap=JSON.parse(localStorage.getItem("cs_appearance")||"{}");if(ap.accent)document.documentElement.style.setProperty("--accent",ap.accent);})();
-var editor,currentLang="python",runController=null;
+var editor,currentLang="python",runController=null,isLoading=false;
 var LANG_COLORS={python:"#3572A5",javascript:"#f1e05a",cpp:"#f34b7d",html:"#e34c26"};
 var LANG_LABELS={python:"Python",javascript:"JavaScript",cpp:"C++",html:"HTML"};
 var PREFS=(function(){try{return JSON.parse(localStorage.getItem("cs_editor_prefs")||"{}");}catch(e){return{};}})();
@@ -214,16 +215,95 @@ require(["vs/editor/editor.main"],function(){
   monaco.languages.html.htmlDefaults.setOptions({validate:true,suggest:{html5:true}});
   monaco.languages.css.cssDefaults.setOptions({validate:true});
   monaco.languages.json.jsonDefaults.setDiagnosticsOptions({validate:true});
-  editor=monaco.editor.create(document.getElementById("monaco-editor"),{value:"",language:"python",theme:currentThemeId,fontSize:currentFontSize,fontFamily:"'JetBrains Mono',monospace",fontLigatures:PREFS.ligatures!==false,minimap:{enabled:!!PREFS.minimap},wordWrap:currentWordWrap?"on":"off",automaticLayout:false,scrollBeyondLastLine:false,padding:{top:14,bottom:14},cursorBlinking:"smooth",cursorSmoothCaretAnimation:"on",smoothScrolling:PREFS.smoothScroll!==false,renderLineHighlight:"gutter",tabSize:PREFS.tabSize||4,lineNumbers:PREFS.lineNumbers!==false?"on":"off",scrollbar:{verticalScrollbarSize:5,horizontalScrollbarSize:5},lightbulb:{enabled:true}});
+  editor=monaco.editor.create(document.getElementById("monaco-editor"),{value:"",language:"python",theme:currentThemeId,fontSize:currentFontSize,fontFamily:"'JetBrains Mono',monospace",fontLigatures:PREFS.ligatures!==false,minimap:{enabled:!!PREFS.minimap},wordWrap:currentWordWrap?"on":"off",automaticLayout:false,scrollBeyondLastLine:false,padding:{top:14,bottom:14},cursorBlinking:"smooth",cursorSmoothCaretAnimation:"on",smoothScrolling:PREFS.smoothScroll!==false,renderLineHighlight:"gutter",tabSize:PREFS.tabSize||4,lineNumbers:PREFS.lineNumbers!==false?"on":"off",scrollbar:{verticalScrollbarSize:5,horizontalScrollbarSize:5},lightbulb:{enabled:true},inlineSuggest:{enabled:true,suppressSuggestions:false}});
   function relayout(){var ep=document.getElementById("editor-pane");if(ep&&editor)editor.layout({width:ep.clientWidth,height:ep.clientHeight});}
   window.addEventListener("resize",relayout);window.csRelayout=relayout;
   editor.onDidChangeCursorPosition(function(e){document.getElementById("sb-cursor").textContent="Ln "+e.position.lineNumber+", Col "+e.position.column;});editor.onDidChangeCursorSelection(function(e){var sel=editor.getSelection();var model=editor.getModel();if(sel&&model&&!sel.isEmpty()){var txt=model.getValueInRange(sel);var chars=txt.length;var words=txt.trim()?txt.trim().split(/\s+/).length:0;document.getElementById("sb-sel").textContent=chars+" chars"+(words?" / "+words+" words":"");document.getElementById("sb-sel").style.display="";}else{document.getElementById("sb-sel").style.display="none";}});
   var saveTimer,lintTimer;
-  editor.onDidChangeModelContent(function(){var model=editor.getModel();if(model)document.getElementById("sb-lines").textContent=model.getLineCount()+" lines";setSave("saving");if(!document.title.startsWith("*"))document.title="* "+document.title;clearTimeout(saveTimer);saveTimer=setTimeout(saveProject,1500);clearTimeout(lintTimer);lintTimer=setTimeout(function(){runLint(editor.getModel());},400);});
+  editor.onDidChangeModelContent(function(){var model=editor.getModel();if(model)document.getElementById("sb-lines").textContent=model.getLineCount()+" lines";if(isLoading)return;setSave("saving");if(!document.title.startsWith("*"))document.title="* "+document.title;clearTimeout(saveTimer);saveTimer=setTimeout(saveProject,1500);clearTimeout(lintTimer);lintTimer=setTimeout(function(){runLint(editor.getModel());},400);});
   monaco.editor.onDidChangeMarkers(function(){if(editor)updateDiagBar(editor.getModel());});
   editor.addAction({id:"cs.quickfix",label:"\u26a1 Quick fix",contextMenuGroupId:"navigation",contextMenuOrder:1.5,run:function(ed){var pos=ed.getPosition(),model=ed.getModel();var mks=monaco.editor.getModelMarkers({resource:model.uri}).filter(function(m){return m.startLineNumber<=pos.lineNumber&&m.endLineNumber>=pos.lineNumber&&typeof m.code==="string"&&m.code.indexOf("FIX:")===0;});if(!mks.length){showToast("No automatic fix on line "+pos.lineNumber,"info");return;}var mk=mks[0],fix=mk.code.slice(4),orig=model.getValueInRange(new monaco.Range(mk.startLineNumber,mk.startColumn,mk.endLineNumber,mk.endColumn));ed.executeEdits("cs-fix",[{range:new monaco.Range(mk.startLineNumber,mk.startColumn,mk.endLineNumber,mk.endColumn),text:fix}]);showToast("Fixed: '"+orig.trim()+"' to '"+fix+"'","success");}});
   editor.addAction({id:"cs.explain",label:"\u2139\ufe0f Explain error / warning",contextMenuGroupId:"navigation",contextMenuOrder:1.6,run:function(ed){var pos=ed.getPosition(),model=ed.getModel();var mks=monaco.editor.getModelMarkers({resource:model.uri}).filter(function(m){return m.startLineNumber<=pos.lineNumber&&m.endLineNumber>=pos.lineNumber;});if(!mks.length){showToast("No errors or warnings on line "+pos.lineNumber,"info");return;}showToast(mks.map(function(m){return(m.severity===monaco.MarkerSeverity.Error?"\u274c":"\u26a0\ufe0f")+" "+m.message;}).join("\n\n"),mks[0].severity===monaco.MarkerSeverity.Error?"error":"warning");}});
   editor.addAction({id:"cs.ignore",label:"\ud83d\udead Ignore warning on this line",contextMenuGroupId:"navigation",contextMenuOrder:1.7,run:function(ed){var pos=ed.getPosition(),model=ed.getModel();var all=monaco.editor.getModelMarkers({resource:model.uri});var keep=all.filter(function(m){return!(m.startLineNumber===pos.lineNumber&&m.severity===monaco.MarkerSeverity.Warning&&m.source==="CodeSponge");});monaco.editor.setModelMarkers(model,"cs-lint",keep.filter(function(m){return m.source==="CodeSponge";}));updateDiagBar(model);showToast("Warning suppressed","info");}});
+  // Lightbulb: show inline quick-fix actions for our FIX: markers
+  monaco.languages.registerCodeActionProvider(["python","javascript","cpp","html"],{
+    provideCodeActions:function(model,range,context){
+      var actions=[];
+      context.markers.forEach(function(m){
+        if(typeof m.code==="string"&&m.code.indexOf("FIX:")===0){
+          var fix=m.code.slice(4);
+          actions.push({title:"Fix: replace with '"+fix+"'",diagnostics:[m],kind:"quickfix",
+            edit:{edits:[{resource:model.uri,versionId:model.getVersionId(),textEdits:[{range:new monaco.Range(m.startLineNumber,m.startColumn,m.endLineNumber,m.endColumn),text:fix}]}]},
+            isPreferred:true});
+        }
+      });
+      return{actions:actions,dispose:function(){}};
+    }
+  });
+
+  // Ghost text (inline completions)
+  var GHOST={
+    python:[
+      {t:/def\s+\w*$/,i:"function_name(params):\n    pass"},
+      {t:/for\s+$/,i:"i in range(10):\n    "},
+      {t:/for\s+\w+\s+in\s+$/,i:"range(10):\n    "},
+      {t:/if\s+$/,i:"condition:\n    "},
+      {t:/while\s+$/,i:"True:\n    "},
+      {t:/class\s+\w*$/,i:"ClassName:\n    def __init__(self):\n        pass"},
+      {t:/import\s+$/,i:"os"},
+      {t:/print\s*\($/,i:'"Hello, World!")'},
+      {t:/try:\s*$/,i:"\nexcept Exception as e:\n    print(e)"},
+      {t:/with\s+open\s*\($/,i:'"file.txt", "r") as f:\n    content = f.read()'},
+      {t:/return\s+$/,i:"result"},
+      {t:/lambda\s+$/,i:"x: x * 2"},
+    ],
+    javascript:[
+      {t:/function\s+\w*$/,i:"name(params) {\n  \n}"},
+      {t:/const\s+\w*\s*=\s*$/,i:"value;"},
+      {t:/let\s+\w*\s*=\s*$/,i:"value;"},
+      {t:/for\s+\($/,i:"let i = 0; i < 10; i++) {\n  \n}"},
+      {t:/if\s+\($/,i:"condition) {\n  \n}"},
+      {t:/console\.log\s*\($/,i:'"Hello, World!")'},
+      {t:/\.forEach\s*\($/,i:"(item) => {\n  \n});"},
+      {t:/\.map\s*\($/,i:"(item) => item);"},
+      {t:/async\s+function\s*$/,i:"name() {\n  \n}"},
+      {t:/await\s+$/,i:"fetch(url)"},
+      {t:/return\s+$/,i:"result;"},
+    ],
+    cpp:[
+      {t:/int\s+main\s*\($/,i:") {\n    \n    return 0;\n}"},
+      {t:/cout\s*<<\s*$/,i:'"Hello, World!" << endl;'},
+      {t:/for\s+\($/,i:"int i = 0; i < 10; i++) {\n    \n}"},
+      {t:/if\s+\($/,i:"condition) {\n    \n}"},
+      {t:/void\s+\w*$/,i:"functionName() {\n    \n}"},
+      {t:/#include\s+<$/,i:"iostream>"},
+      {t:/return\s+$/,i:"0;"},
+    ],
+    html:[
+      {t:/<div\s*$/,i:'class="">\n  \n</div>'},
+      {t:/<p\s*$/,i:'class="">'},
+      {t:/<a\s*$/,i:'href="#">Link</a>'},
+      {t:/<img\s*$/,i:'src="" alt="">'},
+      {t:/<input\s*$/,i:'type="text" placeholder="">'},
+      {t:/<button\s*$/,i:'class="">Click me</button>'},
+      {t:/<style\s*$/,i:'>\n  body {\n    \n  }\n</style>'},
+      {t:/<script\s*$/,i:'>\n  \n</script>'},
+    ]
+  };
+  monaco.languages.registerInlineCompletionsProvider(["python","javascript","cpp","html"],{
+    provideInlineCompletions:function(model,position){
+      var before=model.getLineContent(position.lineNumber).substring(0,position.column-1);
+      var list=GHOST[currentLang]||[];
+      for(var i=0;i<list.length;i++){
+        if(list[i].t.test(before)){
+          return{items:[{insertText:list[i].i,range:{startLineNumber:position.lineNumber,startColumn:position.column,endLineNumber:position.lineNumber,endColumn:position.column}}]};
+        }
+      }
+      return{items:[]};
+    },
+    freeInlineCompletions:function(){}
+  });
+
   loadProject();setTimeout(relayout,300);
 });
 function changeFontSize(delta){currentFontSize=Math.max(10,Math.min(28,currentFontSize+delta));document.getElementById("fs-label").textContent=currentFontSize;if(editor)editor.updateOptions({fontSize:currentFontSize});var p=JSON.parse(localStorage.getItem("cs_editor_prefs")||"{}");p.fontSize=currentFontSize;localStorage.setItem("cs_editor_prefs",JSON.stringify(p));}
@@ -240,7 +320,7 @@ function showToast(msg,type){var el=document.getElementById("cs-toast");var c={e
 function setSave(s){var p=document.getElementById("save-pill"),t=document.getElementById("save-txt");p.className="save-pill"+(s==="saving"?" saving":s==="error"?" error":"");t.textContent=s==="saving"?"Saving...":s==="error"?"Save failed":"Saved";if(s==="saved"){document.title=document.title.replace(/^\*\s*/,"");}}
 function setLangUI(lang){currentLang=lang;document.getElementById("lang-dot").style.background=LANG_COLORS[lang]||"#7d8590";document.getElementById("lang-txt").textContent=LANG_LABELS[lang]||lang;document.getElementById("lang-badge").style.display="flex";document.getElementById("sb-lang").textContent=LANG_LABELS[lang]||lang;if(editor)monaco.editor.setModelLanguage(editor.getModel(),lang==="cpp"?"cpp":lang);document.getElementById("ot-prev").style.display=(lang==="html")?"":"none";switchOut(lang==="html"?"preview":"output");setTimeout(function(){if(editor)runLint(editor.getModel());},300);}
 function hideOverlay(){var el=document.getElementById("load-overlay");el.style.opacity="0";setTimeout(function(){el.style.display="none";},300);}
-async function loadProject(){var snippet=params.get("snippet");if(snippet){loadSnippet(snippet);return;}var hintTimer=setTimeout(function(){document.getElementById("load-hint").classList.add("show");},5000);for(var attempt=0;attempt<3;attempt++){try{if(attempt>0){document.getElementById("load-msg").textContent="Retrying... ("+(attempt+1)+"/3)";await new Promise(function(r){setTimeout(r,2000);});}var res=await fetch(API+"/projects/"+projectId,{headers:authH()});clearTimeout(hintTimer);if(res.status===401){window.location.href="index.html";return;}if(!res.ok)throw new Error("HTTP "+res.status);var data=await res.json();document.title=data.name+" - CodeSponge";document.getElementById("proj-title").value=data.name;setLangUI(data.language||"python");editor.setValue(data.code||getDefault(data.language));var model=editor.getModel();if(model)document.getElementById("sb-lines").textContent=model.getLineCount()+" lines";setSave("saved");hideOverlay();if(window.csRelayout)setTimeout(window.csRelayout,100);setTimeout(function(){runLint(editor.getModel());},600);return;}catch(err){console.error("Attempt "+(attempt+1)+" failed:",err);}}clearTimeout(hintTimer);document.getElementById("proj-title").value="Error";document.getElementById("load-msg").textContent="Could not load project.";document.getElementById("load-hint").textContent="Check your connection and refresh.";document.getElementById("load-hint").classList.add("show");setTimeout(hideOverlay,2000);}
+async function loadProject(){var snippet=params.get("snippet");if(snippet){loadSnippet(snippet);return;}var startT=Date.now();var hint=document.getElementById("load-hint");var elapsedTimer=setInterval(function(){var s=Math.floor((Date.now()-startT)/1000);hint.textContent="Server is starting up... "+s+"s";hint.classList.add("show");},1000);for(var attempt=0;attempt<5;attempt++){try{if(attempt>0){document.getElementById("load-msg").textContent="Retrying... ("+(attempt+1)+"/5)";await new Promise(function(r){setTimeout(r,3000);});}var res=await fetch(API+"/projects/"+projectId,{headers:authH()});clearInterval(elapsedTimer);if(res.status===401){window.location.href="index.html";return;}if(!res.ok)throw new Error("HTTP "+res.status);var data=await res.json();document.title=data.name+" - CodeSponge";document.getElementById("proj-title").value=data.name;setLangUI(data.language||"python");isLoading=true;editor.setValue(data.code||getDefault(data.language));isLoading=false;var model=editor.getModel();if(model)document.getElementById("sb-lines").textContent=model.getLineCount()+" lines";setSave("saved");hideOverlay();if(window.csRelayout)setTimeout(window.csRelayout,100);setTimeout(function(){runLint(editor.getModel());},600);return;}catch(err){console.error("Attempt "+(attempt+1)+" failed:",err);}}clearInterval(elapsedTimer);document.getElementById("proj-title").value="Error";document.getElementById("load-msg").textContent="Could not load project.";hint.textContent="Check your connection and refresh the page.";hint.classList.add("show");setTimeout(hideOverlay,2000);}
 async function loadSnippet(id){try{var res=await fetch(API+"/snippets/"+id);var d=await res.json();setLangUI(d.language||"python");editor.setValue(d.code||"");document.getElementById("save-txt").textContent="Read-only";document.getElementById("save-pill").style.opacity=".6";hideOverlay();setTimeout(function(){runLint(editor.getModel());},600);}catch(e){alert("Could not load snippet.");hideOverlay();}}
 async function saveProject(){if(params.get("snippet"))return;try{var r=await fetch(API+"/projects/"+projectId,{method:"PUT",headers:authH(),body:JSON.stringify({code:editor.getValue(),language:currentLang})});setSave(r.ok?"saved":"error");}catch(e){setSave("error");}}
 async function renameProject(){if(params.get("snippet"))return;var name=document.getElementById("proj-title").value.trim();if(!name)return;document.title=name+" - CodeSponge";try{await fetch(API+"/projects/"+projectId,{method:"PUT",headers:authH(),body:JSON.stringify({code:editor.getValue(),language:currentLang,name:name})});}catch(e){}}
